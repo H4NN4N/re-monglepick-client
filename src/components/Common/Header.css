@@ -1,0 +1,269 @@
+/**
+ * Header 컴포넌트 스타일.
+ *
+ * 다크 테마 반투명 배경의 상단 고정 네비게이션 바.
+ * 768px 이하에서 모바일 햄버거 메뉴로 전환된다.
+ */
+
+/* 헤더 — 상단 고정, 반투명 배경 + 블러 */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
+  width: 100%;
+  height: var(--header-height);
+  background-color: rgba(15, 15, 26, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-light);
+}
+
+/* 내부 컨테이너 — 최대 너비 + 양쪽 정렬 */
+.header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  padding: 0 var(--space-lg);
+  height: 100%;
+}
+
+/* ── 로고 ── */
+.header__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  color: var(--text-primary);
+  flex-shrink: 0;
+}
+
+/* 로고 아이콘 (원형 배지) */
+.header__logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  font-weight: var(--font-bold);
+  font-size: var(--text-lg);
+}
+
+/* 로고 텍스트 */
+.header__logo-text {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+}
+
+/* ── 네비게이션 ── */
+.header__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+/* 네비게이션 링크 */
+.header__nav-link {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.header__nav-link:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-elevated);
+}
+
+/* 활성 상태 링크 */
+.header__nav-link--active {
+  color: var(--primary);
+  background-color: var(--primary-light);
+}
+
+/* ── 인증 버튼 영역 ── */
+.header__auth {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+/* 모바일용 인증 버튼 — 데스크톱에서 숨김 */
+.header__auth--mobile {
+  display: none;
+}
+
+/* 인증 버튼 */
+.header__auth-btn {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.header__auth-btn:hover {
+  color: var(--text-primary);
+}
+
+/* 회원가입 버튼 — Primary 스타일 */
+.header__auth-btn--signup {
+  background-color: var(--primary);
+  color: white;
+}
+
+.header__auth-btn--signup:hover {
+  background-color: var(--primary-hover);
+  color: white;
+  box-shadow: var(--shadow-glow);
+}
+
+/* 로그아웃 버튼 */
+.header__auth-btn--logout {
+  color: var(--text-muted);
+}
+
+.header__auth-btn--logout:hover {
+  color: var(--error);
+}
+
+/* ── 사용자 정보 (로그인 상태) ── */
+.header__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  transition: background-color var(--transition-fast);
+}
+
+.header__user:hover {
+  background-color: var(--bg-elevated);
+}
+
+/* 사용자 아바타 (원형) */
+.header__user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background-color: var(--primary-light);
+  color: var(--primary);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+}
+
+/* 사용자 닉네임 */
+.header__user-name {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  font-weight: var(--font-medium);
+}
+
+/* ── 모바일 햄버거 메뉴 버튼 ── */
+.header__mobile-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+}
+
+.header__mobile-toggle span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background-color: var(--text-secondary);
+  border-radius: 1px;
+  transition: all var(--transition-fast);
+}
+
+/* 햄버거 → X 변환 (열림 상태) */
+.header__mobile-toggle--open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.header__mobile-toggle--open span:nth-child(2) {
+  opacity: 0;
+}
+
+.header__mobile-toggle--open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── 모바일 반응형 (768px 이하) ── */
+@media (max-width: 768px) {
+  /* 햄버거 버튼 표시 */
+  .header__mobile-toggle {
+    display: flex;
+  }
+
+  /* 데스크톱 인증 버튼 숨김 */
+  .header__auth--desktop {
+    display: none;
+  }
+
+  /* 네비게이션 — 전체 화면 오버레이 */
+  .header__nav {
+    display: none;
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    flex-direction: column;
+    padding: var(--space-lg);
+    background-color: var(--bg-main);
+    border-top: 1px solid var(--border-default);
+    gap: var(--space-sm);
+    overflow-y: auto;
+  }
+
+  /* 모바일 메뉴 열림 */
+  .header__nav--open {
+    display: flex;
+  }
+
+  /* 모바일 네비게이션 링크 — 전체 너비 */
+  .header__nav-link {
+    font-size: var(--text-lg);
+    padding: var(--space-md) var(--space-lg);
+    border-radius: var(--radius-lg);
+  }
+
+  /* 모바일 인증 버튼 표시 */
+  .header__auth--mobile {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin-top: var(--space-lg);
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--border-default);
+  }
+
+  .header__auth--mobile .header__auth-btn {
+    padding: var(--space-md);
+    text-align: center;
+    font-size: var(--text-lg);
+    border-radius: var(--radius-lg);
+  }
+
+  .header__auth--mobile .header__nav-link {
+    font-size: var(--text-lg);
+  }
+}
