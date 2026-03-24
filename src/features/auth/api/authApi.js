@@ -132,7 +132,7 @@ export async function logoutAPI(token) {
  * @returns {Promise<Object>} 로그인 응답 (accessToken, refreshToken, user)
  */
 export async function oauthLogin({ provider, code, redirectUri }) {
-  return fetchJSON(`${AUTH_ENDPOINTS.OAUTH(provider)}`, {
+  return fetchJSON(AUTH_ENDPOINTS.OAUTH(provider), {
     method: 'POST',
     body: JSON.stringify({ code, redirectUri }),
   });

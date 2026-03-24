@@ -8,7 +8,7 @@
 
 /**
  * API 기본 URL.
- * 개발 환경: Vite 프록시가 localhost:8000으로 전달.
+ * 개발 환경: Vite 프록시가 경로별로 분배 (인증/포인트/결제 → :8080, 채팅 등 → :8000).
  * 프로덕션 환경: VITE_API_BASE_URL 환경 변수 사용.
  */
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';

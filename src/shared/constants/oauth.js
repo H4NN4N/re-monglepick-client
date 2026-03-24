@@ -50,8 +50,9 @@ export function buildOAuthUrl(provider) {
   const redirectUri = getOAuthRedirectUri(provider);
   const state = crypto.randomUUID();
 
-  // CSRF 방지용 state를 sessionStorage에 저장
-  sessionStorage.setItem('oauth_state', state);
+  // CSRF 방지용 state를 provider별 키로 sessionStorage에 저장
+  // (동시에 여러 제공자 로그인 시도 시 state 덮어쓰기 방지)
+  sessionStorage.setItem(`oauth_state_${provider}`, state);
 
   const params = new URLSearchParams({
     response_type: 'code',
