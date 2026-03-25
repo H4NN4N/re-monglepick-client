@@ -9,28 +9,16 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
-import { useAuth } from '../../../app/providers/AuthProvider';
+import useAuthStore from '../../../shared/stores/useAuthStore';
 /* 로그인 API — 같은 feature 내의 authApi에서 가져옴 */
 import { login as loginAPI } from '../api/authApi';
 /* 유효성 검사 유틸 — shared/utils에서 가져옴 */
 import { validateEmail, validatePassword } from '../../../shared/utils/validators';
 /* 라우트 경로 상수 — shared/constants에서 가져옴 */
 import { ROUTES } from '../../../shared/constants/routes';
-/* API 기본 URL — shared/constants에서 가져옴 */
-import { API_BASE_URL } from '../../../shared/constants/api';
+/* OAuth URL 생성 유틸 — shared/constants에서 가져옴 */
+import { getOAuth2AuthorizationUrl } from '../../../shared/constants/oauth';
 import './LoginForm.css';
-
-/**
- * Spring Security OAuth2 Client 인가 URL을 생성한다.
- * Backend의 /oauth2/authorization/{provider} 경로로 리다이렉트하여
- * Spring Security가 OAuth2 흐름을 처리하도록 한다.
- *
- * @param {string} provider - 제공자 이름 (google, kakao, naver)
- * @returns {string} Backend OAuth2 인가 URL
- */
-function getOAuth2AuthorizationUrl(provider) {
-  return `${API_BASE_URL}/oauth2/authorization/${provider}`;
-}
 
 export default function LoginForm() {
   // 폼 입력값 상태
@@ -44,7 +32,7 @@ export default function LoginForm() {
   const [serverError, setServerError] = useState('');
 
   // 인증 Context에서 login 함수 가져오기
-  const { login } = useAuth();
+  const login = useAuthStore((s) => s.login);
   // 페이지 이동용 navigate
   const navigate = useNavigate();
 

@@ -5,10 +5,8 @@
  */
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-/* 디자인 시스템: CSS 변수 + 글로벌 스타일 (variables.css → global.css 순서로 로드) */
+/* 디자인 시스템: CSS 변수 + 글로벌 스타일 (variables.css는 global.css에서 @import) */
 import './shared/styles/global.css'
-/* 앱 전용 기본 스타일 (리셋 보완) */
-import './index.css'
 import App from './app/App.jsx'
 
 createRoot(document.getElementById('root')).render(

@@ -2,7 +2,7 @@
  * 몽글픽 메인 애플리케이션 컴포넌트.
  *
  * BrowserRouter 기반 라우팅으로 전체 페이지를 관리한다.
- * AuthProvider로 인증 상태를 전역에서 공유하며,
+ * Zustand useAuthStore로 인증 상태를 전역에서 공유하며,
  * MainLayout이 필요한 페이지는 Header/Footer를 포함하는 레이아웃으로 감싼다.
  *
  * 라우트 구성:
@@ -22,8 +22,8 @@
  */
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-/* 인증 상태 Provider — app/providers에서 가져옴 */
-import { AuthProvider, useAuth } from './providers/AuthProvider';
+/* Zustand 인증 스토어 — shared/stores에서 가져옴 */
+import useAuthStore from '../shared/stores/useAuthStore';
 /* 메인 레이아웃 — shared/components에서 가져옴 (Header + Content + Footer) */
 import MainLayout from '../shared/components/Layout/MainLayout';
 
@@ -71,9 +71,10 @@ import './App.css';
  * 인증되지 않은 사용자는 로그인 페이지로 리다이렉트한다.
  */
 function PrivateRoute({ children }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
+  const isLoading = useAuthStore((s) => s.isLoading);
 
-  // 초기 로딩 중에는 Loading 컴포넌트를 표시 (localStorage 복원 대기)
+  /* 초기 로딩 중에는 Loading 컴포넌트를 표시 (localStorage 복원 대기) */
   if (isLoading) return <Loading message="인증 확인 중..." />;
 
   if (!isAuthenticated) {
@@ -86,121 +87,119 @@ function PrivateRoute({ children }) {
 function App() {
   return (
     <BrowserRouter>
-      {/* AuthProvider — BrowserRouter 내부에서 인증 상태 제공 (useNavigate 사용 가능) */}
-      <AuthProvider>
-        <Routes>
-          {/* ── 레이아웃 없는 페이지 ── */}
+      {/* Zustand 스토어는 Provider 래핑 불필요 — 어디서든 useAuthStore() 호출 가능 */}
+      <Routes>
+        {/* ── 레이아웃 없는 페이지 ── */}
 
-          {/* 랜딩 페이지 — 서비스/팀 소개 */}
-          <Route path="/" element={<LandingPage />} />
+        {/* 랜딩 페이지 — 서비스/팀 소개 */}
+        <Route path="/" element={<LandingPage />} />
 
-          {/* 로그인 페이지 — 레이아웃 없이 단독 표시 */}
-          <Route path="/login" element={<LoginPage />} />
+        {/* 로그인 페이지 — 레이아웃 없이 단독 표시 */}
+        <Route path="/login" element={<LoginPage />} />
 
-          {/* 회원가입 페이지 — 레이아웃 없이 단독 표시 */}
-          <Route path="/signup" element={<SignUpPage />} />
+        {/* 회원가입 페이지 — 레이아웃 없이 단독 표시 */}
+        <Route path="/signup" element={<SignUpPage />} />
 
-          {/* OAuth 콜백 페이지 — 구 방식: 인가 코드 직접 처리 (fallback) */}
-          <Route path="/auth/callback/:provider" element={<OAuthCallbackPage />} />
+        {/* OAuth 콜백 페이지 — 구 방식: 인가 코드 직접 처리 (fallback) */}
+        <Route path="/auth/callback/:provider" element={<OAuthCallbackPage />} />
 
-          {/* OAuth 쿠키 교환 페이지 — Spring Security OAuth2 Client 방식 (쿠키→JWT 교환) */}
-          <Route path="/cookie" element={<OAuthCookiePage />} />
+        {/* OAuth 쿠키 교환 페이지 — Spring Security OAuth2 Client 방식 (쿠키→JWT 교환) */}
+        <Route path="/cookie" element={<OAuthCookiePage />} />
 
-          {/* AI 채팅 추천 — 기존 전체 화면 채팅 UI (레이아웃 없음) */}
-          <Route path="/chat" element={<div className="app"><ChatWindow /></div>} />
+        {/* AI 채팅 추천 — 기존 전체 화면 채팅 UI (레이아웃 없음) */}
+        <Route path="/chat" element={<div className="app"><ChatWindow /></div>} />
 
-          {/* ── MainLayout(Header/Footer) 포함 페이지 ── */}
+        {/* ── MainLayout(Header/Footer) 포함 페이지 ── */}
 
-          {/* 홈 페이지 — 인기/최신 영화 목록 */}
-          <Route
-            path="/home"
-            element={
+        {/* 홈 페이지 — 인기/최신 영화 목록 */}
+        <Route
+          path="/home"
+          element={
+            <MainLayout>
+              <HomePage />
+            </MainLayout>
+          }
+        />
+
+        {/* 검색 결과 페이지 */}
+        <Route
+          path="/search"
+          element={
+            <MainLayout>
+              <SearchPage />
+            </MainLayout>
+          }
+        />
+
+        {/* 영화 상세 페이지 — URL 파라미터에서 영화 ID 추출 */}
+        <Route
+          path="/movie/:id"
+          element={
+            <MainLayout>
+              <MovieDetailPage />
+            </MainLayout>
+          }
+        />
+
+        {/* 커뮤니티 — 게시판 + 리뷰 */}
+        <Route
+          path="/community"
+          element={
+            <MainLayout>
+              <CommunityPage />
+            </MainLayout>
+          }
+        />
+
+        {/* 마이페이지 — 프로필/시청이력/위시리스트 (인증 필수) */}
+        <Route
+          path="/mypage"
+          element={
+            <PrivateRoute>
               <MainLayout>
-                <HomePage />
+                <MyPage />
               </MainLayout>
-            }
-          />
+            </PrivateRoute>
+          }
+        />
 
-          {/* 검색 결과 페이지 */}
-          <Route
-            path="/search"
-            element={
+        {/* 포인트 관리 — 잔액/출석/아이템/이력 (인증 필수) */}
+        <Route
+          path="/point"
+          element={
+            <PrivateRoute>
               <MainLayout>
-                <SearchPage />
+                <PointPage />
               </MainLayout>
-            }
-          />
+            </PrivateRoute>
+          }
+        />
 
-          {/* 영화 상세 페이지 — URL 파라미터에서 영화 ID 추출 */}
-          <Route
-            path="/movie/:id"
-            element={
+        {/* 결제/구독 관리 (인증 필수) */}
+        <Route
+          path="/payment"
+          element={
+            <PrivateRoute>
               <MainLayout>
-                <MovieDetailPage />
+                <PaymentPage />
               </MainLayout>
-            }
-          />
+            </PrivateRoute>
+          }
+        />
 
-          {/* 커뮤니티 — 게시판 + 리뷰 */}
-          <Route
-            path="/community"
-            element={
-              <MainLayout>
-                <CommunityPage />
-              </MainLayout>
-            }
-          />
+        {/* 고객센터 — FAQ/도움말/문의하기/문의내역 */}
+        <Route
+          path="/support"
+          element={
+            <MainLayout>
+              <SupportPage />
+            </MainLayout>
+          }
+        />
 
-          {/* 마이페이지 — 프로필/시청이력/위시리스트 (인증 필수) */}
-          <Route
-            path="/mypage"
-            element={
-              <PrivateRoute>
-                <MainLayout>
-                  <MyPage />
-                </MainLayout>
-              </PrivateRoute>
-            }
-          />
-
-          {/* 포인트 관리 — 잔액/출석/아이템/이력 (인증 필수) */}
-          <Route
-            path="/point"
-            element={
-              <PrivateRoute>
-                <MainLayout>
-                  <PointPage />
-                </MainLayout>
-              </PrivateRoute>
-            }
-          />
-
-          {/* 결제/구독 관리 (인증 필수) */}
-          <Route
-            path="/payment"
-            element={
-              <PrivateRoute>
-                <MainLayout>
-                  <PaymentPage />
-                </MainLayout>
-              </PrivateRoute>
-            }
-          />
-
-          {/* 고객센터 — FAQ/도움말/문의하기/문의내역 */}
-          <Route
-            path="/support"
-            element={
-              <MainLayout>
-                <SupportPage />
-              </MainLayout>
-            }
-          />
-
-          {/* 404 — 매칭되지 않는 모든 경로를 Not Found 페이지로 처리 */}
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </AuthProvider>
+        {/* 404 — 매칭되지 않는 모든 경로를 Not Found 페이지로 처리 */}
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
     </BrowserRouter>
   );
 }

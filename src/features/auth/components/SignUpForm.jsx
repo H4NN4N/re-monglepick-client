@@ -15,7 +15,7 @@
 import { useState, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
-import { useAuth } from '../../../app/providers/AuthProvider';
+import useAuthStore from '../../../shared/stores/useAuthStore';
 /* 회원가입 API — 같은 feature 내의 authApi에서 가져옴 */
 import { signup as signupAPI } from '../api/authApi';
 /* 유효성 검사 유틸 — shared/utils에서 가져옴 */
@@ -66,7 +66,7 @@ export default function SignUpForm() {
   // 서버 에러 메시지
   const [serverError, setServerError] = useState('');
 
-  const { login } = useAuth();
+  const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
 
   // 비밀번호 강도 계산 (메모이제이션)

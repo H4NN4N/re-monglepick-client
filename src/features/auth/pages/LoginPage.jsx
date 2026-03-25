@@ -11,7 +11,7 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
-import { useAuth } from '../../../app/providers/AuthProvider';
+import useAuthStore from '../../../shared/stores/useAuthStore';
 /* 라우트 경로 상수 — shared/constants에서 가져옴 */
 import { ROUTES } from '../../../shared/constants/routes';
 /* 로그인 폼 — 같은 feature 내의 components에서 가져옴 */
@@ -19,7 +19,8 @@ import LoginForm from '../components/LoginForm';
 import './LoginPage.css';
 
 export default function LoginPage() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
+  const isLoading = useAuthStore((s) => s.isLoading);
   const navigate = useNavigate();
 
   /**

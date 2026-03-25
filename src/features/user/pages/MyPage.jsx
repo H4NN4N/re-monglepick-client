@@ -22,7 +22,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
-import { useAuth } from '../../../app/providers/AuthProvider';
+import useAuthStore from '../../../shared/stores/useAuthStore';
 /* 마이페이지 API — 같은 feature 내의 userApi에서 가져옴 */
 import { getProfile, getWatchHistory, getWishlist } from '../api/userApi';
 /* 라우트 경로 상수 — shared/constants에서 가져옴 */
@@ -57,17 +57,12 @@ export default function MyPagePage() {
   // 에러 메시지
   const [error, setError] = useState(null);
 
-  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
+  const user = useAuthStore((s) => s.user);
+  const authLoading = useAuthStore((s) => s.isLoading);
   const navigate = useNavigate();
 
-  /**
-   * 인증 상태 확인 — 비인증 시 로그인 페이지로 리다이렉트.
-   */
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      navigate(ROUTES.LOGIN);
-    }
-  }, [isAuthenticated, authLoading, navigate]);
+  /* PrivateRoute가 비인증 리다이렉트를 처리하므로 여기서는 생략 */
 
   /**
    * 탭 전환 시 해당 데이터를 로드한다.
@@ -128,7 +123,7 @@ export default function MyPagePage() {
             <div className="mypage__name-row">
               <h1 className="mypage__nickname">{user?.nickname || '사용자'}</h1>
               {/* 등급 배지 */}
-              <span className="mypage__grade-badge">BRONZE</span>
+              <span className="mypage__grade-badge">{profile?.grade || user?.grade || 'BRONZE'}</span>
             </div>
             <p className="mypage__email">{user?.email || ''}</p>
             {/* 프로필 편집 버튼 (UI만) */}
@@ -139,10 +134,13 @@ export default function MyPagePage() {
         </div>
 
         {/* 탭 네비게이션 — 그라데이션 하단 바 */}
-        <div className="mypage__tabs">
+        <div className="mypage__tabs" role="tablist" aria-label="마이페이지 탭">
           {TABS.map((tab) => (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={activeTab === tab.id}
+              aria-controls={`mypage-panel-${tab.id}`}
               className={`mypage__tab ${activeTab === tab.id ? 'mypage__tab--active' : ''}`}
               onClick={() => setActiveTab(tab.id)}
             >
@@ -240,11 +238,12 @@ export default function MyPagePage() {
                 <h3 className="mypage__preferences-title">선호 장르</h3>
                 <p className="mypage__preferences-hint">
                   좋아하는 장르를 선택하면 더 정확한 추천을 받을 수 있습니다.
+                  <br /><span style={{ fontSize: '0.85em', color: 'var(--text-muted)' }}>이 기능은 준비 중입니다.</span>
                 </p>
                 <div className="mypage__preferences-tags">
                   {['액션', '코미디', '드라마', '로맨스', 'SF', '스릴러', '공포', '애니메이션', '판타지', '범죄', '다큐멘터리', '가족'].map(
                     (genre) => (
-                      <button key={genre} className="mypage__preferences-tag">
+                      <button key={genre} className="mypage__preferences-tag" disabled title="준비 중">
                         {genre}
                       </button>
                     ),

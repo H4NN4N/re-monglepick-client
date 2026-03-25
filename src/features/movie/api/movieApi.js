@@ -2,28 +2,22 @@
  * 영화(Movies) API 모듈.
  *
  * 영화 정보 조회, 검색 등 영화 관련 HTTP 요청을 처리한다.
- * fetch API를 사용하며, 인증이 필요한 요청은 Authorization 헤더를 포함한다.
+ * axios 인스턴스를 사용하며, 인증이 필요한 요청은 interceptor가 Authorization 헤더를 자동 추가한다.
  */
 
+/* 공용 axios 인스턴스 — JWT 자동 주입 + 401 갱신 */
+import api from '../../../shared/api/axiosInstance';
 /* API 상수 — shared/constants에서 가져옴 */
 import { MOVIE_ENDPOINTS } from '../../../shared/constants/api';
-/* 공통 인증 fetch 래퍼 — shared/utils에서 가져옴 (토큰 자동 갱신 포함) */
-import { fetchWithAuth } from '../../../shared/utils/fetchWithAuth';
 
 /**
  * 영화 상세 정보를 조회한다.
  *
  * @param {number|string} movieId - 영화 ID
  * @returns {Promise<Object>} 영화 상세 정보 객체
- *   - id, title, overview, genres, cast, rating, poster_path,
- *     trailer_url, ott_platforms, release_date, runtime 등
- *
- * @example
- * const movie = await getMovie(550);
- * console.log(movie.title); // '파이트 클럽'
  */
 export async function getMovie(movieId) {
-  return fetchWithAuth(MOVIE_ENDPOINTS.DETAIL(movieId));
+  return api.get(MOVIE_ENDPOINTS.DETAIL(movieId));
 }
 
 /**
@@ -37,21 +31,14 @@ export async function getMovie(movieId) {
  * @param {number} [params.page=1] - 페이지 번호
  * @param {number} [params.size=20] - 페이지 크기
  * @returns {Promise<Object>} 검색 결과 ({ movies: [], total: number, page: number })
- *
- * @example
- * const results = await searchMovies({ query: '인터스텔라', genre: 'SF' });
- * console.log(results.movies.length); // 검색된 영화 수
  */
 export async function searchMovies({ query, genre, sort = 'relevance', page = 1, size = 20 }) {
-  // URL 쿼리 파라미터 구성
-  const params = new URLSearchParams();
-  if (query) params.append('query', query);
-  if (genre) params.append('genre', genre);
-  if (sort) params.append('sort', sort);
-  params.append('page', String(page));
-  params.append('size', String(size));
+  /* URL 쿼리 파라미터 구성 — undefined/null 값은 자동 제외 */
+  const params = { sort, page, size };
+  if (query) params.query = query;
+  if (genre) params.genre = genre;
 
-  return fetchWithAuth(`${MOVIE_ENDPOINTS.SEARCH}?${params.toString()}`);
+  return api.get(MOVIE_ENDPOINTS.SEARCH, { params });
 }
 
 /**
@@ -62,8 +49,7 @@ export async function searchMovies({ query, genre, sort = 'relevance', page = 1,
  * @returns {Promise<Object>} 인기 영화 목록 ({ movies: [], total: number })
  */
 export async function getPopularMovies(page = 1, size = 20) {
-  const params = new URLSearchParams({ page: String(page), size: String(size) });
-  return fetchWithAuth(`${MOVIE_ENDPOINTS.POPULAR}?${params.toString()}`);
+  return api.get(MOVIE_ENDPOINTS.POPULAR, { params: { page, size } });
 }
 
 /**
@@ -74,6 +60,5 @@ export async function getPopularMovies(page = 1, size = 20) {
  * @returns {Promise<Object>} 최신 영화 목록 ({ movies: [], total: number })
  */
 export async function getLatestMovies(page = 1, size = 20) {
-  const params = new URLSearchParams({ page: String(page), size: String(size) });
-  return fetchWithAuth(`${MOVIE_ENDPOINTS.LATEST}?${params.toString()}`);
+  return api.get(MOVIE_ENDPOINTS.LATEST, { params: { page, size } });
 }

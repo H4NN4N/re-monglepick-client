@@ -18,7 +18,7 @@ import { useState, useEffect } from 'react';
 /* 커뮤니티 API — 같은 feature 내의 communityApi에서 가져옴 */
 import { getPosts, createPost } from '../api/communityApi';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
-import { useAuth } from '../../../app/providers/AuthProvider';
+import useAuthStore from '../../../shared/stores/useAuthStore';
 /* 게시글 목록/작성 컴포넌트 — 같은 feature 내의 components에서 가져옴 */
 import PostList from '../components/PostList';
 import PostForm from '../components/PostForm';
@@ -44,7 +44,7 @@ export default function CommunityPage() {
   // 글 작성 중 상태
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { isAuthenticated } = useAuth();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
 
   /**
    * 게시글 목록을 로드한다.

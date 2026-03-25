@@ -6,10 +6,10 @@
  * 모든 요청에 인증 토큰이 필요하다.
  */
 
+/* 공용 axios 인스턴스 + 인증 필수 가드 */
+import api, { requireAuth } from '../../../shared/api/axiosInstance';
 /* API 상수 — shared/constants에서 가져옴 */
 import { POINT_ENDPOINTS } from '../../../shared/constants/api';
-/* 공통 인증 fetch 래퍼 — shared/utils에서 가져옴 */
-import { fetchWithAuthRequired } from '../../../shared/utils/fetchWithAuth';
 
 // ── 포인트 잔액 ──
 
@@ -22,14 +22,10 @@ import { fetchWithAuthRequired } from '../../../shared/utils/fetchWithAuth';
  *   - balance: 현재 잔액
  *   - grade: 등급 (BRONZE, SILVER, GOLD, PLATINUM)
  *   - totalEarned: 누적 적립 포인트
- *
- * @example
- * const info = await getBalance();
- * console.log(info.balance); // 1500
- * console.log(info.grade);   // 'SILVER'
  */
 export async function getBalance() {
-  return fetchWithAuthRequired(POINT_ENDPOINTS.BALANCE);
+  requireAuth();
+  return api.get(POINT_ENDPOINTS.BALANCE);
 }
 
 // ── 포인트 이력 ──
@@ -45,22 +41,11 @@ export async function getBalance() {
  * @param {number} [options.size=20] - 페이지 크기
  * @returns {Promise<Object>} Spring Page 응답
  *   - content: 이력 배열 [{ id, pointChange, pointAfter, pointType, description, createdAt }]
- *   - totalPages: 총 페이지 수
- *   - totalElements: 총 이력 건수
- *   - number: 현재 페이지 번호
- *
- * @example
- * const result = await getPointHistory({ page: 0, size: 10 });
- * result.content.forEach(item => {
- *   console.log(item.description, item.pointChange);
- * });
+ *   - totalPages, totalElements, number
  */
 export async function getPointHistory({ page = 0, size = 20 } = {}) {
-  const params = new URLSearchParams({
-    page: String(page),
-    size: String(size),
-  });
-  return fetchWithAuthRequired(`${POINT_ENDPOINTS.HISTORY}?${params.toString()}`);
+  requireAuth();
+  return api.get(POINT_ENDPOINTS.HISTORY, { params: { page, size } });
 }
 
 // ── 출석 체크 ──
@@ -70,46 +55,25 @@ export async function getPointHistory({ page = 0, size = 20 } = {}) {
  * 하루에 한 번만 가능하며, 연속 출석 시 보너스 포인트를 받을 수 있다.
  * - 기본: 10P, 7일 연속: 30P, 30일 연속: 60P
  *
- * JWT 토큰에서 userId를 추출하므로 별도 전달 불필요.
- *
  * @returns {Promise<Object>} 출석 체크 결과
- *   - checkDate: 출석 일자 (YYYY-MM-DD)
- *   - streakCount: 현재 연속 출석 일수
- *   - earnedPoints: 획득 포인트
- *   - currentBalance: 출석 후 잔액
- *
+ *   - checkDate, streakCount, earnedPoints, currentBalance
  * @throws {Error} 이미 출석 완료 시 409 에러 (코드: P003)
- *
- * @example
- * const result = await checkAttendance();
- * console.log(`${result.streakCount}일 연속 출석! +${result.earnedPoints}P`);
  */
 export async function checkAttendance() {
-  return fetchWithAuthRequired(POINT_ENDPOINTS.ATTENDANCE, {
-    method: 'POST',
-  });
+  requireAuth();
+  return api.post(POINT_ENDPOINTS.ATTENDANCE);
 }
 
 /**
  * 출석 현황을 조회한다.
  * 연속 출석 일수, 총 출석 일수, 오늘 출석 여부, 월간 출석 날짜 목록을 반환한다.
  *
- * JWT 토큰에서 userId를 추출하므로 별도 전달 불필요.
- *
  * @returns {Promise<Object>} 출석 현황 정보
- *   - currentStreak: 현재 연속 출석 일수
- *   - totalDays: 총 출석 일수
- *   - checkedToday: 오늘 출석 여부 (boolean)
- *   - monthlyDates: 이번 달 출석 날짜 배열 ['2026-03-01', '2026-03-02', ...]
- *
- * @example
- * const status = await getAttendanceStatus();
- * if (!status.checkedToday) {
- *   console.log('아직 출석하지 않았습니다!');
- * }
+ *   - currentStreak, totalDays, checkedToday, monthlyDates
  */
 export async function getAttendanceStatus() {
-  return fetchWithAuthRequired(POINT_ENDPOINTS.ATTENDANCE_STATUS);
+  requireAuth();
+  return api.get(POINT_ENDPOINTS.ATTENDANCE_STATUS);
 }
 
 // ── 아이템 교환 ──
@@ -120,25 +84,12 @@ export async function getAttendanceStatus() {
  *
  * @param {string} [category] - 아이템 카테고리 필터 (선택)
  * @returns {Promise<Array<Object>>} 아이템 목록
- *   - [{ itemId, name, description, price, category }]
- *
- * @example
- * // 전체 아이템 조회
- * const items = await getPointItems();
- *
- * // 특정 카테고리 아이템만 조회
- * const aiItems = await getPointItems('AI_RECOMMENDATION');
  */
 export async function getPointItems(category) {
-  const params = new URLSearchParams();
-  if (category) {
-    params.append('category', category);
-  }
-  const queryString = params.toString();
-  const url = queryString
-    ? `${POINT_ENDPOINTS.ITEMS}?${queryString}`
-    : POINT_ENDPOINTS.ITEMS;
-  return fetchWithAuthRequired(url);
+  requireAuth();
+  const params = {};
+  if (category) params.category = category;
+  return api.get(POINT_ENDPOINTS.ITEMS, { params });
 }
 
 /**
@@ -147,19 +98,11 @@ export async function getPointItems(category) {
  *
  * @param {number|string} itemId - 교환할 아이템 ID
  * @returns {Promise<Object>} 교환 결과
- *   - success: 교환 성공 여부 (boolean)
- *   - balanceAfter: 교환 후 잔액
- *   - itemName: 교환한 아이템 이름
- *
+ *   - success, balanceAfter, itemName
  * @throws {Error} 포인트 부족 시 402 에러 (코드: P001)
  * @throws {Error} 아이템 미존재 시 404 에러 (코드: P004)
- *
- * @example
- * const result = await exchangeItem(1);
- * console.log(`${result.itemName} 교환 완료! 잔액: ${result.balanceAfter}P`);
  */
 export async function exchangeItem(itemId) {
-  return fetchWithAuthRequired(POINT_ENDPOINTS.EXCHANGE(itemId), {
-    method: 'POST',
-  });
+  requireAuth();
+  return api.post(POINT_ENDPOINTS.EXCHANGE(itemId));
 }

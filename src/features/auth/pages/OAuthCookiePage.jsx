@@ -15,7 +15,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
-import { useAuth } from '../../../app/providers/AuthProvider';
+import useAuthStore from '../../../shared/stores/useAuthStore';
 /* 쿠키→헤더 교환 API — 같은 feature 내의 authApi에서 가져옴 */
 import { exchangeToken } from '../api/authApi';
 /* 라우트 경로 상수 — shared/constants에서 가져옴 */
@@ -25,7 +25,7 @@ import './OAuthCallbackPage.css';
 
 export default function OAuthCookiePage() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const login = useAuthStore((s) => s.login);
 
   /* 에러 메시지 상태 */
   const [error, setError] = useState('');

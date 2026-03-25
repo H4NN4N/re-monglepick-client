@@ -2,43 +2,17 @@
  * 인증(Authentication) API 모듈.
  *
  * 회원가입, 로그인, 토큰 갱신 등 인증 관련 HTTP 요청을 처리한다.
- * fetch API를 사용하며, 응답은 JSON으로 파싱하여 반환한다.
+ * axios 인스턴스를 사용하며, 응답은 interceptor에서 JSON으로 자동 파싱된다.
  */
 
+/* 공용 axios 인스턴스 — JWT 자동 주입 + 401 갱신 */
+import api from '../../../shared/api/axiosInstance';
 /* API 상수 — shared/constants에서 가져옴 */
 import { AUTH_ENDPOINTS, API_BASE_URL } from '../../../shared/constants/api';
 /* localStorage 유틸 — shared/utils에서 가져옴 */
 import { getRefreshToken } from '../../../shared/utils/storage';
-
-/**
- * 공통 fetch 래퍼.
- * 요청 헤더 설정, 에러 처리를 통합한다.
- *
- * @param {string} url - 요청 URL
- * @param {Object} options - fetch 옵션
- * @returns {Promise<Object>} 파싱된 JSON 응답
- * @throws {Error} HTTP 에러 시 에러 메시지 포함
- */
-async function fetchJSON(url, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${url}`, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
-    ...options,
-  });
-
-  // 응답 본문을 JSON으로 파싱
-  const data = await response.json().catch(() => null);
-
-  // HTTP 에러 응답 처리
-  if (!response.ok) {
-    const errorMessage = data?.message || data?.detail || `요청 실패 (${response.status})`;
-    throw new Error(errorMessage);
-  }
-
-  return data;
-}
+/* axios 원본 — 인증 불필요 요청에 사용 */
+import axios from 'axios';
 
 /**
  * 회원가입 API 호출.
@@ -48,19 +22,9 @@ async function fetchJSON(url, options = {}) {
  * @param {string} params.password - 비밀번호
  * @param {string} params.nickname - 닉네임
  * @returns {Promise<Object>} 회원가입 응답 (accessToken, refreshToken, user)
- *
- * @example
- * const result = await signup({
- *   email: 'user@example.com',
- *   password: 'password123',
- *   nickname: '몽글이',
- * });
  */
 export async function signup({ email, password, nickname }) {
-  return fetchJSON(AUTH_ENDPOINTS.SIGNUP, {
-    method: 'POST',
-    body: JSON.stringify({ email, password, nickname }),
-  });
+  return api.post(AUTH_ENDPOINTS.SIGNUP, { email, password, nickname });
 }
 
 /**
@@ -70,19 +34,9 @@ export async function signup({ email, password, nickname }) {
  * @param {string} params.email - 이메일 주소
  * @param {string} params.password - 비밀번호
  * @returns {Promise<Object>} 로그인 응답 (accessToken, refreshToken, user)
- *
- * @example
- * const result = await login({
- *   email: 'user@example.com',
- *   password: 'password123',
- * });
- * // result = { accessToken: 'xxx', refreshToken: 'yyy', user: { id, email, nickname } }
  */
 export async function login({ email, password }) {
-  return fetchJSON(AUTH_ENDPOINTS.LOGIN, {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
-  });
+  return api.post(AUTH_ENDPOINTS.LOGIN, { email, password });
 }
 
 /**
@@ -99,10 +53,7 @@ export async function refreshToken() {
     throw new Error('리프레시 토큰이 없습니다. 다시 로그인해주세요.');
   }
 
-  return fetchJSON(AUTH_ENDPOINTS.REFRESH, {
-    method: 'POST',
-    body: JSON.stringify({ refreshToken: currentRefreshToken }),
-  });
+  return api.post(AUTH_ENDPOINTS.REFRESH, { refreshToken: currentRefreshToken });
 }
 
 /**
@@ -113,20 +64,14 @@ export async function refreshToken() {
  * @returns {Promise<Object>} 로그아웃 응답
  */
 export async function logoutAPI(token) {
-  return fetchJSON(AUTH_ENDPOINTS.LOGOUT, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+  return api.post(AUTH_ENDPOINTS.LOGOUT, null, {
+    headers: { Authorization: `Bearer ${token}` },
   });
 }
 
 /**
  * OAuth 소셜 로그인 API 호출 (구 방식 — 코드 전달).
  * OAuth 제공자로부터 받은 인가 코드를 백엔드에 전달하여 토큰을 발급받는다.
- *
- * 주의: Backend가 Spring Security OAuth2 Client 방식으로 전환된 경우,
- * 이 함수 대신 exchangeToken()을 사용한다.
  *
  * @param {Object} params - OAuth 로그인 정보
  * @param {string} params.provider - 제공자 이름 (google, kakao, naver)
@@ -136,10 +81,7 @@ export async function logoutAPI(token) {
  * @deprecated Backend가 Spring Security OAuth2 Client로 전환됨. exchangeToken() 사용 권장.
  */
 export async function oauthLogin({ provider, code, redirectUri }) {
-  return fetchJSON(AUTH_ENDPOINTS.OAUTH(provider), {
-    method: 'POST',
-    body: JSON.stringify({ code, redirectUri }),
-  });
+  return api.post(AUTH_ENDPOINTS.OAUTH(provider), { code, redirectUri });
 }
 
 /**
@@ -149,23 +91,19 @@ export async function oauthLogin({ provider, code, redirectUri }) {
  * SocialSuccessHandler가 HttpOnly 쿠키에 저장한 Refresh Token을
  * POST /jwt/exchange로 전송하여 JSON 기반 JWT(accessToken + refreshToken)로 교환한다.
  *
- * credentials: 'include'로 쿠키를 자동 전송한다.
+ * withCredentials: true로 쿠키를 자동 전송한다.
  *
  * @returns {Promise<Object>} JWT 응답 (accessToken, refreshToken, userNickname)
  */
 export async function exchangeToken() {
-  const response = await fetch(`${API_BASE_URL}/jwt/exchange`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include', // HttpOnly 쿠키 전송을 위해 필수
-  });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const errorMessage = data?.message || data?.detail || `토큰 교환 실패 (${response.status})`;
-    throw new Error(errorMessage);
-  }
-
-  return data;
+  /* 쿠키 전송이 필요하므로 withCredentials 옵션 사용 */
+  const response = await axios.post(
+    `${API_BASE_URL}/jwt/exchange`,
+    null,
+    {
+      headers: { 'Content-Type': 'application/json' },
+      withCredentials: true,
+    },
+  );
+  return response.data;
 }

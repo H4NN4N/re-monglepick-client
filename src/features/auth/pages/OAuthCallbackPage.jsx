@@ -12,7 +12,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate, Link } from 'react-router-dom';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
-import { useAuth } from '../../../app/providers/AuthProvider';
+import useAuthStore from '../../../shared/stores/useAuthStore';
 /* OAuth 로그인 API — 같은 feature 내의 authApi에서 가져옴 */
 import { oauthLogin } from '../api/authApi';
 /* OAuth 리다이렉트 URI 생성 유틸 — shared/constants에서 가져옴 */
@@ -25,7 +25,7 @@ export default function OAuthCallbackPage() {
   const { provider } = useParams();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const login = useAuthStore((s) => s.login);
 
   /* 에러 메시지 상태 */
   const [error, setError] = useState('');

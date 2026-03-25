@@ -22,9 +22,12 @@
 /* HTML 기본 설정 */
 html {
   font-size: 16px;
+  color-scheme: dark;
   -webkit-text-size-adjust: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
 }
 
@@ -398,4 +401,35 @@ hr {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg), 0 0 30px rgba(124,108,240,0.1);
   border-color: var(--glass-border);
+}
+
+/* ═══════════════════════════════════════════════
+   접근성 (Accessibility)
+   ═══════════════════════════════════════════════ */
+
+/* ── 키보드 포커스 스타일 ── */
+/* 마우스 클릭 시에는 표시하지 않고, 키보드 탭 시에만 표시 */
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+/* 입력 필드는 자체 포커스 스타일이 있으므로 outline 제거 */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+}
+
+/* ── 모션 감소 선호 사용자 대응 (WCAG 2.3.3) ── */
+/* 전정계 질환, 편두통 등이 있는 사용자를 위해 애니메이션을 제거한다 */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

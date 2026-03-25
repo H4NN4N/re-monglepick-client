@@ -13,7 +13,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
-import { useAuth } from '../../../app/providers/AuthProvider';
+import useAuthStore from '../../../shared/stores/useAuthStore';
 /* 고객센터 API — 같은 feature 내의 supportApi에서 가져옴 */
 import {
   getFaqs,
@@ -30,6 +30,8 @@ import FaqTab from '../components/FaqTab';
 import HelpTab from '../components/HelpTab';
 import TicketTab from '../components/TicketTab';
 
+/* 포맷 유틸 — shared/utils에서 가져옴 */
+import { formatDate } from '../../../shared/utils/formatters';
 import './SupportPage.css';
 
 /* ══════════════════════════════════════════
@@ -117,17 +119,6 @@ const FALLBACK_HELP_ARTICLES = [
    유틸리티 함수
    ══════════════════════════════════════════ */
 
-/**
- * ISO 날짜 문자열을 'YYYY.MM.DD' 형식으로 변환한다.
- */
-function formatDate(dateString) {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}.${m}.${d}`;
-}
 
 /* ══════════════════════════════════════════
    메인 컴포넌트
@@ -135,7 +126,8 @@ function formatDate(dateString) {
 
 export default function SupportPage() {
   /* ── 인증 상태 ── */
-  const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
+  const authLoading = useAuthStore((s) => s.isLoading);
 
   /* ── 섹션/탭 상태 ── */
   const [activeSection, setActiveSection] = useState('faq');
@@ -278,8 +270,8 @@ export default function SupportPage() {
       await submitFaqFeedback(faqId, helpful);
       setFaqFeedbackMap((prev) => ({ ...prev, [faqId]: helpful ? 'helpful' : 'notHelpful' }));
     } catch (err) {
-      console.warn('FAQ 피드백 제출 실패:', err.message);
-      setFaqFeedbackMap((prev) => ({ ...prev, [faqId]: helpful ? 'helpful' : 'notHelpful' }));
+      /* 실패 시 UI 업데이트 하지 않음 — 사용자가 재시도 가능 */
+      setError('피드백 제출에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setFeedbackLoadingId(null);
     }

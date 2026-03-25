@@ -5,13 +5,13 @@
  * 마이페이지 관련 HTTP 요청을 처리한다.
  * 모든 요청에 인증 토큰이 필요하다.
  *
- * 공유 fetchWithAuthRequired를 사용하여 401 시 자동 토큰 갱신을 지원한다.
+ * axios interceptor가 JWT 자동 주입 + 401 시 자동 토큰 갱신을 처리한다.
  */
 
+/* 공용 axios 인스턴스 + 인증 필수 가드 */
+import api, { requireAuth } from '../../../shared/api/axiosInstance';
 /* API 상수 — shared/constants에서 가져옴 */
 import { MYPAGE_ENDPOINTS } from '../../../shared/constants/api';
-/* 인증 필수 fetch 래퍼 — shared/utils에서 가져옴 (401 시 자동 갱신 + 재시도) */
-import { fetchWithAuthRequired } from '../../../shared/utils/fetchWithAuth';
 
 // ── 프로필 ──
 
@@ -20,13 +20,10 @@ import { fetchWithAuthRequired } from '../../../shared/utils/fetchWithAuth';
  *
  * @returns {Promise<Object>} 프로필 정보
  *   - id, email, nickname, profileImage, createdAt, favoriteGenres 등
- *
- * @example
- * const profile = await getProfile();
- * console.log(profile.nickname); // '몽글이'
  */
 export async function getProfile() {
-  return fetchWithAuthRequired(MYPAGE_ENDPOINTS.PROFILE);
+  requireAuth();
+  return api.get(MYPAGE_ENDPOINTS.PROFILE);
 }
 
 /**
@@ -38,10 +35,8 @@ export async function getProfile() {
  * @returns {Promise<Object>} 수정된 프로필 정보
  */
 export async function updateProfile(profileData) {
-  return fetchWithAuthRequired(MYPAGE_ENDPOINTS.UPDATE_PROFILE, {
-    method: 'PUT',
-    body: JSON.stringify(profileData),
-  });
+  requireAuth();
+  return api.put(MYPAGE_ENDPOINTS.UPDATE_PROFILE, profileData);
 }
 
 // ── 시청 이력 ──
@@ -49,23 +44,14 @@ export async function updateProfile(profileData) {
 /**
  * 사용자의 시청 이력을 조회한다.
  *
- * @param {Object} [params={}] - 조회 파라미터
- * @param {number} [params.page=1] - 페이지 번호
- * @param {number} [params.size=20] - 페이지 크기
+ * @param {Object} [options={}] - 조회 파라미터
+ * @param {number} [options.page=1] - 페이지 번호
+ * @param {number} [options.size=20] - 페이지 크기
  * @returns {Promise<Object>} 시청 이력 ({ watchHistory: [], total: number })
- *
- * @example
- * const result = await getWatchHistory({ page: 1 });
- * result.watchHistory.forEach(item => {
- *   console.log(item.movie.title, item.watchedAt, item.rating);
- * });
  */
 export async function getWatchHistory({ page = 1, size = 20 } = {}) {
-  const params = new URLSearchParams({
-    page: String(page),
-    size: String(size),
-  });
-  return fetchWithAuthRequired(`${MYPAGE_ENDPOINTS.WATCH_HISTORY}?${params.toString()}`);
+  requireAuth();
+  return api.get(MYPAGE_ENDPOINTS.WATCH_HISTORY, { params: { page, size } });
 }
 
 // ── 위시리스트 ──
@@ -73,17 +59,14 @@ export async function getWatchHistory({ page = 1, size = 20 } = {}) {
 /**
  * 사용자의 위시리스트를 조회한다.
  *
- * @param {Object} [params={}] - 조회 파라미터
- * @param {number} [params.page=1] - 페이지 번호
- * @param {number} [params.size=20] - 페이지 크기
+ * @param {Object} [options={}] - 조회 파라미터
+ * @param {number} [options.page=1] - 페이지 번호
+ * @param {number} [options.size=20] - 페이지 크기
  * @returns {Promise<Object>} 위시리스트 ({ wishlist: [], total: number })
  */
 export async function getWishlist({ page = 1, size = 20 } = {}) {
-  const params = new URLSearchParams({
-    page: String(page),
-    size: String(size),
-  });
-  return fetchWithAuthRequired(`${MYPAGE_ENDPOINTS.WISHLIST}?${params.toString()}`);
+  requireAuth();
+  return api.get(MYPAGE_ENDPOINTS.WISHLIST, { params: { page, size } });
 }
 
 /**
@@ -94,9 +77,8 @@ export async function getWishlist({ page = 1, size = 20 } = {}) {
  * @returns {Promise<void>}
  */
 export async function addToWishlist(movieId) {
-  return fetchWithAuthRequired(MYPAGE_ENDPOINTS.TOGGLE_WISHLIST(movieId), {
-    method: 'POST',
-  });
+  requireAuth();
+  return api.post(MYPAGE_ENDPOINTS.TOGGLE_WISHLIST(movieId));
 }
 
 /**
@@ -107,9 +89,8 @@ export async function addToWishlist(movieId) {
  * @returns {Promise<void>}
  */
 export async function removeFromWishlist(movieId) {
-  return fetchWithAuthRequired(MYPAGE_ENDPOINTS.TOGGLE_WISHLIST(movieId), {
-    method: 'DELETE',
-  });
+  requireAuth();
+  return api.delete(MYPAGE_ENDPOINTS.TOGGLE_WISHLIST(movieId));
 }
 
 // ── 선호 설정 ──
@@ -124,8 +105,6 @@ export async function removeFromWishlist(movieId) {
  * @returns {Promise<Object>} 업데이트된 선호 설정
  */
 export async function updatePreferences(preferences) {
-  return fetchWithAuthRequired(MYPAGE_ENDPOINTS.PREFERENCES, {
-    method: 'PUT',
-    body: JSON.stringify(preferences),
-  });
+  requireAuth();
+  return api.put(MYPAGE_ENDPOINTS.PREFERENCES, preferences);
 }

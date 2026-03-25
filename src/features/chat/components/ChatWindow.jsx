@@ -14,7 +14,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 /* 인증 Context 훅 — app/providers에서 가져옴 (userId 전달용) */
-import { useAuth } from '../../../app/providers/AuthProvider';
+import useAuthStore from '../../../shared/stores/useAuthStore';
 /* 채팅 상태 관리 훅 — 같은 feature 내의 hooks에서 가져옴 */
 import { useChat } from '../hooks/useChat';
 import MovieCard from './MovieCard';
@@ -46,7 +46,7 @@ function getCharCountModifier(current, max) {
 
 export default function ChatWindow() {
   // 인증 상태에서 사용자 ID를 가져와 포인트 시스템 연동에 사용
-  const { user } = useAuth();
+  const user = useAuthStore((s) => s.user);
 
   // 채팅 상태 훅 — userId를 전달하여 포인트 차감/쿼터 검증이 동작하도록 한다
   const {
@@ -359,8 +359,7 @@ export default function ChatWindow() {
                   key={suggestion}
                   className="chat-welcome__suggestion"
                   onClick={() => {
-                    setInputText(suggestion);
-                    sendMessage(suggestion);
+                    if (!isLoading) sendMessage(suggestion);
                   }}
                 >
                   {suggestion}
@@ -375,7 +374,7 @@ export default function ChatWindow() {
           // 사용자 메시지 (이미지 포함 가능)
           if (msg.role === 'user') {
             return (
-              <div key={idx} className="chat-msg chat-msg--user">
+              <div key={msg.timestamp} className="chat-msg chat-msg--user">
                 <div className="chat-msg__bubble chat-msg__bubble--user">
                   {/* 첨부 이미지 표시 */}
                   {msg.image && (
@@ -394,7 +393,7 @@ export default function ChatWindow() {
           // 봇 텍스트 응답 (취소됨 표시 포함)
           if (msg.role === 'bot') {
             return (
-              <div key={idx} className="chat-msg chat-msg--bot">
+              <div key={`bot-${msg.timestamp}`} className="chat-msg chat-msg--bot">
                 <img src="/mongle-transparent.png" alt="몽글픽" className="chat-msg__avatar" />
                 <div className={`chat-msg__bubble chat-msg__bubble--bot${msg.cancelled ? ' chat-msg__bubble--cancelled' : ''}`}>
                   {msg.content}
@@ -406,7 +405,7 @@ export default function ChatWindow() {
           // 영화 카드 목록
           if (msg.role === 'movie_cards') {
             return (
-              <div key={idx} className="chat-msg chat-msg--bot">
+              <div key={`bot-${msg.timestamp}`} className="chat-msg chat-msg--bot">
                 <img src="/mongle-transparent.png" alt="몽글픽" className="chat-msg__avatar" />
                 <div className="chat-movie-cards">
                   {msg.movies.map((movie, mIdx) => (

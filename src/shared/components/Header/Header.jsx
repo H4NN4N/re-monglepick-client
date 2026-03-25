@@ -7,9 +7,9 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
-import { useAuth } from '../../../app/providers/AuthProvider';
+import useAuthStore from '../../stores/useAuthStore';
 /* 라우트 경로 상수 — shared/constants에서 가져옴 */
 import { ROUTES, NAV_ITEMS } from '../../constants/routes';
 import './Header.css';
@@ -18,7 +18,9 @@ export default function Header() {
   // 현재 경로 — 활성 메뉴 하이라이트에 사용
   const location = useLocation();
   // 인증 상태 및 액션
-  const { isAuthenticated, user, logout } = useAuth();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
   // 모바일 메뉴 열림/닫힘 상태
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -45,9 +47,12 @@ export default function Header() {
   /**
    * 로그아웃 버튼 클릭 핸들러.
    */
+  const navigate = useNavigate();
+
   const handleLogout = () => {
     logout();
     closeMobileMenu();
+    navigate(ROUTES.LANDING);
   };
 
   return (

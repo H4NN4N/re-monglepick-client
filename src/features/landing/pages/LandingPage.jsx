@@ -153,7 +153,7 @@ export default function LandingPage() {
           <a href="#lp-team" onClick={e => scrollTo(e, 'lp-team')}>팀 소개</a>
           <a href="#lp-tech" onClick={e => scrollTo(e, 'lp-tech')}>기술</a>
           <a href="#lp-progress" onClick={e => scrollTo(e, 'lp-progress')}>진행현황</a>
-          <Link to={ROUTES.CHAT} className="lp-nav__cta">시작하기</Link>
+          <Link to={ROUTES.HOME} className="lp-nav__cta">시작하기</Link>
         </div>
       </nav>
 
@@ -180,7 +180,7 @@ export default function LandingPage() {
               지금 꼭 봐야 할 영화를 찾아드립니다.
             </p>
             <div className="lp-hero__cta">
-              <Link to={ROUTES.CHAT} className="lp-btn lp-btn--primary">무료로 시작하기 &rarr;</Link>
+              <Link to={ROUTES.HOME} className="lp-btn lp-btn--primary">무료로 시작하기 &rarr;</Link>
               <a href="#lp-features" onClick={e => scrollTo(e, 'lp-features')} className="lp-btn lp-btn--glass">서비스 둘러보기</a>
             </div>
             <div className="lp-hero__checks">
@@ -194,7 +194,7 @@ export default function LandingPage() {
           <div className="lp-hero__cards">
             {MOVIE_CARDS.map((m, i) => (
               <div
-                key={i}
+                key={m.title}
                 className="lp-movie-float"
                 style={{
                   top: m.style.top, left: m.style.left, right: m.style.right,
@@ -283,7 +283,7 @@ export default function LandingPage() {
           <div className="lp-features__pills lp-reveal">
             {FEATURES.map((ft, i) => (
               <button
-                key={i}
+                key={ft.title}
                 className={`lp-feature-pill${activeFeature === i ? ' active' : ''}`}
                 style={{ '--pill-color': ft.color, '--pill-bg': ft.color + '1f' }}
                 onClick={() => selectFeature(i)}
@@ -306,7 +306,7 @@ export default function LandingPage() {
           {/* 미니 그리드 */}
           <div className="lp-features__mini-grid lp-reveal">
             {FEATURES.map((ft, i) => (
-              <div key={i} className={`lp-feature-mini${activeFeature === i ? ' active' : ''}`} onClick={() => selectFeature(i)}>
+              <div key={ft.title} className={`lp-feature-mini${activeFeature === i ? ' active' : ''}`} onClick={() => selectFeature(i)}>
                 <div className="lp-feature-mini__icon">{ft.icon}</div>
                 <div className="lp-feature-mini__title">{ft.title}</div>
               </div>
@@ -331,7 +331,7 @@ export default function LandingPage() {
               { icon: '💬', num: '02', title: 'AI와 대화', desc: '오늘 기분, 상황, 원하는 분위기를\n자연어로 말해보세요' },
               { icon: '🍿', num: '03', title: '바로 감상', desc: 'OTT 바로가기, 영화관 예약까지\n한 번에 연결해드려요' },
             ].map((s, i) => (
-              <div className="lp-step-card" key={i}>
+              <div className="lp-step-card" key={s.num}>
                 <div className="lp-step-card__circle">{s.icon}</div>
                 <div className="lp-step-card__num">{s.num}</div>
                 <h3 className="lp-step-card__title">{s.title}</h3>
@@ -363,7 +363,7 @@ export default function LandingPage() {
                 { icon: '💞', text: '시네마 소울메이트 매칭', sub: '취향 유사도 TOP 10 유저 연결' },
                 { icon: '📺', text: 'OTT 통합 연동', sub: '넷플릭스, 왓챠, 디즈니+ 등 한번에' },
               ].map((d, i) => (
-                <div className="lp-diff-item" key={i}>
+                <div className="lp-diff-item" key={d.text}>
                   <span className="lp-diff-item__icon">{d.icon}</span>
                   <div>
                     <div className="lp-diff-item__text">{d.text}</div>
@@ -389,7 +389,7 @@ export default function LandingPage() {
 
           <div className="lp-team__grid">
             {TEAM_MEMBERS.map((m, i) => (
-              <div className={`lp-team-card lp-reveal lp-reveal-delay-${i + 1}`} key={i} style={{ '--card-accent': m.color }}>
+              <div className={`lp-team-card lp-reveal lp-reveal-delay-${i + 1}`} key={m.name} style={{ '--card-accent': m.color }}>
                 <div className="lp-team-card__top">
                   <div className="lp-team-card__avatar" style={{ background: m.color, color: m.color === '#ffd166' ? '#0a0a14' : '#fff' }}>
                     {m.initials}
@@ -435,7 +435,7 @@ export default function LandingPage() {
               { title: 'Database (5)', dot: '#118ab2', items: ['MySQL 8.0 (36 Tables)', 'Qdrant (Vector, 4096D)', 'Neo4j 5 (Graph)', 'Elasticsearch 8.17 (Nori)', 'Redis 7 (Cache + Session)'] },
               { title: 'Infrastructure', dot: '#06d6a0', items: ['Docker Compose (Multi VM)', 'Nginx (SSL + SSE Proxy)', 'GitHub Actions CI/CD', 'Prometheus + Grafana + Loki', 'Kakao Cloud (4 VM)'] },
             ].map((cat, i) => (
-              <div className={`lp-tech-category lp-reveal lp-reveal-delay-${i + 1}`} key={i}>
+              <div className={`lp-tech-category lp-reveal lp-reveal-delay-${i + 1}`} key={cat.title}>
                 <h3 className="lp-tech-category__title">{cat.title}</h3>
                 <div className="lp-tech-category__items">
                   {cat.items.map((item, j) => (
@@ -470,7 +470,7 @@ export default function LandingPage() {
               { value: '43K', label: 'KMDb 영화', sub: '한국영화데이터베이스' },
               { value: '586K', label: 'Redis 캐시 키', sub: 'CF 캐시 975MB' },
             ].map((d, i) => (
-              <div className={`lp-data-card lp-reveal lp-reveal-delay-${(i % 4) + 1}`} key={i}>
+              <div className={`lp-data-card lp-reveal lp-reveal-delay-${(i % 4) + 1}`} key={d.label}>
                 <div className="lp-data-card__value">{d.value}</div>
                 <div className="lp-data-card__label">{d.label}</div>
                 <div className="lp-data-card__sub">{d.sub}</div>
@@ -495,7 +495,7 @@ export default function LandingPage() {
               { dot: 'active', title: '전체 재적재', desc: 'TMDB 1.17M건 스트리밍 배치 → 3DB 적재 (run_full_reload.py)', badge: 'active' },
               { dot: '', title: 'Phase 5~8', desc: 'SSE 최적화, LangChain Tools, 콘텐츠 분석, 테스트 & 최적화', badge: 'pending' },
             ].map((item, i) => (
-              <div className="lp-timeline-item" key={i}>
+              <div className="lp-timeline-item" key={item.title}>
                 <div className={`lp-timeline-item__dot${item.dot ? ` lp-timeline-item__dot--${item.dot}` : ''}`} />
                 <div className="lp-timeline-item__content">
                   <h4>{item.title} <span className={`lp-timeline-badge lp-timeline-badge--${item.badge}`}>

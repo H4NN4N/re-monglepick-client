@@ -171,6 +171,23 @@ export function formatNumber(num) {
 }
 
 /**
+ * 숫자를 천 단위 콤마가 포함된 문자열로 포맷팅한다.
+ * 포인트 잔액, 결제 금액 등 한국어 숫자 표기에 사용한다.
+ *
+ * @param {number} num - 포맷팅할 숫자
+ * @returns {string} 콤마가 포함된 문자열 (예: '1,500')
+ *
+ * @example
+ * formatNumberWithComma(1500)   // => '1,500'
+ * formatNumberWithComma(0)      // => '0'
+ * formatNumberWithComma(null)   // => '0'
+ */
+export function formatNumberWithComma(num) {
+  if (num == null) return '0';
+  return Number(num).toLocaleString('ko-KR');
+}
+
+/**
  * 러닝타임(분)을 '시간 분' 형식으로 변환한다.
  *
  * @param {number} minutes - 러닝타임(분 단위)

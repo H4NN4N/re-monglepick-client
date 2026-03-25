@@ -18,7 +18,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
-import { useAuth } from '../../../app/providers/AuthProvider';
+import useAuthStore from '../../../shared/stores/useAuthStore';
 /* 결제/구독 API — 같은 feature 내의 paymentApi에서 가져옴 */
 import {
   createOrder,
@@ -36,6 +36,8 @@ import PointPackSection from '../components/PointPackSection';
 import SubscriptionStatus from '../components/SubscriptionStatus';
 import OrderHistory from '../components/OrderHistory';
 
+/* 포맷 유틸 — shared/utils에서 가져옴 */
+import { formatDate, formatNumberWithComma as formatNumber } from '../../../shared/utils/formatters';
 import './PaymentPage.css';
 
 /* ── 상수 정의 ── */
@@ -53,32 +55,6 @@ const POINT_PACKS = [
 
 /** 결제 내역 페이지당 표시 건수 */
 const ORDER_PAGE_SIZE = 10;
-
-/**
- * 숫자를 천 단위 콤마가 포함된 문자열로 포맷팅한다.
- *
- * @param {number} num - 포맷팅할 숫자
- * @returns {string} 콤마가 포함된 문자열
- */
-function formatNumber(num) {
-  if (num == null) return '0';
-  return Number(num).toLocaleString('ko-KR');
-}
-
-/**
- * ISO 날짜 문자열을 'YYYY.MM.DD' 형식으로 변환한다.
- *
- * @param {string} dateString - ISO 날짜 문자열
- * @returns {string} 포맷팅된 날짜 문자열
- */
-function formatDate(dateString) {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const d = String(date.getDate()).padStart(2, '0');
-  return `${y}.${m}.${d}`;
-}
 
 export default function PaymentPage() {
   /* ── 상태 관리 ── */
@@ -112,7 +88,9 @@ export default function PaymentPage() {
   }, []);
 
   /* 인증 상태 */
-  const { isAuthenticated, user, isLoading: authLoading } = useAuth();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
+  const user = useAuthStore((s) => s.user);
+  const authLoading = useAuthStore((s) => s.isLoading);
 
   /* ── 데이터 로드 ── */
 

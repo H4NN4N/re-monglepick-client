@@ -132,7 +132,7 @@ export default function HomePage() {
           <div className="home-suggestions__grid">
             {SUGGESTION_CARDS.map((card, idx) => (
               <button
-                key={idx}
+                key={card.title}
                 className="home-suggestions__card"
                 onClick={() => handleSuggestionClick(card.query)}
               >
