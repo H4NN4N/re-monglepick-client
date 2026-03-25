@@ -1,18 +1,29 @@
 /**
  * MovieDetailCard 컴포넌트 스타일.
  *
- * 영화 상세 정보 카드 — 포스터와 정보를 가로 배치.
+ * glass-card 전체 + gradient-text 제목 + 포스터 하단 페이드 +
+ * 액션 버튼 gradient hover + 섹션 그라데이션 구분선 +
+ * 별점 글로우 + 트레일러 주변 글로우 + fadeInUp 등장.
  */
 
-/* 카드 전체 컨테이너 */
+/* ── Skeleton shimmer 애니메이션 ── */
+@keyframes shimmerDetail {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* 카드 전체 컨테이너 — glass-card + fadeInUp */
 .movie-detail {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-default);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-xl);
   padding: var(--space-xl);
   display: flex;
   flex-direction: column;
   gap: var(--space-xl);
+  animation: fadeInUp 0.5s ease forwards;
 }
 
 /* ── 상단: 포스터 + 정보 가로 배치 ── */
@@ -21,13 +32,26 @@
   gap: var(--space-xl);
 }
 
-/* 포스터 영역 */
+/* 포스터 영역 — 하단 그라데이션 페이드 */
 .movie-detail__poster {
   flex-shrink: 0;
   width: 280px;
   border-radius: var(--radius-lg);
   overflow: hidden;
   background-color: var(--bg-elevated);
+  position: relative;
+}
+
+/* 포스터 하단 페이드 오버레이 */
+.movie-detail__poster::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to top, rgba(26,26,46,0.8), transparent);
+  pointer-events: none;
 }
 
 .movie-detail__poster-img {
@@ -36,14 +60,43 @@
   display: block;
 }
 
+/* 포스터 로딩 중 숨김 */
+.movie-detail__poster-img--loading {
+  opacity: 0;
+  position: absolute;
+}
+
+/* 포스터 Skeleton */
+.movie-detail__poster-skeleton {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  background: linear-gradient(
+    90deg,
+    var(--bg-secondary) 25%,
+    var(--bg-tertiary) 50%,
+    var(--bg-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmerDetail 1.5s ease-in-out infinite;
+}
+
+/* 포스터 플레이스홀더 */
 .movie-detail__poster-placeholder {
   width: 100%;
   aspect-ratio: 2 / 3;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: var(--space-sm);
   color: var(--text-muted);
   font-size: var(--text-sm);
+  background: linear-gradient(135deg, var(--bg-elevated), var(--bg-card));
+}
+
+.movie-detail__poster-placeholder-icon {
+  font-size: var(--text-4xl);
+  opacity: 0.5;
 }
 
 /* 정보 영역 */
@@ -54,13 +107,18 @@
   gap: var(--space-md);
 }
 
-/* 제목 */
+/* 제목 — gradient-text */
 .movie-detail__title {
   font-size: var(--text-3xl);
   font-weight: var(--font-bold);
-  color: var(--text-primary);
   margin: 0;
   line-height: var(--leading-tight);
+  background: var(--gradient-text);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease infinite;
 }
 
 /* 원제 */
@@ -71,7 +129,7 @@
   margin-top: calc(-1 * var(--space-sm));
 }
 
-/* ── 평점 ── */
+/* ── 평점 — 별 글로우 ── */
 .movie-detail__rating {
   display: flex;
   align-items: center;
@@ -82,6 +140,7 @@
   color: var(--star-filled);
   font-size: var(--text-lg);
   letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(251,191,36,0.4);
 }
 
 .movie-detail__rating-value {
@@ -143,7 +202,7 @@
   color: var(--text-muted);
 }
 
-/* ── 액션 버튼 ── */
+/* ── 액션 버튼 — outline -> hover gradient 채움 + glow ── */
 .movie-detail__actions {
   display: flex;
   gap: var(--space-md);
@@ -163,14 +222,22 @@
 }
 
 .movie-detail__btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
+  background: var(--gradient-primary);
+  border-color: transparent;
+  color: white;
+  box-shadow: var(--glow-primary);
 }
 
 .movie-detail__btn--wishlisted {
   background-color: var(--error-bg);
   border-color: var(--error);
   color: var(--error);
+}
+
+.movie-detail__btn--wishlisted:hover {
+  background-color: var(--error);
+  color: white;
+  box-shadow: var(--glow-pink);
 }
 
 .movie-detail__btn--trailer {
@@ -180,17 +247,20 @@
 }
 
 .movie-detail__btn--trailer:hover {
-  background-color: var(--primary);
+  background: var(--gradient-primary);
+  border-color: transparent;
   color: white;
+  box-shadow: var(--glow-primary);
 }
 
-/* ── 트레일러 ── */
+/* ── 트레일러 — 주변 글로우 ── */
 .movie-detail__trailer {
   width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background-color: #000;
+  background-color: var(--bg-main);
+  box-shadow: 0 0 40px rgba(124,108,240,0.1), 0 0 80px rgba(124,108,240,0.05);
 }
 
 .movie-detail__trailer-iframe {
@@ -199,7 +269,26 @@
   border: none;
 }
 
-/* ── 줄거리 ── */
+/* ── 섹션 공통 — 그라데이션 구분선 ── */
+.movie-detail__section {
+  padding-top: var(--space-lg);
+  border-top: none;
+  position: relative;
+}
+
+/* 그라데이션 구분선 */
+.movie-detail__section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--gradient-primary);
+  opacity: 0.3;
+}
+
+/* 섹션 제목 */
 .movie-detail__section-title {
   font-size: var(--text-xl);
   font-weight: var(--font-semibold);
@@ -207,6 +296,7 @@
   margin: 0 0 var(--space-md) 0;
 }
 
+/* ── 줄거리 ── */
 .movie-detail__overview-text {
   font-size: var(--text-base);
   color: var(--text-secondary);
@@ -236,12 +326,25 @@
   text-decoration: underline;
 }
 
-/* ── 출연진 ── */
+/* ── 추천 이유 — 인용 스타일 + gradient 보더 ── */
+.movie-detail__recommendation {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+  padding-left: var(--space-md);
+  border-left: 3px solid;
+  border-image: var(--gradient-primary) 1;
+  font-style: italic;
+}
+
+/* ── 출연진 — 아바타 원형 + 가로 스크롤 ── */
 .movie-detail__cast-list {
   display: flex;
   gap: var(--space-lg);
   overflow-x: auto;
   padding-bottom: var(--space-sm);
+  scrollbar-width: thin;
 }
 
 .movie-detail__cast-item {
@@ -250,11 +353,16 @@
   align-items: center;
   gap: var(--space-xs);
   min-width: 80px;
+  transition: transform var(--transition-fast);
+}
+
+.movie-detail__cast-item:hover {
+  transform: translateY(-2px);
 }
 
 .movie-detail__cast-avatar {
-  width: 60px;
-  height: 60px;
+  width: 64px;
+  height: 64px;
   border-radius: var(--radius-full);
   overflow: hidden;
   background-color: var(--bg-elevated);
@@ -263,6 +371,13 @@
   justify-content: center;
   color: var(--text-muted);
   font-size: var(--text-lg);
+  border: 2px solid var(--border-default);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.movie-detail__cast-item:hover .movie-detail__cast-avatar {
+  border-color: var(--primary);
+  box-shadow: 0 0 12px rgba(124,108,240,0.3);
 }
 
 .movie-detail__cast-avatar img {
@@ -284,7 +399,7 @@
   text-align: center;
 }
 
-/* ── OTT 플랫폼 ── */
+/* ── OTT 플랫폼 — tooltip 호버 효과 ── */
 .movie-detail__ott-list {
   display: flex;
   flex-wrap: wrap;
@@ -298,6 +413,15 @@
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
   color: var(--text-secondary);
+  cursor: default;
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.movie-detail__ott-tag:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background-color: var(--primary-light);
 }
 
 /* ── 반응형 (768px 이하) ── */

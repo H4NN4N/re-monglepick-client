@@ -1,0 +1,131 @@
+/**
+ * PointHistory 컴포넌트 스타일.
+ *
+ * 포인트 이력 테이블 + 페이지네이션.
+ * BEM 네이밍: .point-page__history-*, .point-page__pagination-*
+ */
+
+/* 이력 건수 표시 */
+.point-page__history-count {
+  font-size: var(--text-sm);
+  font-weight: var(--font-normal);
+  color: var(--text-muted);
+}
+
+/* 빈 이력 */
+.point-page__history-empty {
+  text-align: center;
+  padding: var(--space-2xl);
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+/* 테이블 래퍼 — 가로 스크롤 */
+.point-page__history-table-wrapper {
+  overflow-x: auto;
+}
+
+/* 이력 테이블 */
+.point-page__history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.point-page__history-table thead th {
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+  text-align: left;
+  border-bottom: 1px solid var(--border-default);
+  white-space: nowrap;
+}
+
+.point-page__history-table tbody td {
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.point-page__history-table tbody tr:hover {
+  background-color: var(--bg-elevated);
+}
+
+/* 내용 열 */
+.point-page__history-desc {
+  color: var(--text-primary);
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 변동 열 — 양수(초록), 음수(빨강) */
+.point-page__history-change {
+  font-weight: var(--font-semibold);
+  white-space: nowrap;
+}
+
+.point-page__history-change--positive {
+  color: var(--success);
+}
+
+.point-page__history-change--negative {
+  color: var(--error);
+}
+
+/* 잔액 열 */
+.point-page__history-after {
+  white-space: nowrap;
+}
+
+/* 일시 열 */
+.point-page__history-date {
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+
+/* 페이지네이션 */
+.point-page__pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.point-page__pagination-btn {
+  padding: var(--space-sm) var(--space-lg);
+  background: none;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.point-page__pagination-btn:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.point-page__pagination-btn:disabled {
+  color: var(--text-muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.point-page__pagination-info {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .point-page__history-table {
+    min-width: 500px;
+  }
+}

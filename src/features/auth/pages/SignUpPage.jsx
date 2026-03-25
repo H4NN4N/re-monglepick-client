@@ -3,6 +3,9 @@
  *
  * SignUpForm 컴포넌트를 중앙 정렬하여 표시한다.
  * 이미 로그인된 사용자는 홈 페이지로 리다이렉트한다.
+ *
+ * 개선 사항:
+ * - 배경에 그라데이션 원 장식 2개 (decorative circles)
  */
 
 import { useEffect } from 'react';
@@ -30,6 +33,10 @@ export default function SignUpPage() {
 
   return (
     <div className="signup-page">
+      {/* 배경 장식 — Floating Orb 3개 (보라/시안/핑크) */}
+      <div className="signup-page__deco signup-page__deco--1" aria-hidden="true" />
+      <div className="signup-page__deco signup-page__deco--2" aria-hidden="true" />
+      <div className="signup-page__deco signup-page__deco--3" aria-hidden="true" />
       <SignUpForm />
     </div>
   );

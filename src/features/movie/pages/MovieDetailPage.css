@@ -1,12 +1,15 @@
 /**
  * MovieDetailPage 스타일.
+ *
+ * fadeInUp 페이지 등장 + gradient-text 섹션 제목.
  */
 
-/* 페이지 컨테이너 */
+/* 페이지 컨테이너 — fadeInUp 등장 */
 .movie-detail-page {
   width: 100%;
   min-height: 60vh;
   padding: var(--space-xl) var(--space-lg);
+  animation: fadeInUp 0.5s ease forwards;
 }
 
 /* 내부 컨테이너 */

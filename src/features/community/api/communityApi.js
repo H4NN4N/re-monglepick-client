@@ -1,7 +1,8 @@
 /**
  * 커뮤니티(Community) API 모듈.
  *
- * 게시글 및 영화 리뷰의 CRUD 관련 HTTP 요청을 처리한다.
+ * 게시글의 CRUD 관련 HTTP 요청을 처리한다.
+ * 리뷰 관련 API는 features/review/api/reviewApi.js로 분리되었다.
  * 모든 요청에 인증 토큰을 포함하며, 비인증 상태에서도 조회는 가능하다.
  */
 
@@ -101,50 +102,3 @@ export async function createPost({ title, content, category = 'general' }) {
   });
 }
 
-// ── 리뷰 (Reviews) ──
-
-/**
- * 특정 영화의 리뷰 목록을 조회한다.
- *
- * @param {number|string} movieId - 영화 ID
- * @param {Object} [params={}] - 조회 파라미터
- * @param {number} [params.page=1] - 페이지 번호
- * @param {number} [params.size=10] - 페이지 크기
- * @param {string} [params.sort='latest'] - 정렬 기준 (latest, rating_high, rating_low)
- * @returns {Promise<Object>} 리뷰 목록 ({ reviews: [], total: number })
- *
- * @example
- * const result = await getReviews(550, { sort: 'rating_high' });
- * console.log(result.reviews); // [{id, content, rating, author, createdAt, ...}]
- */
-export async function getReviews(movieId, { page = 1, size = 10, sort = 'latest' } = {}) {
-  const params = new URLSearchParams({
-    page: String(page),
-    size: String(size),
-    sort,
-  });
-  return fetchWithAuth(`${COMMUNITY_ENDPOINTS.REVIEWS(movieId)}?${params.toString()}`);
-}
-
-/**
- * 영화 리뷰를 작성한다.
- * 인증이 필요하다.
- *
- * @param {number|string} movieId - 영화 ID
- * @param {Object} reviewData - 리뷰 데이터
- * @param {string} reviewData.content - 리뷰 내용
- * @param {number} reviewData.rating - 평점 (1~10)
- * @returns {Promise<Object>} 생성된 리뷰 정보
- *
- * @example
- * const review = await createReview(550, {
- *   content: '몰입감이 대단한 영화!',
- *   rating: 9,
- * });
- */
-export async function createReview(movieId, { content, rating }) {
-  return fetchWithAuth(COMMUNITY_ENDPOINTS.CREATE_REVIEW(movieId), {
-    method: 'POST',
-    body: JSON.stringify({ content, rating }),
-  });
-}

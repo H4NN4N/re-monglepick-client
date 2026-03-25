@@ -181,7 +181,7 @@ export default function MovieDetailCard({ movie, onWishlistToggle, isWishlisted 
             title="트레일러"
             className="movie-detail__trailer-iframe"
             frameBorder="0"
-            sandbox="allow-scripts allow-presentation allow-popups"
+            sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />

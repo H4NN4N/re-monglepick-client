@@ -116,7 +116,8 @@ export async function getOrders({ page = 0, size = 20 } = {}) {
     page: String(page),
     size: String(size),
   });
-  return fetchWithAuthRequired(`${PAYMENT_ENDPOINTS.ORDERS}?${params.toString()}`);
+  // ORDER_LIST: GET 결제 내역 조회 (CREATE_ORDER와 경로는 동일하지만 HTTP 메서드가 다름)
+  return fetchWithAuthRequired(`${PAYMENT_ENDPOINTS.ORDER_LIST}?${params.toString()}`);
 }
 
 // ── 구독 ──

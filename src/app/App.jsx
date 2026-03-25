@@ -34,8 +34,10 @@ import LandingPage from '../features/landing/pages/LandingPage';
 import LoginPage from '../features/auth/pages/LoginPage';
 /* 회원가입 페이지 — features/auth에서 가져옴 */
 import SignUpPage from '../features/auth/pages/SignUpPage';
-/* OAuth 콜백 페이지 — features/auth에서 가져옴 (소셜 로그인 인가 코드 처리) */
+/* OAuth 콜백 페이지 — features/auth에서 가져옴 (구 방식: 인가 코드 처리, fallback) */
 import OAuthCallbackPage from '../features/auth/pages/OAuthCallbackPage';
+/* OAuth 쿠키 교환 페이지 — features/auth에서 가져옴 (Spring Security OAuth2 Client: 쿠키→JWT 교환) */
+import OAuthCookiePage from '../features/auth/pages/OAuthCookiePage';
 /* 채팅 윈도우 컴포넌트 — features/chat에서 가져옴 */
 import ChatWindow from '../features/chat/components/ChatWindow';
 
@@ -59,6 +61,8 @@ import SupportPage from '../features/support/pages/SupportPage';
 /* 404 에러 페이지 — features/error에서 가져옴 */
 import NotFoundPage from '../features/error/pages/NotFoundPage';
 
+/* 로딩 스피너 — shared/components에서 가져옴 (PrivateRoute 로딩 중 표시용) */
+import Loading from '../shared/components/Loading/Loading';
 /* App 전용 레이아웃 스타일 */
 import './App.css';
 
@@ -69,8 +73,8 @@ import './App.css';
 function PrivateRoute({ children }) {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // 초기 로딩 중에는 아무것도 렌더링하지 않음 (localStorage 복원 대기)
-  if (isLoading) return null;
+  // 초기 로딩 중에는 Loading 컴포넌트를 표시 (localStorage 복원 대기)
+  if (isLoading) return <Loading message="인증 확인 중..." />;
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
@@ -96,8 +100,11 @@ function App() {
           {/* 회원가입 페이지 — 레이아웃 없이 단독 표시 */}
           <Route path="/signup" element={<SignUpPage />} />
 
-          {/* OAuth 콜백 페이지 — 소셜 로그인 인가 코드 처리 */}
+          {/* OAuth 콜백 페이지 — 구 방식: 인가 코드 직접 처리 (fallback) */}
           <Route path="/auth/callback/:provider" element={<OAuthCallbackPage />} />
+
+          {/* OAuth 쿠키 교환 페이지 — Spring Security OAuth2 Client 방식 (쿠키→JWT 교환) */}
+          <Route path="/cookie" element={<OAuthCookiePage />} />
 
           {/* AI 채팅 추천 — 기존 전체 화면 채팅 UI (레이아웃 없음) */}
           <Route path="/chat" element={<div className="app"><ChatWindow /></div>} />

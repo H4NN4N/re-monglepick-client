@@ -3,6 +3,10 @@
  *
  * OAuth 제공자(Google/카카오/네이버)에서 인가 코드를 받아
  * 백엔드에 전달하고, 로그인 처리 후 홈으로 리다이렉트한다.
+ *
+ * @deprecated 구 방식 — Spring Security OAuth2 Client 전환 후
+ *   OAuthCookiePage(/cookie)가 메인 흐름이므로, 추후 제거 예정.
+ *   현재는 fallback 용도로 유지.
  */
 
 import { useEffect, useState, useRef } from 'react';

@@ -1,8 +1,9 @@
 /**
  * HomePage 스타일.
  *
- * 히어로 섹션, 추천 질문 카드, 인기 영화 그리드를 포함하는
- * 랜딩 페이지 레이아웃.
+ * 히어로 섹션 (floating orb + gradient-text + fadeInUp),
+ * 추천 질문 카드 (glass-card + shine + stagger),
+ * 인기 영화 그리드 (페이드 마스크 스크롤).
  */
 
 /* 페이지 전체 컨테이너 */
@@ -10,7 +11,7 @@
   width: 100%;
 }
 
-/* ── 히어로 섹션 ── */
+/* ── 히어로 섹션 — floating orb 배경 ── */
 .home-hero {
   position: relative;
   display: flex;
@@ -30,15 +31,19 @@
   text-align: center;
   gap: var(--space-lg);
   max-width: 640px;
+  animation: fadeInUp 0.6s ease forwards;
 }
 
-/* 배지 */
+/* 배지 — 글래스 스타일 */
 .home-hero__badge {
   display: inline-flex;
   align-items: center;
   gap: var(--space-sm);
   padding: var(--space-xs) var(--space-md);
-  background-color: var(--primary-light);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-full);
   font-size: var(--text-sm);
   color: var(--primary);
@@ -52,7 +57,7 @@
   flex-shrink: 0;
 }
 
-/* 타이틀 */
+/* 타이틀 — gradient-text 효과 */
 .home-hero__title {
   font-size: var(--text-4xl);
   font-weight: var(--font-bold);
@@ -61,16 +66,23 @@
   margin: 0;
 }
 
+/* "AI 영화 추천" 악센트 — 그라데이션 텍스트 */
 .home-hero__title-accent {
-  color: var(--primary);
+  background: var(--gradient-text);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease infinite;
 }
 
-/* 설명 */
+/* 설명 — 지연 등장 */
 .home-hero__desc {
   font-size: var(--text-lg);
   color: var(--text-secondary);
   line-height: var(--leading-relaxed);
   margin: 0;
+  animation: fadeInUp 0.6s ease 0.2s both;
 }
 
 /* CTA 버튼 영역 */
@@ -78,6 +90,7 @@
   display: flex;
   gap: var(--space-md);
   margin-top: var(--space-sm);
+  animation: fadeInUp 0.6s ease 0.4s both;
 }
 
 .home-hero__btn {
@@ -89,29 +102,34 @@
   transition: all var(--transition-fast);
 }
 
+/* Primary 버튼 — 그라데이션 + 글로우 */
 .home-hero__btn--primary {
-  background-color: var(--primary);
+  background: var(--gradient-primary);
   color: white;
 }
 
 .home-hero__btn--primary:hover {
-  background-color: var(--primary-hover);
-  box-shadow: var(--shadow-glow);
+  box-shadow: var(--glow-primary);
+  transform: translateY(-2px);
   color: white;
 }
 
+/* Secondary 버튼 — 글래스 */
 .home-hero__btn--secondary {
-  background-color: transparent;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   color: var(--text-secondary);
-  border: 1px solid var(--border-default);
+  border: 1px solid var(--glass-border);
 }
 
 .home-hero__btn--secondary:hover {
   border-color: var(--primary);
   color: var(--primary);
+  box-shadow: 0 0 15px rgba(124,108,240,0.15);
 }
 
-/* 배경 글로우 */
+/* 배경 글로우 (중앙) */
 .home-hero__glow {
   position: absolute;
   top: 50%;
@@ -123,25 +141,86 @@
   pointer-events: none;
 }
 
+/* Floating Orb 1 — 보라색 (좌상단) */
+.home-hero__orb--1 {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 300px;
+  height: 300px;
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle, rgba(124,108,240,0.2) 0%, transparent 70%);
+  filter: blur(80px);
+  pointer-events: none;
+  animation: floatUpDown 8s ease-in-out infinite;
+}
+
+/* Floating Orb 2 — 시안 (우하단) */
+.home-hero__orb--2 {
+  position: absolute;
+  bottom: 10%;
+  right: 10%;
+  width: 250px;
+  height: 250px;
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle, rgba(6,214,160,0.15) 0%, transparent 70%);
+  filter: blur(80px);
+  pointer-events: none;
+  animation: floatUpDown 10s ease-in-out infinite 2s;
+}
+
 /* ── 추천 질문 카드 섹션 ── */
 .home-suggestions {
   padding: var(--space-3xl) var(--space-lg);
-  background-color: var(--bg-card);
-  border-top: 1px solid var(--border-light);
-  border-bottom: 1px solid var(--border-light);
+  position: relative;
+  border-top: none;
+  border-bottom: none;
+}
+
+/* 배경에 은은한 글로우 */
+.home-suggestions::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  height: 400px;
+  background: var(--gradient-glow);
+  pointer-events: none;
+  opacity: 0.5;
 }
 
 .home-suggestions__inner {
   max-width: var(--content-max-width);
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
+/* 섹션 제목 — 글로우 점 장식 */
 .home-suggestions__title {
   font-size: var(--text-2xl);
   font-weight: var(--font-bold);
   color: var(--text-primary);
   text-align: center;
   margin: 0 0 var(--space-xl) 0;
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+/* 제목 옆 글로우 점 */
+.home-suggestions__title::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  margin-left: var(--space-sm);
+  vertical-align: middle;
+  box-shadow: 0 0 10px rgba(124,108,240,0.6), 0 0 20px rgba(124,108,240,0.3);
 }
 
 .home-suggestions__grid {
@@ -150,25 +229,52 @@
   gap: var(--space-lg);
 }
 
-/* 카드 */
+/* 카드 — glass-card 스타일 + stagger 등장 + hover shine */
 .home-suggestions__card {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: var(--space-sm);
   padding: var(--space-lg);
-  background-color: var(--bg-main);
-  border: 1px solid var(--border-light);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-base);
   text-align: left;
+  position: relative;
+  overflow: hidden;
+  animation: fadeInUp 0.5s ease both;
+}
+
+/* stagger 등장 (각 카드 0.1s 간격) */
+.home-suggestions__card:nth-child(1) { animation-delay: 0.1s; }
+.home-suggestions__card:nth-child(2) { animation-delay: 0.2s; }
+.home-suggestions__card:nth-child(3) { animation-delay: 0.3s; }
+.home-suggestions__card:nth-child(4) { animation-delay: 0.4s; }
+
+/* 카드 hover shine 효과 */
+.home-suggestions__card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.04), transparent);
+  pointer-events: none;
+}
+
+.home-suggestions__card:hover::before {
+  animation: cardShine 0.8s ease forwards;
 }
 
 .home-suggestions__card:hover {
-  border-color: var(--primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  border-color: rgba(124,108,240,0.4);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg), 0 0 30px rgba(124,108,240,0.1);
 }
 
 .home-suggestions__card-icon {
@@ -192,6 +298,7 @@
 /* ── 인기 영화 섹션 ── */
 .home-movies {
   padding: var(--space-3xl) var(--space-lg);
+  position: relative;
 }
 
 .home-movies__inner {
@@ -206,11 +313,26 @@
   margin-bottom: var(--space-lg);
 }
 
+/* 섹션 제목 — 글로우 점 */
 .home-movies__title {
   font-size: var(--text-2xl);
   font-weight: var(--font-bold);
   color: var(--text-primary);
   margin: 0;
+  position: relative;
+}
+
+/* 제목 옆 글로우 점 */
+.home-movies__title::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: #06d6a0;
+  margin-left: var(--space-sm);
+  vertical-align: middle;
+  box-shadow: 0 0 10px rgba(6,214,160,0.6), 0 0 20px rgba(6,214,160,0.3);
 }
 
 .home-movies__more {
@@ -218,9 +340,11 @@
   color: var(--primary);
   text-decoration: none;
   font-weight: var(--font-medium);
+  transition: all var(--transition-fast);
 }
 
 .home-movies__more:hover {
+  text-shadow: 0 0 12px rgba(124,108,240,0.3);
   text-decoration: underline;
 }
 
@@ -251,5 +375,11 @@
   .home-hero__glow {
     width: 400px;
     height: 400px;
+  }
+
+  .home-hero__orb--1,
+  .home-hero__orb--2 {
+    width: 180px;
+    height: 180px;
   }
 }

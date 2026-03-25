@@ -5,6 +5,12 @@
  * 각 항목은 제목, 작성자, 작성일, 댓글 수 등을 보여준다.
  * 클릭 시 게시글 상세 페이지로 이동한다.
  *
+ * 개선 사항:
+ * - 좌측 카테고리 컬러 바 (4px border-left)
+ * - 메타 정보에 이모지 아이콘 추가
+ * - 빈 상태에 EmptyState 컴포넌트 적용
+ * - 로딩 시 Skeleton 표시
+ *
  * @param {Object} props
  * @param {Array} props.posts - 게시글 배열
  * @param {boolean} [props.loading=false] - 로딩 상태
@@ -13,30 +19,47 @@
 import { Link } from 'react-router-dom';
 /* 포맷팅 유틸 — shared/utils에서 가져옴 */
 import { formatRelativeTime, truncateText } from '../../../shared/utils/formatters';
-/* 로딩 스피너 — shared/components에서 가져옴 */
-import Loading from '../../../shared/components/Loading/Loading';
+/* 스켈레톤 로더 — shared/components에서 가져옴 */
+import Skeleton from '../../../shared/components/Skeleton/Skeleton';
+/* 빈 상태 컴포넌트 — shared/components에서 가져옴 */
+import EmptyState from '../../../shared/components/EmptyState/EmptyState';
 import './PostList.css';
 
 export default function PostList({ posts = [], loading = false }) {
-  // 로딩 중 표시
+  // 로딩 중 — 스켈레톤 3개 표시
   if (loading) {
-    return <Loading message="게시글을 불러오는 중..." />;
+    return (
+      <div className="post-list">
+        {[1, 2, 3].map((n) => (
+          <div key={n} className="post-list__skeleton">
+            <Skeleton variant="text" height="16px" width="60px" />
+            <Skeleton variant="text" height="20px" width="80%" />
+            <Skeleton variant="text" height="14px" width="100%" />
+            <Skeleton variant="text" height="12px" width="40%" />
+          </div>
+        ))}
+      </div>
+    );
   }
 
-  // 게시글이 없을 때
+  // 게시글이 없을 때 — EmptyState 컴포넌트
   if (!posts || posts.length === 0) {
     return (
-      <div className="post-list__empty">
-        <p className="post-list__empty-text">아직 작성된 게시글이 없습니다.</p>
-        <p className="post-list__empty-hint">첫 번째 게시글을 작성해 보세요!</p>
-      </div>
+      <EmptyState
+        icon="📝"
+        title="아직 작성된 게시글이 없습니다"
+        description="첫 번째 게시글을 작성해 보세요!"
+      />
     );
   }
 
   return (
     <div className="post-list">
       {posts.map((post) => (
-        <article key={post.id} className="post-list__item">
+        <article
+          key={post.id}
+          className={`post-list__item post-list__item--${post.category || 'free'}`}
+        >
           <Link to={`/community/${post.id}`} className="post-list__link">
             {/* 게시글 헤더 — 카테고리 + 작성 시간 */}
             <div className="post-list__item-header">
@@ -47,7 +70,7 @@ export default function PostList({ posts = [], loading = false }) {
                 </span>
               )}
               <span className="post-list__time">
-                {formatRelativeTime(post.createdAt)}
+                📅 {formatRelativeTime(post.createdAt)}
               </span>
             </div>
 
@@ -59,18 +82,18 @@ export default function PostList({ posts = [], loading = false }) {
               {truncateText(post.content, 120)}
             </p>
 
-            {/* 하단 메타 정보 */}
+            {/* 하단 메타 정보 — 이모지 아이콘 추가 */}
             <div className="post-list__meta">
               {/* 작성자 */}
               <span className="post-list__author">
-                {post.author?.nickname || '익명'}
+                👤 {post.author?.nickname || '익명'}
               </span>
 
               {/* 통계 (좋아요, 댓글) */}
               <div className="post-list__stats">
                 {post.likeCount !== undefined && (
                   <span className="post-list__stat">
-                    ♡ {post.likeCount}
+                    ❤️ {post.likeCount}
                   </span>
                 )}
                 {post.commentCount !== undefined && (

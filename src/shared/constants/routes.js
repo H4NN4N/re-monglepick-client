@@ -37,8 +37,11 @@ export const ROUTES = {
   /** 회원가입 페이지 */
   SIGNUP: '/signup',
 
-  /** OAuth 콜백 페이지 (동적 파라미터 :provider) */
+  /** OAuth 콜백 페이지 — 구 방식: 인가 코드 직접 처리 (동적 파라미터 :provider) */
   OAUTH_CALLBACK: '/auth/callback/:provider',
+
+  /** OAuth 쿠키 교환 페이지 — Spring Security OAuth2 Client 방식 */
+  OAUTH_COOKIE: '/cookie',
 
   /** 포인트 관리 페이지 */
   POINT: '/point',

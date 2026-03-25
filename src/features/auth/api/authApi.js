@@ -122,18 +122,50 @@ export async function logoutAPI(token) {
 }
 
 /**
- * OAuth 소셜 로그인 API 호출.
+ * OAuth 소셜 로그인 API 호출 (구 방식 — 코드 전달).
  * OAuth 제공자로부터 받은 인가 코드를 백엔드에 전달하여 토큰을 발급받는다.
+ *
+ * 주의: Backend가 Spring Security OAuth2 Client 방식으로 전환된 경우,
+ * 이 함수 대신 exchangeToken()을 사용한다.
  *
  * @param {Object} params - OAuth 로그인 정보
  * @param {string} params.provider - 제공자 이름 (google, kakao, naver)
  * @param {string} params.code - OAuth 인가 코드
  * @param {string} params.redirectUri - 콜백 리다이렉트 URI
  * @returns {Promise<Object>} 로그인 응답 (accessToken, refreshToken, user)
+ * @deprecated Backend가 Spring Security OAuth2 Client로 전환됨. exchangeToken() 사용 권장.
  */
 export async function oauthLogin({ provider, code, redirectUri }) {
   return fetchJSON(AUTH_ENDPOINTS.OAUTH(provider), {
     method: 'POST',
     body: JSON.stringify({ code, redirectUri }),
   });
+}
+
+/**
+ * OAuth2 쿠키→헤더 토큰 교환 API 호출.
+ *
+ * Spring Security OAuth2 Client 방식의 소셜 로그인 흐름에서 사용.
+ * SocialSuccessHandler가 HttpOnly 쿠키에 저장한 Refresh Token을
+ * POST /jwt/exchange로 전송하여 JSON 기반 JWT(accessToken + refreshToken)로 교환한다.
+ *
+ * credentials: 'include'로 쿠키를 자동 전송한다.
+ *
+ * @returns {Promise<Object>} JWT 응답 (accessToken, refreshToken, userNickname)
+ */
+export async function exchangeToken() {
+  const response = await fetch(`${API_BASE_URL}/jwt/exchange`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include', // HttpOnly 쿠키 전송을 위해 필수
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    const errorMessage = data?.message || data?.detail || `토큰 교환 실패 (${response.status})`;
+    throw new Error(errorMessage);
+  }
+
+  return data;
 }

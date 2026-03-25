@@ -18,9 +18,8 @@
 import { useState, useCallback, useRef } from 'react';
 /* SSE 채팅 API — 같은 feature 내의 chatApi에서 가져옴 */
 import { sendChatMessage } from '../api/chatApi';
-
-/** localStorage에 세션 ID를 저장하는 키 */
-const SESSION_STORAGE_KEY = 'monglepick_session_id';
+/* localStorage 래퍼 유틸 — 세션 ID 안전 접근 */
+import { getSessionId, setSessionId, removeSessionId } from '../../../shared/utils/storage';
 
 /**
  * 채팅 상태 관리 훅.
@@ -59,14 +58,8 @@ export function useChat({ userId = '' } = {}) {
 
   // 요청 취소용 AbortController ref
   const abortControllerRef = useRef(null);
-  // 세션 ID — localStorage에서 복원하여 대화 연속성 유지 (IIFE로 초기값 계산)
-  const sessionIdRef = useRef((() => {
-    try {
-      return localStorage.getItem(SESSION_STORAGE_KEY) || '';
-    } catch {
-      return '';
-    }
-  })());
+  // 세션 ID — storage 래퍼를 통해 localStorage에서 복원하여 대화 연속성 유지
+  const sessionIdRef = useRef(getSessionId() || '');
   // 현재 스트리밍 중인 봇 응답을 누적하는 ref (토큰 스트리밍용)
   const pendingResponseRef = useRef('');
   // 현재 스트리밍 중인 영화 카드를 누적하는 ref
@@ -115,15 +108,11 @@ export function useChat({ userId = '' } = {}) {
           image: imageBase64,
         },
         {
-          // session 이벤트: 세션 ID를 받아 ref + localStorage에 저장
+          // session 이벤트: 세션 ID를 받아 ref + localStorage에 저장 (storage 래퍼 사용)
           onSession: (data) => {
             if (data.session_id) {
               sessionIdRef.current = data.session_id;
-              try {
-                localStorage.setItem(SESSION_STORAGE_KEY, data.session_id);
-              } catch {
-                // localStorage 접근 실패 시 무시 (시크릿 모드 등)
-              }
+              setSessionId(data.session_id);
             }
           },
 
@@ -280,13 +269,9 @@ export function useChat({ userId = '' } = {}) {
     setClarification(null);
     setPointInfo(null);
     setQuotaError(null);
-    // 세션 ID 초기화 + localStorage 삭제
+    // 세션 ID 초기화 + localStorage 삭제 (storage 래퍼 사용)
     sessionIdRef.current = '';
-    try {
-      localStorage.removeItem(SESSION_STORAGE_KEY);
-    } catch {
-      // localStorage 접근 실패 시 무시
-    }
+    removeSessionId();
   }, []);
 
   /**

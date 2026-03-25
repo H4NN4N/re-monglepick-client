@@ -11,15 +11,23 @@
   gap: var(--space-md);
 }
 
-/* ── 리뷰 아이템 ── */
+/* ── 리뷰 아이템 — glass-card ── */
 .review-list__item {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-light);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px) saturate(1.4);
+  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.review-list__item:hover {
+  border-color: rgba(124,108,240,0.3);
+  box-shadow: 0 0 15px rgba(124,108,240,0.08);
 }
 
 /* 헤더 — 작성자 + 평점 */
@@ -75,10 +83,12 @@
   flex-shrink: 0;
 }
 
+/* 별점 — 글로우 */
 .review-list__stars {
   color: var(--star-filled);
   font-size: var(--text-sm);
   letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(251,191,36,0.3);
 }
 
 .review-list__score {

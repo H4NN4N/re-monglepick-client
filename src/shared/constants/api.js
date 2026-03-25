@@ -25,8 +25,8 @@ export const AUTH_ENDPOINTS = {
   SIGNUP: `${API_VERSION}/auth/signup`,
   /** 로그인 - POST */
   LOGIN: `${API_VERSION}/auth/login`,
-  /** 토큰 갱신 - POST */
-  REFRESH: `${API_VERSION}/auth/refresh`,
+  /** 토큰 갱신 - POST /jwt/refresh (JwtController — Refresh Token Rotation) */
+  REFRESH: `/jwt/refresh`,
   /** 로그아웃 - POST */
   LOGOUT: `${API_VERSION}/auth/logout`,
   /** OAuth 소셜 로그인 - POST (provider 파라미터 필요) */
@@ -139,12 +139,12 @@ export const POINT_ENDPOINTS = {
  * Toss Payments 연동 결제를 처리한다.
  */
 export const PAYMENT_ENDPOINTS = {
-  /** 주문 생성 - POST */
+  /** 주문 생성 - POST /payment/orders */
   CREATE_ORDER: `${API_VERSION}/payment/orders`,
-  /** 결제 승인 - POST */
+  /** 결제 승인 - POST /payment/confirm */
   CONFIRM: `${API_VERSION}/payment/confirm`,
-  /** 결제 내역 - GET (query: userId, page, size) */
-  ORDERS: `${API_VERSION}/payment/orders`,
+  /** 결제 내역 조회 - GET /payment/orders (query: page, size) */
+  ORDER_LIST: `${API_VERSION}/payment/orders`,
 };
 
 /**

@@ -10,8 +10,8 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 /* 영화 API — 같은 feature 내의 movieApi에서 가져옴 */
 import { getMovie } from '../api/movieApi';
-/* 리뷰 API — features/community에서 가져옴 */
-import { getReviews } from '../../community/api/communityApi';
+/* 리뷰 API — features/review에서 가져옴 */
+import { getReviews } from '../../review/api/reviewApi';
 /* 위시리스트 API — features/user에서 가져옴 */
 import { addToWishlist, removeFromWishlist } from '../../user/api/userApi';
 /* 인증 Context 훅 — app/providers에서 가져옴 */

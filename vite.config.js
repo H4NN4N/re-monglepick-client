@@ -10,6 +10,21 @@ export default defineConfig({
     proxy: {
       // Spring Boot 백엔드 API (인증, 포인트, 결제, 구독)
       // 더 구체적인 경로가 범용 /api 보다 먼저 선언되어야 함
+      // Spring Security OAuth2 인가 엔드포인트 (소셜 로그인 시작)
+      '/oauth2': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      // Spring Security OAuth2 콜백 엔드포인트 (제공자 → 백엔드)
+      '/login/oauth2': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      // JWT 토큰 교환/갱신 엔드포인트 (쿠키→헤더 교환, Refresh Rotation)
+      '/jwt': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
       '/api/v1/auth': {
         target: 'http://localhost:8080',
         changeOrigin: true,

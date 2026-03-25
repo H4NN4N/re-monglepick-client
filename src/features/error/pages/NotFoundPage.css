@@ -1,10 +1,10 @@
 /**
  * 404 Not Found 페이지 스타일.
  *
- * 개선 사항:
- * - 404 숫자 fade-in + scale 등장 애니메이션
- * - 배경에 떠다니는 이모지 (CSS float 애니메이션)
- * - "영화 검색" 보조 링크 추가
+ * 404 숫자 gradient-text + gradientShift +
+ * 3개 floating orb 배경 (blur) +
+ * 이모지 floatUpDown 다른 duration +
+ * "홈으로" gradient 버튼 + pulseGlow.
  */
 
 /* ── 404 등장 애니메이션 ── */
@@ -22,7 +22,7 @@
   }
 }
 
-/* ── 떠다니는 이모지 애니메이션 ── */
+/* ── 떠다니는 이모지 애니메이션 (각기 다른 duration) ── */
 @keyframes floatEmoji1 {
   0%, 100% {
     transform: translateY(0) rotate(0deg);
@@ -71,11 +71,40 @@
   overflow: hidden;
 }
 
-/* ── 떠다니는 이모지 ── */
+/* ── Floating Orb 배경 3개 ── */
+.not-found::before {
+  content: '';
+  position: absolute;
+  top: -10%;
+  left: -5%;
+  width: 400px;
+  height: 400px;
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle, rgba(124,108,240,0.18) 0%, transparent 70%);
+  filter: blur(100px);
+  pointer-events: none;
+  animation: floatUpDown 8s ease-in-out infinite;
+}
+
+.not-found::after {
+  content: '';
+  position: absolute;
+  bottom: -10%;
+  right: -5%;
+  width: 350px;
+  height: 350px;
+  border-radius: var(--radius-full);
+  background: radial-gradient(circle, rgba(6,214,160,0.14) 0%, transparent 70%);
+  filter: blur(100px);
+  pointer-events: none;
+  animation: floatUpDown 10s ease-in-out infinite 2s;
+}
+
+/* ── 떠다니는 이모지 — floatUpDown 각기 다른 duration ── */
 .not-found__float {
   position: absolute;
   font-size: 48px;
-  opacity: 0.1;
+  opacity: 0.12;
   pointer-events: none;
 }
 
@@ -103,23 +132,27 @@
   animation: floatEmoji4 3.5s ease-in-out infinite 1.5s;
 }
 
-/* 내부 콘텐츠 래퍼 — 텍스트 중앙 정렬 */
+/* 내부 콘텐츠 래퍼 */
 .not-found__inner {
   text-align: center;
   max-width: 480px;
   position: relative;
   z-index: 1;
+  animation: fadeInUp 0.6s ease forwards;
 }
 
-/* 404 코드 — fade-in + scale 애니메이션 */
+/* 404 코드 — gradient-text + gradientShift + fadeInScale */
 .not-found__code {
   font-size: 8rem;
   font-weight: var(--font-bold);
-  color: var(--primary);
   line-height: 1;
   margin: 0 0 var(--space-md) 0;
-  text-shadow: var(--shadow-glow);
-  animation: fadeInScale 0.8s ease-out;
+  background: var(--gradient-text);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 3s ease infinite, fadeInScale 0.8s ease-out;
 }
 
 /* 주 안내 메시지 */
@@ -146,32 +179,35 @@
   flex-wrap: wrap;
 }
 
-/* 홈으로 돌아가기 링크 버튼 — Primary */
+/* 홈으로 돌아가기 — gradient + pulseGlow */
 .not-found__home-link {
   display: inline-block;
   padding: var(--space-md) var(--space-xl);
-  background-color: var(--primary);
-  color: var(--text-inverse);
+  background: var(--gradient-primary);
+  color: white;
   border-radius: var(--radius-lg);
   text-decoration: none;
   font-weight: var(--font-semibold);
   font-size: var(--text-base);
   transition: all var(--transition-fast);
+  animation: pulseGlow 3s ease-in-out infinite;
 }
 
 .not-found__home-link:hover {
-  background-color: var(--primary-hover);
-  box-shadow: var(--shadow-glow);
+  box-shadow: var(--glow-primary);
   transform: translateY(-2px);
+  color: white;
 }
 
-/* 영화 검색 링크 — Secondary (아웃라인) */
+/* 영화 검색 링크 — glass 아웃라인 */
 .not-found__search-link {
   display: inline-block;
   padding: var(--space-md) var(--space-xl);
-  background-color: transparent;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
   color: var(--primary);
-  border: 1px solid var(--primary);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-lg);
   text-decoration: none;
   font-weight: var(--font-semibold);
@@ -180,6 +216,7 @@
 }
 
 .not-found__search-link:hover {
-  background-color: var(--primary-light);
+  border-color: var(--primary);
+  box-shadow: 0 0 15px rgba(124,108,240,0.15);
   transform: translateY(-2px);
 }

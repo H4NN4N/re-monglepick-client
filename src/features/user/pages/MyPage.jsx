@@ -27,8 +27,8 @@ import { useAuth } from '../../../app/providers/AuthProvider';
 import { getProfile, getWatchHistory, getWishlist } from '../api/userApi';
 /* 라우트 경로 상수 — shared/constants에서 가져옴 */
 import { ROUTES } from '../../../shared/constants/routes';
-/* 영화 목록 컴포넌트 — features/movie에서 가져옴 */
-import MovieList from '../../movie/components/MovieList';
+/* 영화 목록 컴포넌트 — shared/components에서 가져옴 */
+import MovieList from '../../../shared/components/MovieList/MovieList';
 /* 로딩 스피너 — shared/components에서 가져옴 */
 import Loading from '../../../shared/components/Loading/Loading';
 /* 빈 상태 컴포넌트 — shared/components에서 가져옴 */

@@ -15,6 +15,9 @@
  * - error: 에러 메시지 ({message, error_code?, balance?, cost?, ...})
  */
 
+/* localStorage 래퍼 유틸 — 인증 토큰 안전 접근 */
+import { getToken } from '../../../shared/utils/storage';
+
 /** API 베이스 경로 (Vite 프록시가 localhost:8000으로 전달) */
 const API_BASE = '/api/v1';
 
@@ -43,8 +46,8 @@ export async function sendChatMessage(
   { onSession, onStatus, onMovieCard, onClarification, onToken, onPointUpdate, onDone, onError } = {},
   signal,
 ) {
-  // JWT 토큰 조회 (인증된 사용자는 토큰으로 userId 전달)
-  const token = localStorage.getItem('monglepick_auth_token');
+  // JWT 토큰 조회 — storage 래퍼를 통해 안전하게 접근 (시크릿 모드 등 대응)
+  const token = getToken();
   const headers = { 'Content-Type': 'application/json' };
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;

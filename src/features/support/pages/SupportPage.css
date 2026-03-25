@@ -26,11 +26,22 @@
   margin-bottom: var(--space-xl);
 }
 
+/* 페이지 등장 */
+.support-page__inner {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* 제목 — gradient-text */
 .support-page__title {
   font-size: var(--text-3xl);
   font-weight: var(--font-bold);
-  color: var(--text-primary);
   margin: 0 0 var(--space-sm) 0;
+  background: var(--gradient-text);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease infinite;
 }
 
 .support-page__subtitle {
@@ -72,9 +83,12 @@
   color: var(--text-primary);
 }
 
+/* 활성 탭 — gradient 하단 보더 */
 .support-page__nav-btn--active {
   color: var(--primary);
-  border-bottom-color: var(--primary);
+  border-bottom: 2px solid;
+  border-image: var(--gradient-primary) 1;
+  text-shadow: 0 0 12px rgba(124,108,240,0.3);
 }
 
 /* ── 공통 섹션 ── */
@@ -115,10 +129,12 @@
   color: var(--text-primary);
 }
 
+/* 활성 카테고리 — gradient pill */
 .support-page__category-tab--active {
-  background-color: var(--primary);
-  border-color: var(--primary);
-  color: var(--text-inverse);
+  background: var(--gradient-primary);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 0 10px rgba(124,108,240,0.2);
 }
 
 /* ── 검색 바 ── */
@@ -155,8 +171,10 @@
   color: var(--text-muted);
 }
 
+/* 검색 입력 포커스 — glow */
 .support-page__search-input:focus {
-  border-color: var(--border-focus);
+  border-color: var(--primary);
+  box-shadow: var(--glow-primary);
 }
 
 /* ── FAQ 아코디언 ── */
@@ -167,16 +185,20 @@
   gap: var(--space-sm);
 }
 
+/* FAQ 아이템 — glass-card + border glow on open */
 .support-page__faq-item {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-default);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px) saturate(1.4);
+  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   overflow: hidden;
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
 
 .support-page__faq-item:hover {
-  border-color: var(--border-focus);
+  border-color: rgba(124,108,240,0.4);
+  box-shadow: 0 0 15px rgba(124,108,240,0.08);
 }
 
 .support-page__faq-question {
@@ -310,19 +332,40 @@
   gap: var(--space-md);
 }
 
+/* 도움말 카드 — glass-card + hover shine */
 .support-page__help-card {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-default);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px) saturate(1.4);
+  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   padding: var(--space-md);
   cursor: pointer;
   transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+/* hover shine */
+.support-page__help-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+  pointer-events: none;
+}
+
+.support-page__help-card:hover::before {
+  animation: cardShine 0.8s ease forwards;
 }
 
 .support-page__help-card:hover {
-  border-color: var(--primary);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  border-color: rgba(124,108,240,0.4);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(124,108,240,0.1);
 }
 
 .support-page__help-card-header {
@@ -420,9 +463,12 @@
 
 /* ── 문의하기 폼 ── */
 
+/* 티켓 폼 — glass-card */
 .support-page__ticket-form {
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-default);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px) saturate(1.4);
+  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
   padding: var(--space-lg);
 }
@@ -462,8 +508,10 @@
   padding-right: var(--space-xl);
 }
 
+/* select 포커스 — glow */
 .support-page__form-select:focus {
-  border-color: var(--border-focus);
+  border-color: var(--primary);
+  box-shadow: var(--glow-primary);
 }
 
 .support-page__form-input {
@@ -479,8 +527,10 @@
   box-sizing: border-box;
 }
 
+/* 입력 필드 포커스 — glow */
 .support-page__form-input:focus {
-  border-color: var(--border-focus);
+  border-color: var(--primary);
+  box-shadow: var(--glow-primary);
 }
 
 .support-page__form-textarea {
@@ -499,8 +549,10 @@
   box-sizing: border-box;
 }
 
+/* textarea 포커스 — glow */
 .support-page__form-textarea:focus {
-  border-color: var(--border-focus);
+  border-color: var(--primary);
+  box-shadow: var(--glow-primary);
 }
 
 .support-page__form-hint {
@@ -526,21 +578,23 @@
   color: var(--error);
 }
 
+/* 제출 버튼 — gradient + glow hover */
 .support-page__submit-btn {
   width: 100%;
   padding: var(--space-sm) var(--space-lg);
-  background-color: var(--primary);
+  background: var(--gradient-primary);
   border: none;
   border-radius: var(--radius-md);
   color: white;
   font-size: var(--text-base);
   font-weight: var(--font-semibold);
   cursor: pointer;
-  transition: background-color var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .support-page__submit-btn:hover:not(:disabled) {
-  background-color: var(--primary-hover);
+  box-shadow: var(--glow-primary);
+  transform: translateY(-1px);
 }
 
 .support-page__submit-btn:disabled {

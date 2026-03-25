@@ -3,7 +3,13 @@
  *
  * 게시글과 리뷰를 탭으로 전환하여 표시한다.
  * - 게시글 탭: PostList + PostForm (새 글 작성)
- * - 리뷰 탭: ReviewList (최신 리뷰)
+ * - 리뷰 탭: 안내 메시지 (EmptyState)
+ *
+ * 개선 사항:
+ * - 탭 활성 시 하단 3px 그라데이션 바
+ * - 탭 호버 시 배경색 변화
+ * - 글쓰기 버튼을 우하단 FAB(Floating Action Button) 스타일로 변경
+ * - 리뷰 탭에 EmptyState 컴포넌트 적용
  *
  * 인증된 사용자는 새 게시글을 작성할 수 있다.
  */
@@ -16,6 +22,8 @@ import { useAuth } from '../../../app/providers/AuthProvider';
 /* 게시글 목록/작성 컴포넌트 — 같은 feature 내의 components에서 가져옴 */
 import PostList from '../components/PostList';
 import PostForm from '../components/PostForm';
+/* 빈 상태 컴포넌트 — shared/components에서 가져옴 */
+import EmptyState from '../../../shared/components/EmptyState/EmptyState';
 import './CommunityPage.css';
 
 /** 탭 정의 */
@@ -88,7 +96,7 @@ export default function CommunityPage() {
           <p className="community-page__desc">영화에 대한 이야기를 나눠보세요</p>
         </div>
 
-        {/* 탭 네비게이션 */}
+        {/* 탭 네비게이션 — 활성 탭에 그라데이션 하단 바 */}
         <div className="community-page__tabs">
           {TABS.map((tab) => (
             <button
@@ -101,20 +109,10 @@ export default function CommunityPage() {
           ))}
         </div>
 
-        {/* 탭 콘텐츠 */}
-        <div className="community-page__content">
+        {/* 탭 콘텐츠 — fade-in 애니메이션 적용 */}
+        <div className="community-page__content" key={activeTab}>
           {activeTab === 'posts' && (
             <>
-              {/* 새 글 작성 버튼 (인증된 사용자만) */}
-              {isAuthenticated && !showForm && (
-                <button
-                  className="community-page__write-btn"
-                  onClick={() => setShowForm(true)}
-                >
-                  + 새 글 작성
-                </button>
-              )}
-
               {/* 글 작성 폼 */}
               {showForm && (
                 <PostForm
@@ -130,14 +128,25 @@ export default function CommunityPage() {
           )}
 
           {activeTab === 'reviews' && (
-            <div className="community-page__reviews-placeholder">
-              <p className="community-page__placeholder-text">
-                영화 상세 페이지에서 리뷰를 작성할 수 있습니다.
-              </p>
-            </div>
+            <EmptyState
+              icon="📝"
+              title="리뷰를 작성해보세요"
+              description="영화 상세 페이지에서 리뷰를 작성할 수 있습니다"
+            />
           )}
         </div>
       </div>
+
+      {/* FAB (Floating Action Button) — 인증된 사용자가 게시글 탭에서만 표시 */}
+      {isAuthenticated && activeTab === 'posts' && !showForm && (
+        <button
+          className="community-page__fab"
+          onClick={() => setShowForm(true)}
+          aria-label="새 글 작성"
+        >
+          +
+        </button>
+      )}
     </div>
   );
 }

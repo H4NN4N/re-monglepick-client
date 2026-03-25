@@ -16,9 +16,21 @@ import { login as loginAPI } from '../api/authApi';
 import { validateEmail, validatePassword } from '../../../shared/utils/validators';
 /* 라우트 경로 상수 — shared/constants에서 가져옴 */
 import { ROUTES } from '../../../shared/constants/routes';
-/* OAuth URL 생성 유틸 — shared/constants에서 가져옴 */
-import { buildOAuthUrl } from '../../../shared/constants/oauth';
+/* API 기본 URL — shared/constants에서 가져옴 */
+import { API_BASE_URL } from '../../../shared/constants/api';
 import './LoginForm.css';
+
+/**
+ * Spring Security OAuth2 Client 인가 URL을 생성한다.
+ * Backend의 /oauth2/authorization/{provider} 경로로 리다이렉트하여
+ * Spring Security가 OAuth2 흐름을 처리하도록 한다.
+ *
+ * @param {string} provider - 제공자 이름 (google, kakao, naver)
+ * @returns {string} Backend OAuth2 인가 URL
+ */
+function getOAuth2AuthorizationUrl(provider) {
+  return `${API_BASE_URL}/oauth2/authorization/${provider}`;
+}
 
 export default function LoginForm() {
   // 폼 입력값 상태
@@ -157,7 +169,7 @@ export default function LoginForm() {
         <button
           type="button"
           className="login-form__social-btn login-form__social-btn--google"
-          onClick={() => { window.location.href = buildOAuthUrl('google'); }}
+          onClick={() => { window.location.href = getOAuth2AuthorizationUrl('google'); }}
           disabled={isSubmitting}
         >
           Google로 로그인
@@ -165,7 +177,7 @@ export default function LoginForm() {
         <button
           type="button"
           className="login-form__social-btn login-form__social-btn--kakao"
-          onClick={() => { window.location.href = buildOAuthUrl('kakao'); }}
+          onClick={() => { window.location.href = getOAuth2AuthorizationUrl('kakao'); }}
           disabled={isSubmitting}
         >
           카카오로 로그인
@@ -173,7 +185,7 @@ export default function LoginForm() {
         <button
           type="button"
           className="login-form__social-btn login-form__social-btn--naver"
-          onClick={() => { window.location.href = buildOAuthUrl('naver'); }}
+          onClick={() => { window.location.href = getOAuth2AuthorizationUrl('naver'); }}
           disabled={isSubmitting}
         >
           네이버로 로그인

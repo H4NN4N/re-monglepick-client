@@ -283,3 +283,119 @@ hr {
   background-color: var(--primary-light);
   color: var(--text-primary);
 }
+
+/* ═══════════════════════════════════════════════
+   공통 애니메이션 키프레임
+   ═══════════════════════════════════════════════ */
+
+/* 그라데이션 배경 이동 (텍스트/배경 효과) */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* 위아래 부유 애니메이션 */
+@keyframes floatUpDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* 글로우 펄스 (버튼/카드 강조) */
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 20px rgba(124,108,240,0.2); }
+  50% { box-shadow: 0 0 40px rgba(124,108,240,0.4), 0 0 60px rgba(124,108,240,0.1); }
+}
+
+/* 보더 색상 변화 (카드 테두리 강조) */
+@keyframes borderGlow {
+  0% { border-color: rgba(124,108,240,0.3); }
+  50% { border-color: rgba(6,214,160,0.5); }
+  100% { border-color: rgba(124,108,240,0.3); }
+}
+
+/* 아래에서 위로 등장 */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 왼쪽에서 슬라이드 등장 */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* 스케일 인 등장 */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 카드 빛 지나가는 효과 (호버 시) */
+@keyframes cardShine {
+  0% { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* ═══════════════════════════════════════════════
+   공통 유틸리티 클래스 (디자인 시스템)
+   ═══════════════════════════════════════════════ */
+
+/* ── 글래스 카드 — glassmorphism 공통 ── */
+.glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 글래스 카드 호버 시 빛이 지나가는 shine 효과 */
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+  transition: none;
+  pointer-events: none;
+}
+
+.glass-card:hover::before {
+  animation: cardShine 0.8s ease forwards;
+}
+
+/* ── 그라데이션 텍스트 ── */
+.gradient-text {
+  background: var(--gradient-text);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease infinite;
+}
+
+/* ── 글로우 Primary 버튼 호버 ── */
+.btn-primary:hover:not(:disabled) {
+  box-shadow: var(--glow-primary);
+}
+
+/* ── 페이지 진입 애니메이션 ── */
+.page-enter {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* ── 카드 호버 공통 (기존 .card 확장) ── */
+.card {
+  transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg), 0 0 30px rgba(124,108,240,0.1);
+  border-color: var(--glass-border);
+}

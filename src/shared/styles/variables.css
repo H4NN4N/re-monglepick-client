@@ -119,4 +119,35 @@
   --z-modal-backdrop: 300;
   --z-modal: 400;
   --z-toast: 500;
+
+  /* ── 그라데이션 (Gradients) ── */
+
+  /* 기본 보라→시안 그라데이션 */
+  --gradient-primary: linear-gradient(135deg, #7c6cf0 0%, #06d6a0 100%);
+  /* 3색 악센트 그라데이션 (핑크→옐로→시안) */
+  --gradient-accent: linear-gradient(135deg, #ef476f 0%, #ffd166 50%, #06d6a0 100%);
+  /* 텍스트용 그라데이션 (보라→시안→블루) */
+  --gradient-text: linear-gradient(135deg, #7c6cf0, #06d6a0, #60a5fa);
+  /* 카드 보더 그라데이션 */
+  --gradient-card-border: linear-gradient(135deg, rgba(124,108,240,0.5), rgba(6,214,160,0.5), rgba(124,108,240,0.5));
+  /* 배경 글로우 라디얼 그라데이션 */
+  --gradient-glow: radial-gradient(circle, rgba(124,108,240,0.15) 0%, transparent 70%);
+
+  /* ── 네온 글로우 (Glow Effects) ── */
+
+  /* 보라색 글로우 — 버튼/카드 호버 */
+  --glow-primary: 0 0 20px rgba(124,108,240,0.4), 0 0 40px rgba(124,108,240,0.2);
+  /* 시안 글로우 — 악센트 요소 */
+  --glow-cyan: 0 0 20px rgba(6,214,160,0.4), 0 0 40px rgba(6,214,160,0.2);
+  /* 핑크 글로우 — 경고/하이라이트 */
+  --glow-pink: 0 0 20px rgba(239,71,111,0.4);
+
+  /* ── 글래스모피즘 (Glassmorphism) ── */
+
+  /* 글래스 배경 — 반투명 다크 */
+  --glass-bg: rgba(26, 26, 46, 0.6);
+  /* 글래스 보더 색상 */
+  --glass-border: rgba(124, 108, 240, 0.15);
+  /* 글래스 블러 + 채도 강화 */
+  --glass-blur: blur(16px) saturate(1.8);
 }

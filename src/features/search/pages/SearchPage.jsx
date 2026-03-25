@@ -14,8 +14,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 /* 영화 검색 API — features/movie에서 가져옴 */
 import { searchMovies } from '../../movie/api/movieApi';
-/* 영화 목록 컴포넌트 — features/movie에서 가져옴 */
-import MovieList from '../../movie/components/MovieList';
+/* 영화 목록 컴포넌트 — shared/components에서 가져옴 */
+import MovieList from '../../../shared/components/MovieList/MovieList';
 /* 스켈레톤 로더 — shared/components에서 가져옴 */
 import Skeleton from '../../../shared/components/Skeleton/Skeleton';
 /* 빈 상태 컴포넌트 — shared/components에서 가져옴 */

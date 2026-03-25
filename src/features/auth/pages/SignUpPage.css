@@ -1,7 +1,8 @@
 /**
  * SignUpPage 스타일.
  *
- * 폼을 화면 중앙에 배치한다.
+ * 3개 floating orb 배경 (보라/시안/핑크, blur(150px), 느린 animation).
+ * 폼 카드 중앙 배치 + fadeInUp 등장.
  */
 
 .signup-page {
@@ -11,4 +12,47 @@
   align-items: center;
   justify-content: center;
   padding: var(--space-xl) var(--space-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── 배경 Floating Orb 3개 ── */
+.signup-page__deco {
+  position: absolute;
+  border-radius: var(--radius-full);
+  pointer-events: none;
+  will-change: transform;
+}
+
+/* 우상단 보라 orb */
+.signup-page__deco--1 {
+  width: 450px;
+  height: 450px;
+  top: -120px;
+  right: -120px;
+  background: radial-gradient(circle, rgba(124,108,240,0.2) 0%, transparent 70%);
+  filter: blur(100px);
+  animation: floatUpDown 8s ease-in-out infinite;
+}
+
+/* 좌하단 시안 orb */
+.signup-page__deco--2 {
+  width: 350px;
+  height: 350px;
+  bottom: -100px;
+  left: -100px;
+  background: radial-gradient(circle, rgba(6,214,160,0.15) 0%, transparent 70%);
+  filter: blur(100px);
+  animation: floatUpDown 10s ease-in-out infinite 2s;
+}
+
+/* 좌상단 핑크 orb */
+.signup-page__deco--3 {
+  width: 300px;
+  height: 300px;
+  top: 30%;
+  left: 5%;
+  background: radial-gradient(circle, rgba(239,71,111,0.1) 0%, transparent 70%);
+  filter: blur(120px);
+  animation: floatUpDown 12s ease-in-out infinite 4s;
 }
