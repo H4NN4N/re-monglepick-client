@@ -25,14 +25,12 @@ import { create } from 'zustand';
 import {
   getToken,
   setToken,
-  removeToken,
   getUser,
   setUser,
-  removeUser,
   setRefreshToken,
-  removeRefreshToken,
   clearAll,
 } from '../utils/storage';
+/* removeToken, removeUser, removeRefreshToken은 logout에서 clearAll()로 일괄 처리하므로 미사용 */
 
 /**
  * 인증 Zustand 스토어.

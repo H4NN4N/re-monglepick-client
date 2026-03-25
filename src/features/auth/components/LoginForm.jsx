@@ -13,7 +13,8 @@ import useAuthStore from '../../../shared/stores/useAuthStore';
 /* 로그인 API — 같은 feature 내의 authApi에서 가져옴 */
 import { login as loginAPI } from '../api/authApi';
 /* 유효성 검사 유틸 — shared/utils에서 가져옴 */
-import { validateEmail, validatePassword } from '../../../shared/utils/validators';
+/* 로그인 폼은 비밀번호 입력 여부만 확인하므로 validatePassword는 사용하지 않음 */
+import { validateEmail } from '../../../shared/utils/validators';
 /* 라우트 경로 상수 — shared/constants에서 가져옴 */
 import { ROUTES } from '../../../shared/constants/routes';
 /* OAuth URL 생성 유틸 — shared/constants에서 가져옴 */

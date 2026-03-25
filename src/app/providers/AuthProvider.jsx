@@ -9,65 +9,75 @@
  * - isAuthenticated: 인증 여부 (boolean)
  *
  * localStorage를 통해 새로고침 후에도 인증 상태를 유지한다.
+ *
+ * @remarks
+ * useAuth 훅은 별도 파일(useAuth.js)로 분리되어 있다.
+ * React Fast Refresh는 한 파일에 컴포넌트와 비컴포넌트 export가 섞이면
+ * HMR 동작이 불안정해지기 때문이다.
  */
 
-import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
+import { createContext, useState, useCallback, useMemo } from 'react';
 /* localStorage 래퍼 — shared/utils에서 가져옴 */
 import {
   getToken,
   setToken,
-  removeToken,
   getUser,
   setUser,
-  removeUser,
   setRefreshToken,
-  removeRefreshToken,
   clearAll,
 } from '../../shared/utils/storage';
 
 /**
  * 인증 Context 객체.
  * Provider 외부에서 접근하면 null이 반환된다.
+ * useAuth 훅(useAuth.js)을 통해서만 접근할 것을 권장한다.
  */
 const AuthContext = createContext(null);
+
+/**
+ * localStorage에서 토큰과 사용자 정보를 읽어 초기 인증 상태를 구성한다.
+ * useState의 lazy initializer로 사용하여 마운트 시 단 한 번만 실행된다.
+ * useEffect 내 동기 setState(cascading render)를 방지하기 위한 패턴이다.
+ *
+ * @returns {{ token: string|null, user: Object|null }} 초기 상태
+ */
+function readAuthFromStorage() {
+  const savedToken = getToken();
+  const savedUser = getUser();
+
+  /* 토큰과 사용자 정보가 모두 있어야 로그인 상태로 복원한다 */
+  if (savedToken && savedUser) {
+    return { token: savedToken, user: savedUser };
+  }
+
+  return { token: null, user: null };
+}
 
 /**
  * 인증 Context Provider 컴포넌트.
  *
  * 앱 최상위에서 감싸서 하위 컴포넌트에 인증 상태를 제공한다.
- * 초기 마운트 시 localStorage에서 저장된 토큰과 사용자 정보를 복원한다.
+ * useState lazy initializer를 통해 렌더링 전에 localStorage를 즉시 복원하므로
+ * useEffect 방식의 cascading render 문제가 발생하지 않는다.
  *
  * @param {Object} props
  * @param {React.ReactNode} props.children - 하위 컴포넌트
  */
 export function AuthProvider({ children }) {
-  // 사용자 정보 상태 (localStorage에서 복원)
-  const [user, setUserState] = useState(null);
-  // 액세스 토큰 상태 (localStorage에서 복원)
-  const [token, setTokenState] = useState(null);
-  // 초기 로딩 상태 (localStorage 복원 중)
-  const [isLoading, setIsLoading] = useState(true);
-
   /**
-   * 컴포넌트 마운트 시 localStorage에서 인증 정보를 복원한다.
-   * 토큰과 사용자 정보가 모두 존재하면 로그인 상태로 간주한다.
+   * 인증 상태 (token + user)를 단일 객체로 관리한다.
+   * lazy initializer로 마운트 시 단 한 번 localStorage를 읽어 복원하므로
+   * readAuthFromStorage() 중복 호출이 발생하지 않는다.
    */
-  useEffect(() => {
-    const savedToken = getToken();
-    const savedUser = getUser();
+  const [auth, setAuth] = useState(readAuthFromStorage);
 
-    if (savedToken && savedUser) {
-      setTokenState(savedToken);
-      setUserState(savedUser);
-    }
-
-    // 복원 완료
-    setIsLoading(false);
-  }, []);
+  /* 구조 분해하여 개별 참조로 사용 */
+  const { token, user } = auth;
 
   /**
    * 로그인 처리 함수.
-   * API 응답으로 받은 토큰과 사용자 정보를 상태와 localStorage에 저장한다.
+   * API 응답으로 받은 토큰과 사용자 정보를 상태(단일 auth 객체)와
+   * localStorage에 동시에 저장한다.
    *
    * @param {Object} params - 로그인 응답 데이터
    * @param {string} params.accessToken - JWT 액세스 토큰
@@ -75,15 +85,14 @@ export function AuthProvider({ children }) {
    * @param {Object} params.user - 사용자 정보 객체 (id, email, nickname 등)
    */
   const login = useCallback(({ accessToken, refreshToken, user: userData }) => {
-    // 상태 업데이트
-    setTokenState(accessToken);
-    setUserState(userData);
+    /* auth 단일 객체로 상태 업데이트 (배치 처리 — 리렌더링 1회) */
+    setAuth({ token: accessToken, user: userData });
 
-    // localStorage에 영속 저장
+    /* localStorage에 영속 저장 */
     setToken(accessToken);
     setUser(userData);
 
-    // 리프레시 토큰이 있으면 별도 저장
+    /* 리프레시 토큰이 있으면 별도 저장 */
     if (refreshToken) {
       setRefreshToken(refreshToken);
     }
@@ -94,42 +103,51 @@ export function AuthProvider({ children }) {
    * 상태와 localStorage의 모든 인증 정보를 삭제한다.
    */
   const logout = useCallback(() => {
-    // 상태 초기화
-    setTokenState(null);
-    setUserState(null);
+    /* auth 단일 객체를 null 상태로 초기화 */
+    setAuth({ token: null, user: null });
 
-    // localStorage 전체 삭제
+    /* localStorage 전체 삭제 (토큰 + 리프레시 + 세션 + 유저) */
     clearAll();
   }, []);
 
   /**
    * 사용자 정보를 업데이트한다 (프로필 수정 등).
+   * token은 유지하고 user 정보만 교체한다.
    *
    * @param {Object} updatedUser - 업데이트할 사용자 정보
    */
   const updateUser = useCallback((updatedUser) => {
-    setUserState(updatedUser);
+    /* 이전 auth 상태를 spread하여 user만 교체 */
+    setAuth((prev) => ({ ...prev, user: updatedUser }));
     setUser(updatedUser);
   }, []);
 
-  /** 인증 여부 (토큰과 사용자 정보가 모두 존재하면 true) */
+  /**
+   * 인증 여부 (토큰과 사용자 정보가 모두 존재하면 true).
+   * token/user 상태에서 파생되는 값으로, useMemo 의존성에 명시하여
+   * React Compiler가 memoization을 올바르게 추론할 수 있도록 한다.
+   */
   const isAuthenticated = Boolean(token && user);
 
   /**
    * Context 값 메모이제이션.
    * 불필요한 리렌더링을 방지하기 위해 useMemo로 감싼다.
+   *
+   * 의존성 배열에 isAuthenticated를 포함한다:
+   * - isAuthenticated는 token/user에서 파생되므로 논리적으로 중복이지만
+   * - React Compiler는 객체 내에 직접 참조된 변수를 의존성으로 요구한다
+   * - 누락 시 "inferred dependency did not match" 컴파일 오류가 발생한다
    */
   const contextValue = useMemo(
     () => ({
       user,
       token,
       isAuthenticated,
-      isLoading,
       login,
       logout,
       updateUser,
     }),
-    [user, token, isLoading, login, logout, updateUser],
+    [user, token, isAuthenticated, login, logout, updateUser],
   );
 
   return (
@@ -137,31 +155,6 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-/**
- * 인증 Context를 사용하기 위한 커스텀 훅.
- * AuthProvider 내부에서만 호출 가능하다.
- *
- * @returns {Object} 인증 상태 및 액션
- * @returns {Object|null} user - 사용자 정보
- * @returns {string|null} token - 액세스 토큰
- * @returns {boolean} isAuthenticated - 인증 여부
- * @returns {boolean} isLoading - 초기 로딩 중 여부
- * @returns {function} login - 로그인 함수
- * @returns {function} logout - 로그아웃 함수
- * @returns {function} updateUser - 사용자 정보 업데이트 함수
- *
- * @throws {Error} AuthProvider 외부에서 호출 시 에러
- */
-export function useAuth() {
-  const context = useContext(AuthContext);
-
-  if (!context) {
-    throw new Error('useAuth는 AuthProvider 내부에서만 사용할 수 있습니다.');
-  }
-
-  return context;
 }
 
 export default AuthContext;

@@ -370,7 +370,7 @@ export default function ChatWindow() {
         )}
 
         {/* 메시지 목록 */}
-        {messages.map((msg, idx) => {
+        {messages.map((msg) => {
           // 사용자 메시지 (이미지 포함 가능)
           if (msg.role === 'user') {
             return (

@@ -130,7 +130,7 @@ export default function HomePage() {
         <div className="home-suggestions__inner">
           <h2 className="home-suggestions__title">이런 것도 물어볼 수 있어요</h2>
           <div className="home-suggestions__grid">
-            {SUGGESTION_CARDS.map((card, idx) => (
+            {SUGGESTION_CARDS.map((card) => (
               <button
                 key={card.title}
                 className="home-suggestions__card"

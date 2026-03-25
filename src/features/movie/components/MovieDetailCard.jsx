@@ -22,7 +22,8 @@
 
 import { useState } from 'react';
 /* 포맷팅 유틸 — shared/utils에서 가져옴 */
-import { formatRating, formatRatingStars, formatRuntime, formatDate, formatGenres } from '../../../shared/utils/formatters';
+/* formatGenres: 장르 태그는 movie.genres 배열을 직접 순회하므로 미사용 */
+import { formatRating, formatRatingStars, formatRuntime, formatDate } from '../../../shared/utils/formatters';
 import './MovieDetailCard.css';
 
 export default function MovieDetailCard({ movie, onWishlistToggle, isWishlisted = false }) {

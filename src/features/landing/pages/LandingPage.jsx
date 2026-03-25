@@ -192,7 +192,7 @@ export default function LandingPage() {
 
           {/* 우측 플로팅 무비카드 */}
           <div className="lp-hero__cards">
-            {MOVIE_CARDS.map((m, i) => (
+            {MOVIE_CARDS.map((m) => (
               <div
                 key={m.title}
                 className="lp-movie-float"
@@ -330,7 +330,7 @@ export default function LandingPage() {
               { icon: '🎯', num: '01', title: '취향 설정', desc: '장르를 고르고 영화 월드컵으로\n나만의 성향을 알아가요' },
               { icon: '💬', num: '02', title: 'AI와 대화', desc: '오늘 기분, 상황, 원하는 분위기를\n자연어로 말해보세요' },
               { icon: '🍿', num: '03', title: '바로 감상', desc: 'OTT 바로가기, 영화관 예약까지\n한 번에 연결해드려요' },
-            ].map((s, i) => (
+            ].map((s) => (
               <div className="lp-step-card" key={s.num}>
                 <div className="lp-step-card__circle">{s.icon}</div>
                 <div className="lp-step-card__num">{s.num}</div>
@@ -362,7 +362,7 @@ export default function LandingPage() {
                 { icon: '🎮', text: '게임화된 취향 분석', sub: '영화 월드컵 이지선다로 재미있게' },
                 { icon: '💞', text: '시네마 소울메이트 매칭', sub: '취향 유사도 TOP 10 유저 연결' },
                 { icon: '📺', text: 'OTT 통합 연동', sub: '넷플릭스, 왓챠, 디즈니+ 등 한번에' },
-              ].map((d, i) => (
+              ].map((d) => (
                 <div className="lp-diff-item" key={d.text}>
                   <span className="lp-diff-item__icon">{d.icon}</span>
                   <div>
@@ -494,7 +494,7 @@ export default function LandingPage() {
               { dot: 'done', title: 'Phase 4 — 추천 엔진 + 보안 강화', desc: '7노드 CF+CBF+MMR, VLM 이미지 분석, 세션 영속화, 보안 강화 — 308 tests', badge: 'done' },
               { dot: 'active', title: '전체 재적재', desc: 'TMDB 1.17M건 스트리밍 배치 → 3DB 적재 (run_full_reload.py)', badge: 'active' },
               { dot: '', title: 'Phase 5~8', desc: 'SSE 최적화, LangChain Tools, 콘텐츠 분석, 테스트 & 최적화', badge: 'pending' },
-            ].map((item, i) => (
+            ].map((item) => (
               <div className="lp-timeline-item" key={item.title}>
                 <div className={`lp-timeline-item__dot${item.dot ? ` lp-timeline-item__dot--${item.dot}` : ''}`} />
                 <div className="lp-timeline-item__content">

@@ -2,16 +2,17 @@
  * 게시글 작성/수정 폼 컴포넌트.
  *
  * 제목, 카테고리, 내용을 입력받아 게시글을 생성한다.
- * 수정 모드일 때는 기존 데이터를 폼에 채워넣는다.
+ * 수정 모드일 때는 initialData를 useState lazy initializer로 직접 주입한다.
+ * (useEffect 내 동기 setState 제거 → ESLint react/no-use-state-in-effect 준수)
  *
  * @param {Object} props
  * @param {function} props.onSubmit - 폼 제출 콜백 ({ title, content, category })
- * @param {Object} [props.initialData] - 수정 시 초기 데이터
+ * @param {Object} [props.initialData] - 수정 시 초기 데이터 (마운트 시 1회만 적용)
  * @param {boolean} [props.isSubmitting=false] - 제출 중 상태
  * @param {function} [props.onCancel] - 취소 버튼 콜백
  */
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 /* 유효성 검사 유틸 — shared/utils에서 가져옴 */
 import { validatePostTitle, validateContent } from '../../../shared/utils/validators';
 import './PostForm.css';
@@ -24,23 +25,17 @@ const CATEGORY_OPTIONS = [
 ];
 
 export default function PostForm({ onSubmit, initialData, isSubmitting = false, onCancel }) {
-  // 폼 입력값 상태
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [category, setCategory] = useState('general');
+  /**
+   * lazy initializer를 사용해 마운트 시점에 initialData를 직접 읽는다.
+   * - initialData가 존재하면 해당 값을 초기값으로 사용
+   * - initialData가 없으면 빈 문자열 / 기본 카테고리 사용
+   * - useEffect + setState 패턴을 대체하여 불필요한 재렌더링을 제거
+   */
+  const [title, setTitle] = useState(() => initialData?.title ?? '');
+  const [content, setContent] = useState(() => initialData?.content ?? '');
+  const [category, setCategory] = useState(() => initialData?.category ?? 'general');
   // 필드별 에러 메시지
   const [errors, setErrors] = useState({});
-
-  /**
-   * 수정 모드일 때 초기 데이터를 폼에 채워넣는다.
-   */
-  useEffect(() => {
-    if (initialData) {
-      setTitle(initialData.title || '');
-      setContent(initialData.content || '');
-      setCategory(initialData.category || 'general');
-    }
-  }, [initialData]);
 
   /**
    * 폼 유효성 검사.

@@ -269,7 +269,7 @@ export default function SupportPage() {
     try {
       await submitFaqFeedback(faqId, helpful);
       setFaqFeedbackMap((prev) => ({ ...prev, [faqId]: helpful ? 'helpful' : 'notHelpful' }));
-    } catch (err) {
+    } catch {
       /* 실패 시 UI 업데이트 하지 않음 — 사용자가 재시도 가능 */
       setError('피드백 제출에 실패했습니다. 다시 시도해주세요.');
     } finally {
