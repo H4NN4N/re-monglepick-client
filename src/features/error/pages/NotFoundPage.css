@@ -1,0 +1,185 @@
+/**
+ * 404 Not Found 페이지 스타일.
+ *
+ * 개선 사항:
+ * - 404 숫자 fade-in + scale 등장 애니메이션
+ * - 배경에 떠다니는 이모지 (CSS float 애니메이션)
+ * - "영화 검색" 보조 링크 추가
+ */
+
+/* ── 404 등장 애니메이션 ── */
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  60% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ── 떠다니는 이모지 애니메이션 ── */
+@keyframes floatEmoji1 {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-30px) rotate(10deg);
+  }
+}
+
+@keyframes floatEmoji2 {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(-8deg);
+  }
+}
+
+@keyframes floatEmoji3 {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-25px) rotate(12deg);
+  }
+}
+
+@keyframes floatEmoji4 {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-18px) rotate(-6deg);
+  }
+}
+
+/* 전체 화면 중앙 정렬 컨테이너 */
+.not-found {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  padding: var(--space-lg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── 떠다니는 이모지 ── */
+.not-found__float {
+  position: absolute;
+  font-size: 48px;
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.not-found__float--1 {
+  top: 15%;
+  left: 10%;
+  animation: floatEmoji1 4s ease-in-out infinite;
+}
+
+.not-found__float--2 {
+  top: 25%;
+  right: 15%;
+  animation: floatEmoji2 5s ease-in-out infinite 0.5s;
+}
+
+.not-found__float--3 {
+  bottom: 20%;
+  left: 20%;
+  animation: floatEmoji3 4.5s ease-in-out infinite 1s;
+}
+
+.not-found__float--4 {
+  bottom: 30%;
+  right: 10%;
+  animation: floatEmoji4 3.5s ease-in-out infinite 1.5s;
+}
+
+/* 내부 콘텐츠 래퍼 — 텍스트 중앙 정렬 */
+.not-found__inner {
+  text-align: center;
+  max-width: 480px;
+  position: relative;
+  z-index: 1;
+}
+
+/* 404 코드 — fade-in + scale 애니메이션 */
+.not-found__code {
+  font-size: 8rem;
+  font-weight: var(--font-bold);
+  color: var(--primary);
+  line-height: 1;
+  margin: 0 0 var(--space-md) 0;
+  text-shadow: var(--shadow-glow);
+  animation: fadeInScale 0.8s ease-out;
+}
+
+/* 주 안내 메시지 */
+.not-found__message {
+  font-size: var(--text-xl);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-sm) 0;
+  font-weight: var(--font-semibold);
+}
+
+/* 부가 설명 */
+.not-found__description {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-xl) 0;
+  line-height: var(--leading-relaxed);
+}
+
+/* ── 액션 링크 영역 ── */
+.not-found__actions {
+  display: flex;
+  gap: var(--space-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* 홈으로 돌아가기 링크 버튼 — Primary */
+.not-found__home-link {
+  display: inline-block;
+  padding: var(--space-md) var(--space-xl);
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  transition: all var(--transition-fast);
+}
+
+.not-found__home-link:hover {
+  background-color: var(--primary-hover);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-2px);
+}
+
+/* 영화 검색 링크 — Secondary (아웃라인) */
+.not-found__search-link {
+  display: inline-block;
+  padding: var(--space-md) var(--space-xl);
+  background-color: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-base);
+  transition: all var(--transition-fast);
+}
+
+.not-found__search-link:hover {
+  background-color: var(--primary-light);
+  transform: translateY(-2px);
+}

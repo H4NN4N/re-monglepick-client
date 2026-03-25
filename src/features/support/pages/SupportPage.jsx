@@ -11,7 +11,7 @@
  * 백엔드 API가 미구현인 경우, 플레이스홀더 데이터로 대체하여 UI가 정상 표시된다.
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { Link } from 'react-router-dom';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
 import { useAuth } from '../../../app/providers/AuthProvider';
@@ -284,6 +284,12 @@ export default function SupportPage() {
   /* ── 글로벌 에러 ── */
   const [error, setError] = useState(null);
 
+  /* setTimeout cleanup 용 ref (메모리 누수 방지) */
+  const errorTimerRef = useRef(null);
+  useEffect(() => {
+    return () => { if (errorTimerRef.current) clearTimeout(errorTimerRef.current); };
+  }, []);
+
   /* ══════════════════════════════════════════
      데이터 로드 함수
      ══════════════════════════════════════════ */
@@ -505,8 +511,9 @@ export default function SupportPage() {
     } catch (err) {
       console.warn('티켓 생성 실패:', err.message);
       setError(err.message || '문의 등록에 실패했습니다. 잠시 후 다시 시도해주세요.');
-      /* 3초 후 에러 메시지 숨김 */
-      setTimeout(() => setError(null), 5000);
+      /* 5초 후 에러 메시지 숨김 */
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+      errorTimerRef.current = setTimeout(() => setError(null), 5000);
     } finally {
       setIsSubmittingTicket(false);
     }

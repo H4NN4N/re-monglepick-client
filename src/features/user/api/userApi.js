@@ -4,54 +4,14 @@
  * 사용자 프로필, 시청 이력, 위시리스트, 선호 설정 등
  * 마이페이지 관련 HTTP 요청을 처리한다.
  * 모든 요청에 인증 토큰이 필요하다.
+ *
+ * 공유 fetchWithAuthRequired를 사용하여 401 시 자동 토큰 갱신을 지원한다.
  */
 
 /* API 상수 — shared/constants에서 가져옴 */
-import { MYPAGE_ENDPOINTS, API_BASE_URL } from '../../../shared/constants/api';
-/* localStorage 유틸 — shared/utils에서 가져옴 */
-import { getToken } from '../../../shared/utils/storage';
-
-/**
- * 인증이 필요한 API 요청을 위한 공통 fetch 래퍼.
- * Authorization 헤더를 자동으로 포함한다.
- *
- * @param {string} url - 요청 URL
- * @param {Object} [options={}] - fetch 옵션
- * @returns {Promise<Object>} 파싱된 JSON 응답
- * @throws {Error} 인증 토큰이 없거나 HTTP 에러 시
- */
-async function fetchAuthenticated(url, options = {}) {
-  const token = getToken();
-
-  // 인증 토큰 검증 — 마이페이지 API는 인증 필수
-  if (!token) {
-    throw new Error('로그인이 필요합니다.');
-  }
-
-  const headers = {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token}`,
-    ...options.headers,
-  };
-
-  const response = await fetch(`${API_BASE_URL}${url}`, {
-    ...options,
-    headers,
-  });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    // 401 Unauthorized — 토큰 만료 등
-    if (response.status === 401) {
-      throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
-    }
-    const errorMessage = data?.message || data?.detail || `요청 실패 (${response.status})`;
-    throw new Error(errorMessage);
-  }
-
-  return data;
-}
+import { MYPAGE_ENDPOINTS } from '../../../shared/constants/api';
+/* 인증 필수 fetch 래퍼 — shared/utils에서 가져옴 (401 시 자동 갱신 + 재시도) */
+import { fetchWithAuthRequired } from '../../../shared/utils/fetchWithAuth';
 
 // ── 프로필 ──
 
@@ -66,7 +26,7 @@ async function fetchAuthenticated(url, options = {}) {
  * console.log(profile.nickname); // '몽글이'
  */
 export async function getProfile() {
-  return fetchAuthenticated(MYPAGE_ENDPOINTS.PROFILE);
+  return fetchWithAuthRequired(MYPAGE_ENDPOINTS.PROFILE);
 }
 
 /**
@@ -78,7 +38,7 @@ export async function getProfile() {
  * @returns {Promise<Object>} 수정된 프로필 정보
  */
 export async function updateProfile(profileData) {
-  return fetchAuthenticated(MYPAGE_ENDPOINTS.UPDATE_PROFILE, {
+  return fetchWithAuthRequired(MYPAGE_ENDPOINTS.UPDATE_PROFILE, {
     method: 'PUT',
     body: JSON.stringify(profileData),
   });
@@ -105,7 +65,7 @@ export async function getWatchHistory({ page = 1, size = 20 } = {}) {
     page: String(page),
     size: String(size),
   });
-  return fetchAuthenticated(`${MYPAGE_ENDPOINTS.WATCH_HISTORY}?${params.toString()}`);
+  return fetchWithAuthRequired(`${MYPAGE_ENDPOINTS.WATCH_HISTORY}?${params.toString()}`);
 }
 
 // ── 위시리스트 ──
@@ -123,27 +83,32 @@ export async function getWishlist({ page = 1, size = 20 } = {}) {
     page: String(page),
     size: String(size),
   });
-  return fetchAuthenticated(`${MYPAGE_ENDPOINTS.WISHLIST}?${params.toString()}`);
+  return fetchWithAuthRequired(`${MYPAGE_ENDPOINTS.WISHLIST}?${params.toString()}`);
 }
 
 /**
- * 위시리스트에 영화를 추가하거나 제거한다 (토글).
- * 이미 위시리스트에 있으면 제거, 없으면 추가한다.
+ * 위시리스트에 영화를 추가한다.
+ * Backend: POST /api/v1/users/me/wishlist/{movieId} → 201 Created
  *
- * @param {number|string} movieId - 영화 ID
- * @returns {Promise<Object>} 토글 결과 ({ added: boolean, movieId })
- *
- * @example
- * const result = await toggleWishlist(550);
- * if (result.added) {
- *   console.log('위시리스트에 추가됨');
- * } else {
- *   console.log('위시리스트에서 제거됨');
- * }
+ * @param {string} movieId - 영화 ID
+ * @returns {Promise<void>}
  */
-export async function toggleWishlist(movieId) {
-  return fetchAuthenticated(MYPAGE_ENDPOINTS.TOGGLE_WISHLIST(movieId), {
+export async function addToWishlist(movieId) {
+  return fetchWithAuthRequired(MYPAGE_ENDPOINTS.TOGGLE_WISHLIST(movieId), {
     method: 'POST',
+  });
+}
+
+/**
+ * 위시리스트에서 영화를 제거한다.
+ * Backend: DELETE /api/v1/users/me/wishlist/{movieId} → 204 No Content
+ *
+ * @param {string} movieId - 영화 ID
+ * @returns {Promise<void>}
+ */
+export async function removeFromWishlist(movieId) {
+  return fetchWithAuthRequired(MYPAGE_ENDPOINTS.TOGGLE_WISHLIST(movieId), {
+    method: 'DELETE',
   });
 }
 
@@ -159,7 +124,7 @@ export async function toggleWishlist(movieId) {
  * @returns {Promise<Object>} 업데이트된 선호 설정
  */
 export async function updatePreferences(preferences) {
-  return fetchAuthenticated(MYPAGE_ENDPOINTS.PREFERENCES, {
+  return fetchWithAuthRequired(MYPAGE_ENDPOINTS.PREFERENCES, {
     method: 'PUT',
     body: JSON.stringify(preferences),
   });

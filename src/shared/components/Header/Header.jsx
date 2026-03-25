@@ -6,7 +6,7 @@
  * 모바일 환경에서는 햄버거 메뉴로 전환된다.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
 import { useAuth } from '../../../app/providers/AuthProvider';
@@ -21,6 +21,12 @@ export default function Header() {
   const { isAuthenticated, user, logout } = useAuth();
   // 모바일 메뉴 열림/닫힘 상태
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // 모바일 메뉴 열릴 때 body 스크롤 잠금
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobileMenuOpen]);
 
   /**
    * 모바일 메뉴 토글 핸들러.

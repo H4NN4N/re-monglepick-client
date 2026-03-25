@@ -45,6 +45,12 @@ export default function OAuthCallbackPage() {
      */
     const processOAuth = async () => {
       try {
+        // provider 유효성 검증 (임의 URL 접근 방지)
+        const validProviders = ['google', 'kakao', 'naver'];
+        if (!validProviders.includes(provider)) {
+          throw new Error(`지원하지 않는 소셜 로그인 제공자입니다: ${provider}`);
+        }
+
         const code = searchParams.get('code');
         const state = searchParams.get('state');
 

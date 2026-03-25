@@ -129,7 +129,7 @@ export function AuthProvider({ children }) {
       logout,
       updateUser,
     }),
-    [user, token, isAuthenticated, isLoading, login, logout, updateUser],
+    [user, token, isLoading, login, logout, updateUser],
   );
 
   return (

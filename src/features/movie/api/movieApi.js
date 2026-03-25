@@ -6,45 +6,9 @@
  */
 
 /* API 상수 — shared/constants에서 가져옴 */
-import { MOVIE_ENDPOINTS, API_BASE_URL } from '../../../shared/constants/api';
-/* localStorage 유틸 — shared/utils에서 가져옴 */
-import { getToken } from '../../../shared/utils/storage';
-
-/**
- * 인증 헤더를 포함한 공통 fetch 래퍼.
- * 저장된 토큰이 있으면 Authorization 헤더를 자동 추가한다.
- *
- * @param {string} url - 요청 URL
- * @param {Object} [options={}] - fetch 옵션
- * @returns {Promise<Object>} 파싱된 JSON 응답
- * @throws {Error} HTTP 에러 시 에러 메시지 포함
- */
-async function fetchWithAuth(url, options = {}) {
-  const token = getToken();
-
-  // 헤더 구성: 토큰이 있으면 Authorization 추가
-  const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  const response = await fetch(`${API_BASE_URL}${url}`, {
-    ...options,
-    headers,
-  });
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const errorMessage = data?.message || data?.detail || `요청 실패 (${response.status})`;
-    throw new Error(errorMessage);
-  }
-
-  return data;
-}
+import { MOVIE_ENDPOINTS } from '../../../shared/constants/api';
+/* 공통 인증 fetch 래퍼 — shared/utils에서 가져옴 (토큰 자동 갱신 포함) */
+import { fetchWithAuth } from '../../../shared/utils/fetchWithAuth';
 
 /**
  * 영화 상세 정보를 조회한다.

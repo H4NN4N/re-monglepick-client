@@ -85,18 +85,18 @@ export const COMMUNITY_ENDPOINTS = {
  * 사용자 프로필, 시청 이력, 위시리스트를 처리한다.
  */
 export const MYPAGE_ENDPOINTS = {
-  /** 프로필 조회 - GET */
-  PROFILE: `${API_VERSION}/mypage/profile`,
+  /** 프로필 조회 - GET (Backend: /api/v1/users/me/profile) */
+  PROFILE: `${API_VERSION}/users/me/profile`,
   /** 프로필 수정 - PUT */
-  UPDATE_PROFILE: `${API_VERSION}/mypage/profile`,
+  UPDATE_PROFILE: `${API_VERSION}/users/me/profile`,
   /** 시청 이력 조회 - GET */
-  WATCH_HISTORY: `${API_VERSION}/mypage/watch-history`,
+  WATCH_HISTORY: `${API_VERSION}/users/me/watch-history`,
   /** 위시리스트 조회 - GET */
-  WISHLIST: `${API_VERSION}/mypage/wishlist`,
-  /** 위시리스트 토글 - POST (movieId 파라미터 필요) */
-  TOGGLE_WISHLIST: (movieId) => `${API_VERSION}/mypage/wishlist/${movieId}`,
-  /** 선호 장르/분위기 설정 - PUT */
-  PREFERENCES: `${API_VERSION}/mypage/preferences`,
+  WISHLIST: `${API_VERSION}/users/me/wishlist`,
+  /** 위시리스트 추가 - POST / 삭제 - DELETE (movieId 파라미터 필요) */
+  TOGGLE_WISHLIST: (movieId) => `${API_VERSION}/users/me/wishlist/${movieId}`,
+  /** 선호 장르/분위기 설정 - GET/PUT */
+  PREFERENCES: `${API_VERSION}/users/me/preferences`,
 };
 
 /**

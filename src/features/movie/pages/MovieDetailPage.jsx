@@ -13,7 +13,7 @@ import { getMovie } from '../api/movieApi';
 /* 리뷰 API — features/community에서 가져옴 */
 import { getReviews } from '../../community/api/communityApi';
 /* 위시리스트 API — features/user에서 가져옴 */
-import { toggleWishlist } from '../../user/api/userApi';
+import { addToWishlist, removeFromWishlist } from '../../user/api/userApi';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
 import { useAuth } from '../../../app/providers/AuthProvider';
 /* 영화 상세 카드 — 같은 feature 내의 components에서 가져옴 */
@@ -91,8 +91,15 @@ export default function MovieDetailPage() {
     }
 
     try {
-      const result = await toggleWishlist(movieId);
-      setIsWishlisted(result.added);
+      if (isWishlisted) {
+        // 이미 찜한 상태 → 제거 (DELETE)
+        await removeFromWishlist(movieId);
+        setIsWishlisted(false);
+      } else {
+        // 찜하지 않은 상태 → 추가 (POST)
+        await addToWishlist(movieId);
+        setIsWishlisted(true);
+      }
     } catch (err) {
       alert(err.message || '위시리스트 변경에 실패했습니다.');
     }

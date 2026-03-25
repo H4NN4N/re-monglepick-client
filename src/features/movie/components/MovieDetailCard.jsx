@@ -7,6 +7,13 @@
  * - OTT 플랫폼 정보
  * - 감독, 개봉일, 러닝타임 등 메타 정보
  *
+ * 개선 사항:
+ * - 포스터 로딩 시 Skeleton 적용
+ * - 출연진 섹션 아바타 원형 + 이름 가로 스크롤
+ * - OTT 태그 호버 시 tooltip 효과
+ * - 섹션 구분선 추가
+ * - 추천 이유 인용 스타일
+ *
  * @param {Object} props
  * @param {Object} props.movie - 영화 상세 정보 객체
  * @param {function} [props.onWishlistToggle] - 위시리스트 토글 콜백
@@ -23,6 +30,8 @@ export default function MovieDetailCard({ movie, onWishlistToggle, isWishlisted 
   const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
   // 트레일러 표시 상태
   const [showTrailer, setShowTrailer] = useState(false);
+  // 포스터 로딩 상태
+  const [posterLoaded, setPosterLoaded] = useState(false);
 
   // 영화 데이터가 없으면 렌더링하지 않음
   if (!movie) return null;
@@ -56,13 +65,23 @@ export default function MovieDetailCard({ movie, onWishlistToggle, isWishlisted 
         {/* 포스터 */}
         <div className="movie-detail__poster">
           {movie.poster_path || movie.posterUrl ? (
-            <img
-              src={movie.poster_path || movie.posterUrl}
-              alt={`${movie.title} 포스터`}
-              className="movie-detail__poster-img"
-            />
+            <>
+              {/* 포스터 로딩 전 Skeleton */}
+              {!posterLoaded && (
+                <div className="movie-detail__poster-skeleton" />
+              )}
+              <img
+                src={movie.poster_path || movie.posterUrl}
+                alt={`${movie.title} 포스터`}
+                className={`movie-detail__poster-img ${posterLoaded ? '' : 'movie-detail__poster-img--loading'}`}
+                onLoad={() => setPosterLoaded(true)}
+              />
+            </>
           ) : (
-            <div className="movie-detail__poster-placeholder">포스터 없음</div>
+            <div className="movie-detail__poster-placeholder">
+              <span className="movie-detail__poster-placeholder-icon">🎬</span>
+              <span>포스터 없음</span>
+            </div>
           )}
         </div>
 
@@ -113,8 +132,8 @@ export default function MovieDetailCard({ movie, onWishlistToggle, isWishlisted 
           {/* 장르 태그 */}
           {movie.genres && movie.genres.length > 0 && (
             <div className="movie-detail__genres">
-              {movie.genres.map((genre, idx) => (
-                <span key={idx} className="movie-detail__genre-tag">
+              {movie.genres.map((genre) => (
+                <span key={typeof genre === 'string' ? genre : (genre.name || genre.id)} className="movie-detail__genre-tag">
                   {typeof genre === 'string' ? genre : genre.name}
                 </span>
               ))}
@@ -162,6 +181,7 @@ export default function MovieDetailCard({ movie, onWishlistToggle, isWishlisted 
             title="트레일러"
             className="movie-detail__trailer-iframe"
             frameBorder="0"
+            sandbox="allow-scripts allow-presentation allow-popups"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
           />
@@ -170,7 +190,7 @@ export default function MovieDetailCard({ movie, onWishlistToggle, isWishlisted 
 
       {/* ── 줄거리 ── */}
       {movie.overview && (
-        <div className="movie-detail__overview">
+        <div className="movie-detail__section">
           <h2 className="movie-detail__section-title">줄거리</h2>
           <p className={`movie-detail__overview-text ${isOverviewExpanded ? '' : 'movie-detail__overview-text--collapsed'}`}>
             {movie.overview}
@@ -183,13 +203,23 @@ export default function MovieDetailCard({ movie, onWishlistToggle, isWishlisted 
         </div>
       )}
 
+      {/* ── 추천 이유 (있는 경우) ── */}
+      {movie.recommendation_reason && (
+        <div className="movie-detail__section">
+          <h2 className="movie-detail__section-title">추천 이유</h2>
+          <blockquote className="movie-detail__recommendation">
+            {movie.recommendation_reason}
+          </blockquote>
+        </div>
+      )}
+
       {/* ── 출연진 ── */}
       {movie.cast && movie.cast.length > 0 && (
-        <div className="movie-detail__cast">
+        <div className="movie-detail__section">
           <h2 className="movie-detail__section-title">출연진</h2>
           <div className="movie-detail__cast-list">
-            {movie.cast.slice(0, 10).map((actor, idx) => (
-              <div key={idx} className="movie-detail__cast-item">
+            {movie.cast.slice(0, 10).map((actor) => (
+              <div key={actor.id || actor.name} className="movie-detail__cast-item">
                 <div className="movie-detail__cast-avatar">
                   {actor.profile_path ? (
                     <img src={actor.profile_path} alt={actor.name} />
@@ -209,11 +239,15 @@ export default function MovieDetailCard({ movie, onWishlistToggle, isWishlisted 
 
       {/* ── OTT 플랫폼 ── */}
       {movie.ott_platforms && movie.ott_platforms.length > 0 && (
-        <div className="movie-detail__ott">
+        <div className="movie-detail__section">
           <h2 className="movie-detail__section-title">시청 가능한 곳</h2>
           <div className="movie-detail__ott-list">
-            {movie.ott_platforms.map((platform, idx) => (
-              <span key={idx} className="movie-detail__ott-tag">
+            {movie.ott_platforms.map((platform) => (
+              <span
+                key={platform}
+                className="movie-detail__ott-tag"
+                title={`${platform}에서 시청 가능`}
+              >
                 {platform}
               </span>
             ))}

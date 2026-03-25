@@ -21,6 +21,9 @@
   --bg-elevated: #222240;
   --bg-input: #16162b;
   --bg-overlay: rgba(0, 0, 0, 0.6);
+  /* 스켈레톤/shimmer 용 보조 배경색 */
+  --bg-secondary: #1e1e35;
+  --bg-tertiary: #2a2a48;
 
   /* 텍스트(Text) 색상 */
   --text-primary: #e8e8f0;

@@ -8,6 +8,14 @@
  * - 위시리스트: 찜한 영화 목록
  * - 선호 설정: 선호 장르/분위기 설정
  *
+ * 개선 사항:
+ * - 프로필 카드 glassmorphism 효과
+ * - 아바타 그라데이션 테두리 (80px)
+ * - 등급 배지 표시
+ * - 탭 전환 시 fade-in 애니메이션
+ * - 빈 시청이력/위시리스트에 EmptyState 컴포넌트
+ * - 프로필 편집 버튼 (UI만)
+ *
  * 비인증 상태에서 접근 시 로그인 페이지로 리다이렉트한다.
  */
 
@@ -23,6 +31,8 @@ import { ROUTES } from '../../../shared/constants/routes';
 import MovieList from '../../movie/components/MovieList';
 /* 로딩 스피너 — shared/components에서 가져옴 */
 import Loading from '../../../shared/components/Loading/Loading';
+/* 빈 상태 컴포넌트 — shared/components에서 가져옴 */
+import EmptyState from '../../../shared/components/EmptyState/EmptyState';
 import './MyPage.css';
 
 /** 탭 정의 */
@@ -44,6 +54,8 @@ export default function MyPagePage() {
   const [wishlist, setWishlist] = useState([]);
   // 로딩 상태
   const [isLoading, setIsLoading] = useState(true);
+  // 에러 메시지
+  const [error, setError] = useState(null);
 
   const { isAuthenticated, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -65,6 +77,7 @@ export default function MyPagePage() {
 
     async function loadTabData() {
       setIsLoading(true);
+      setError(null);
       try {
         switch (activeTab) {
           case 'profile': {
@@ -85,8 +98,8 @@ export default function MyPagePage() {
           default:
             break;
         }
-      } catch {
-        // API 미구현 시 기본값 유지
+      } catch (err) {
+        setError(err.message || '데이터를 불러오는 데 실패했습니다.');
       } finally {
         setIsLoading(false);
       }
@@ -103,18 +116,29 @@ export default function MyPagePage() {
   return (
     <div className="mypage">
       <div className="mypage__inner">
-        {/* 페이지 헤더 — 사용자 기본 정보 */}
+        {/* 페이지 헤더 — 프로필 카드 (glassmorphism) */}
         <div className="mypage__header">
-          <div className="mypage__avatar">
-            {user?.nickname?.charAt(0) || 'U'}
+          {/* 아바타 — 그라데이션 테두리 */}
+          <div className="mypage__avatar-wrap">
+            <div className="mypage__avatar">
+              {user?.nickname?.charAt(0) || 'U'}
+            </div>
           </div>
           <div className="mypage__user-info">
-            <h1 className="mypage__nickname">{user?.nickname || '사용자'}</h1>
+            <div className="mypage__name-row">
+              <h1 className="mypage__nickname">{user?.nickname || '사용자'}</h1>
+              {/* 등급 배지 */}
+              <span className="mypage__grade-badge">BRONZE</span>
+            </div>
             <p className="mypage__email">{user?.email || ''}</p>
+            {/* 프로필 편집 버튼 (UI만) */}
+            <button className="mypage__edit-btn">
+              ✏️ 프로필 수정
+            </button>
           </div>
         </div>
 
-        {/* 탭 네비게이션 */}
+        {/* 탭 네비게이션 — 그라데이션 하단 바 */}
         <div className="mypage__tabs">
           {TABS.map((tab) => (
             <button
@@ -127,8 +151,16 @@ export default function MyPagePage() {
           ))}
         </div>
 
-        {/* 탭 콘텐츠 */}
-        <div className="mypage__content">
+        {/* 에러 메시지 */}
+        {error && (
+          <div className="mypage__error" role="alert">
+            {error}
+            <button className="mypage__error-close" onClick={() => setError(null)}>닫기</button>
+          </div>
+        )}
+
+        {/* 탭 콘텐츠 — fade-in 애니메이션 */}
+        <div className="mypage__content" key={activeTab}>
           {/* 프로필 탭 */}
           {activeTab === 'profile' && (
             <div className="mypage__profile">
@@ -162,22 +194,42 @@ export default function MyPagePage() {
           {/* 시청 이력 탭 */}
           {activeTab === 'history' && (
             <div className="mypage__history">
-              <MovieList
-                movies={watchHistory.map((item) => item.movie || item)}
-                loading={isLoading}
-                title="시청한 영화"
-              />
+              {!isLoading && watchHistory.length === 0 ? (
+                <EmptyState
+                  icon="🎬"
+                  title="시청 이력이 없습니다"
+                  description="영화를 시청하면 여기에 기록됩니다"
+                  actionLabel="영화 검색하기"
+                  onAction={() => navigate(ROUTES.SEARCH)}
+                />
+              ) : (
+                <MovieList
+                  movies={watchHistory.map((item) => item.movie || item)}
+                  loading={isLoading}
+                  title="시청한 영화"
+                />
+              )}
             </div>
           )}
 
           {/* 위시리스트 탭 */}
           {activeTab === 'wishlist' && (
             <div className="mypage__wishlist">
-              <MovieList
-                movies={wishlist.map((item) => item.movie || item)}
-                loading={isLoading}
-                title="찜한 영화"
-              />
+              {!isLoading && wishlist.length === 0 ? (
+                <EmptyState
+                  icon="💝"
+                  title="위시리스트가 비어있습니다"
+                  description="마음에 드는 영화를 찜해보세요"
+                  actionLabel="영화 둘러보기"
+                  onAction={() => navigate(ROUTES.SEARCH)}
+                />
+              ) : (
+                <MovieList
+                  movies={wishlist.map((item) => item.movie || item)}
+                  loading={isLoading}
+                  title="찜한 영화"
+                />
+              )}
             </div>
           )}
 

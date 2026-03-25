@@ -11,7 +11,7 @@
  * 비인증 사용자는 로그인 페이지로 리다이렉트된다.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
 import { useAuth } from '../../../app/providers/AuthProvider';
@@ -138,6 +138,16 @@ export default function PointPage() {
   /* 에러 메시지 */
   const [error, setError] = useState(null);
 
+  /* setTimeout cleanup 용 ref (메모리 누수 방지) */
+  const attendanceTimerRef = useRef(null);
+  const errorTimerRef = useRef(null);
+  useEffect(() => {
+    return () => {
+      if (attendanceTimerRef.current) clearTimeout(attendanceTimerRef.current);
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+    };
+  }, []);
+
   /* 인증 상태 및 네비게이션 */
   const { isAuthenticated, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -163,7 +173,7 @@ export default function PointPage() {
     if (!user?.id) return;
     setIsLoadingBalance(true);
     try {
-      const data = await getBalance(user.id);
+      const data = await getBalance();
       setBalanceInfo(data);
     } catch (err) {
       console.error('잔액 조회 실패:', err);
@@ -181,7 +191,7 @@ export default function PointPage() {
     if (!user?.id) return;
     setIsLoadingAttendance(true);
     try {
-      const data = await getAttendanceStatus(user.id);
+      const data = await getAttendanceStatus();
       setAttendanceStatus(data);
     } catch (err) {
       console.error('출석 현황 조회 실패:', err);
@@ -224,7 +234,7 @@ export default function PointPage() {
     if (!user?.id) return;
     setIsLoadingHistory(true);
     try {
-      const data = await getPointHistory(user.id, {
+      const data = await getPointHistory({
         page: historyPage,
         size: HISTORY_PAGE_SIZE,
       });
@@ -276,18 +286,20 @@ export default function PointPage() {
     setError(null);
 
     try {
-      const result = await checkAttendance(user.id);
+      const result = await checkAttendance();
       /* 출석 결과를 애니메이션 표시용으로 저장 */
       setAttendanceResult(result);
       /* 잔액 및 출석 현황 갱신 */
       await Promise.all([loadBalance(), loadAttendanceStatus()]);
 
       /* 3초 후 애니메이션 숨김 */
-      setTimeout(() => setAttendanceResult(null), 3000);
+      if (attendanceTimerRef.current) clearTimeout(attendanceTimerRef.current);
+      attendanceTimerRef.current = setTimeout(() => setAttendanceResult(null), 3000);
     } catch (err) {
       setError(err.message || '출석 체크에 실패했습니다.');
       /* 3초 후 에러 메시지 숨김 */
-      setTimeout(() => setError(null), 3000);
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+      errorTimerRef.current = setTimeout(() => setError(null), 3000);
     } finally {
       setIsCheckingAttendance(false);
     }
@@ -312,14 +324,15 @@ export default function PointPage() {
     setError(null);
 
     try {
-      const result = await exchangeItem(item.itemId, user.id);
+      const result = await exchangeItem(item.itemId);
       /* 교환 성공 알림 */
       alert(`'${result.itemName || item.name}' 교환 완료! 잔액: ${formatNumber(result.balanceAfter)}P`);
       /* 잔액 갱신 */
       await loadBalance();
     } catch (err) {
       setError(err.message || '아이템 교환에 실패했습니다.');
-      setTimeout(() => setError(null), 3000);
+      if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
+      errorTimerRef.current = setTimeout(() => setError(null), 3000);
     } finally {
       setExchangingItemId(null);
     }

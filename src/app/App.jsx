@@ -21,9 +21,9 @@
  *   - /support                  : 고객센터 (FAQ/도움말/문의하기/문의내역)
  */
 
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 /* 인증 상태 Provider — app/providers에서 가져옴 */
-import { AuthProvider } from './providers/AuthProvider';
+import { AuthProvider, useAuth } from './providers/AuthProvider';
 /* 메인 레이아웃 — shared/components에서 가져옴 (Header + Content + Footer) */
 import MainLayout from '../shared/components/Layout/MainLayout';
 
@@ -56,9 +56,28 @@ import PointPage from '../features/point/pages/PointPage';
 import PaymentPage from '../features/payment/pages/PaymentPage';
 /* 고객센터 페이지 — features/support에서 가져옴 */
 import SupportPage from '../features/support/pages/SupportPage';
+/* 404 에러 페이지 — features/error에서 가져옴 */
+import NotFoundPage from '../features/error/pages/NotFoundPage';
 
 /* App 전용 레이아웃 스타일 */
 import './App.css';
+
+/**
+ * 인증이 필요한 라우트를 보호하는 래퍼 컴포넌트.
+ * 인증되지 않은 사용자는 로그인 페이지로 리다이렉트한다.
+ */
+function PrivateRoute({ children }) {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  // 초기 로딩 중에는 아무것도 렌더링하지 않음 (localStorage 복원 대기)
+  if (isLoading) return null;
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
 
 function App() {
   return (
@@ -125,33 +144,39 @@ function App() {
             }
           />
 
-          {/* 마이페이지 — 프로필/시청이력/위시리스트 */}
+          {/* 마이페이지 — 프로필/시청이력/위시리스트 (인증 필수) */}
           <Route
             path="/mypage"
             element={
-              <MainLayout>
-                <MyPage />
-              </MainLayout>
+              <PrivateRoute>
+                <MainLayout>
+                  <MyPage />
+                </MainLayout>
+              </PrivateRoute>
             }
           />
 
-          {/* 포인트 관리 — 잔액/출석/아이템/이력 */}
+          {/* 포인트 관리 — 잔액/출석/아이템/이력 (인증 필수) */}
           <Route
             path="/point"
             element={
-              <MainLayout>
-                <PointPage />
-              </MainLayout>
+              <PrivateRoute>
+                <MainLayout>
+                  <PointPage />
+                </MainLayout>
+              </PrivateRoute>
             }
           />
 
-          {/* 결제/구독 관리 */}
+          {/* 결제/구독 관리 (인증 필수) */}
           <Route
             path="/payment"
             element={
-              <MainLayout>
-                <PaymentPage />
-              </MainLayout>
+              <PrivateRoute>
+                <MainLayout>
+                  <PaymentPage />
+                </MainLayout>
+              </PrivateRoute>
             }
           />
 
@@ -164,6 +189,9 @@ function App() {
               </MainLayout>
             }
           />
+
+          {/* 404 — 매칭되지 않는 모든 경로를 Not Found 페이지로 처리 */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

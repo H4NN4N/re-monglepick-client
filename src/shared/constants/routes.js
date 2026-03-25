@@ -10,8 +10,11 @@
  * 각 경로는 React Router의 <Route path=""> 속성에 사용된다.
  */
 export const ROUTES = {
-  /** 홈 (랜딩 페이지) */
-  HOME: '/',
+  /** 랜딩 페이지 (서비스/팀 소개) */
+  LANDING: '/',
+
+  /** 홈 페이지 (인기/최신 영화 목록) */
+  HOME: '/home',
 
   /** AI 채팅 추천 페이지 */
   CHAT: '/chat',
@@ -70,7 +73,7 @@ export function buildPath(route, params = {}) {
  * Header 컴포넌트에서 반복 렌더링에 사용한다.
  */
 export const NAV_ITEMS = [
-  { path: ROUTES.HOME, label: '홈' },
+  { path: ROUTES.HOME, label: '홈' },  // /home (영화 목록)
   { path: ROUTES.CHAT, label: 'AI 추천' },
   { path: ROUTES.COMMUNITY, label: '커뮤니티' },
   { path: ROUTES.SEARCH, label: '검색' },

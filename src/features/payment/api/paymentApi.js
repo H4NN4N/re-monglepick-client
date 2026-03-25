@@ -52,10 +52,11 @@ import { fetchWithAuthRequired } from '../../../shared/utils/fetchWithAuth';
  *   planCode: 'monthly_basic',
  * });
  */
-export async function createOrder({ userId, orderType, amount, pointsAmount, planCode }) {
+export async function createOrder({ orderType, amount, pointsAmount, planCode }) {
+  // userId는 서버가 JWT에서 추출 (BOLA 방지)
   return fetchWithAuthRequired(PAYMENT_ENDPOINTS.CREATE_ORDER, {
     method: 'POST',
-    body: JSON.stringify({ userId, orderType, amount, pointsAmount, planCode }),
+    body: JSON.stringify({ orderType, amount, pointsAmount, planCode }),
   });
 }
 
@@ -93,7 +94,8 @@ export async function confirmPayment({ orderId, paymentKey, amount }) {
  * 결제 내역을 조회한다 (페이징).
  * 포인트 충전, 구독 결제 등 모든 결제 기록을 확인할 수 있다.
  *
- * @param {string} userId - 사용자 ID
+ * JWT 토큰에서 userId를 추출하므로 별도 전달 불필요.
+ *
  * @param {Object} [options={}] - 조회 옵션
  * @param {number} [options.page=0] - 페이지 번호 (0부터 시작, Spring Page 규격)
  * @param {number} [options.size=20] - 페이지 크기
@@ -104,14 +106,13 @@ export async function confirmPayment({ orderId, paymentKey, amount }) {
  *   - number: 현재 페이지 번호
  *
  * @example
- * const result = await getOrders('user123', { page: 0, size: 10 });
+ * const result = await getOrders({ page: 0, size: 10 });
  * result.content.forEach(order => {
  *   console.log(order.orderType, order.amount, order.status);
  * });
  */
-export async function getOrders(userId, { page = 0, size = 20 } = {}) {
+export async function getOrders({ page = 0, size = 20 } = {}) {
   const params = new URLSearchParams({
-    userId,
     page: String(page),
     size: String(size),
   });
@@ -147,7 +148,8 @@ export async function getSubscriptionPlans() {
 /**
  * 사용자의 현재 구독 상태를 조회한다.
  *
- * @param {string} userId - 사용자 ID
+ * JWT 토큰에서 userId를 추출하므로 별도 전달 불필요.
+ *
  * @returns {Promise<Object>} 구독 상태 정보
  *   - hasActiveSubscription: 활성 구독 여부 (boolean)
  *   - planName: 구독 상품명 (null 가능)
@@ -157,32 +159,31 @@ export async function getSubscriptionPlans() {
  *   - autoRenew: 자동 갱신 여부 (boolean)
  *
  * @example
- * const status = await getSubscriptionStatus('user123');
+ * const status = await getSubscriptionStatus();
  * if (status.hasActiveSubscription) {
  *   console.log(`${status.planName} 구독 중 (만료: ${status.expiresAt})`);
  * }
  */
-export async function getSubscriptionStatus(userId) {
-  const params = new URLSearchParams({ userId });
-  return fetchWithAuthRequired(`${SUBSCRIPTION_ENDPOINTS.STATUS}?${params.toString()}`);
+export async function getSubscriptionStatus() {
+  return fetchWithAuthRequired(SUBSCRIPTION_ENDPOINTS.STATUS);
 }
 
 /**
  * 구독을 취소한다.
  * 즉시 해지되지 않고, 현재 구독 기간 만료 시 해지된다.
  *
- * @param {string} userId - 사용자 ID
+ * JWT 토큰에서 userId를 추출하므로 별도 전달 불필요.
+ *
  * @returns {Promise<Object>} 취소 결과
  *   - message: 취소 안내 메시지
  *
  * @example
- * const result = await cancelSubscription('user123');
+ * const result = await cancelSubscription();
  * console.log(result.message);
  * // '구독이 취소되었습니다. 2026-04-24까지 이용 가능합니다.'
  */
-export async function cancelSubscription(userId) {
-  const params = new URLSearchParams({ userId });
-  return fetchWithAuthRequired(`${SUBSCRIPTION_ENDPOINTS.CANCEL}?${params.toString()}`, {
+export async function cancelSubscription() {
+  return fetchWithAuthRequired(SUBSCRIPTION_ENDPOINTS.CANCEL, {
     method: 'POST',
   });
 }

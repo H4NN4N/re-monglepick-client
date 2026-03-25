@@ -30,10 +30,7 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
-      '/api/v1/mypage': {
-        target: 'http://localhost:8080',
-        changeOrigin: true,
-      },
+      // /api/v1/mypage는 /api/v1/users/me로 통합됨 (UserController)
       // AI Agent API (채팅, 검색 등 — 나머지 모든 /api 요청)
       '/api': {
         target: 'http://100.73.239.117:8000',

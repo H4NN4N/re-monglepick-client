@@ -559,7 +559,7 @@ export default function ChatWindow() {
             <button
               className="chat-input__btn chat-input__btn--send"
               onClick={handleSend}
-              disabled={!inputText.trim() && !attachedImage}
+              disabled={(!inputText.trim() && !attachedImage) || inputText.length > (quotaError?.max_input_length ?? DEFAULT_MAX_INPUT_LENGTH)}
               title="전송"
             >
               ↑

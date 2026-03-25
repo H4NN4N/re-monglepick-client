@@ -2,18 +2,24 @@
  * 검색 페이지 컴포넌트.
  *
  * 영화 검색 기능을 제공한다:
- * - 키워드 검색 입력
- * - 장르 필터
- * - 정렬 옵션 (관련도, 평점, 최신순)
+ * - 키워드 검색 입력 (확대된 입력창 + 검색 아이콘)
+ * - 장르 필터 (활성 상태 강조)
+ * - 정렬 옵션 (커스텀 셀렉트 스타일)
  * - 검색 결과를 MovieList 그리드로 표시
+ * - 로딩 중 Skeleton 카드 6개 표시
+ * - 결과 없을 때 EmptyState 컴포넌트 사용
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 /* 영화 검색 API — features/movie에서 가져옴 */
 import { searchMovies } from '../../movie/api/movieApi';
 /* 영화 목록 컴포넌트 — features/movie에서 가져옴 */
 import MovieList from '../../movie/components/MovieList';
+/* 스켈레톤 로더 — shared/components에서 가져옴 */
+import Skeleton from '../../../shared/components/Skeleton/Skeleton';
+/* 빈 상태 컴포넌트 — shared/components에서 가져옴 */
+import EmptyState from '../../../shared/components/EmptyState/EmptyState';
 import './SearchPage.css';
 
 /** 장르 필터 옵션 */
@@ -84,16 +90,24 @@ export default function SearchPage() {
   }, [setSearchParams]);
 
   /**
-   * URL 파라미터에 검색어가 있으면 자동 검색 실행.
+   * URL 파라미터에 검색어가 있으면 마운트 시 1회 자동 검색 실행.
+   * useRef 가드로 Strict Mode 이중 실행 방지.
    */
+  const initialLoadRef = useRef(false);
   useEffect(() => {
+    if (initialLoadRef.current) return;
+    initialLoadRef.current = true;
+
     const urlQuery = searchParams.get('q');
+    const urlGenre = searchParams.get('genre') || '전체';
+    const urlSort = searchParams.get('sort') || 'relevance';
     if (urlQuery) {
       setQuery(urlQuery);
-      executeSearch(urlQuery, genre, sort);
+      setGenre(urlGenre);
+      setSort(urlSort);
+      executeSearch(urlQuery, urlGenre, urlSort);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams, executeSearch]);
 
   /**
    * 검색 폼 제출 핸들러.
@@ -138,6 +152,8 @@ export default function SearchPage() {
         {/* 검색 입력 폼 */}
         <form className="search-page__form" onSubmit={handleSearch}>
           <div className="search-page__input-wrap">
+            {/* 검색 아이콘 */}
+            <span className="search-page__input-icon" aria-hidden="true">🔍</span>
             <input
               type="text"
               className="search-page__input"
@@ -152,7 +168,7 @@ export default function SearchPage() {
           </div>
         </form>
 
-        {/* 장르 필터 */}
+        {/* 장르 필터 + 정렬 */}
         <div className="search-page__filters">
           <div className="search-page__genres">
             {GENRE_FILTERS.map((g) => (
@@ -166,19 +182,23 @@ export default function SearchPage() {
             ))}
           </div>
 
-          {/* 정렬 옵션 */}
+          {/* 정렬 옵션 — 커스텀 셀렉트 래퍼 */}
           <div className="search-page__sort">
-            <select
-              className="search-page__sort-select"
-              value={sort}
-              onChange={(e) => handleSortChange(e.target.value)}
-            >
-              {SORT_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+            <div className="search-page__sort-wrap">
+              <select
+                className="search-page__sort-select"
+                value={sort}
+                onChange={(e) => handleSortChange(e.target.value)}
+              >
+                {SORT_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              {/* 커스텀 화살표 아이콘 */}
+              <span className="search-page__sort-arrow" aria-hidden="true">▾</span>
+            </div>
           </div>
         </div>
 
@@ -189,14 +209,37 @@ export default function SearchPage() {
               검색 결과 <strong>{totalCount}</strong>건
             </p>
           )}
-          {hasSearched ? (
-            <MovieList movies={movies} loading={isLoading} />
-          ) : (
-            <div className="search-page__empty">
-              <p className="search-page__empty-text">
-                검색어를 입력하여 영화를 찾아보세요.
-              </p>
+
+          {/* 로딩 중 — Skeleton 카드 6개 그리드 */}
+          {isLoading && (
+            <div className="search-page__skeleton-grid">
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <Skeleton key={n} variant="card" />
+              ))}
             </div>
+          )}
+
+          {/* 검색 완료 — 결과 표시 */}
+          {hasSearched && !isLoading && movies.length > 0 && (
+            <MovieList movies={movies} />
+          )}
+
+          {/* 검색 완료 — 결과 없음 */}
+          {hasSearched && !isLoading && movies.length === 0 && (
+            <EmptyState
+              icon="🔍"
+              title="검색 결과가 없습니다"
+              description="다른 키워드로 검색해보세요"
+            />
+          )}
+
+          {/* 초기 상태 — 검색 안내 */}
+          {!hasSearched && !isLoading && (
+            <EmptyState
+              icon="🎬"
+              title="영화를 검색해보세요"
+              description="제목, 배우, 감독 이름으로 검색할 수 있습니다"
+            />
           )}
         </div>
       </div>

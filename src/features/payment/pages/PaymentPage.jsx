@@ -16,7 +16,7 @@
  * 비인증 사용자는 로그인 페이지로 리다이렉트된다.
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
 import { useAuth } from '../../../app/providers/AuthProvider';
@@ -125,6 +125,12 @@ export default function PaymentPage() {
   const [error, setError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
 
+  /* setTimeout cleanup 용 ref (메모리 누수 방지) */
+  const messageTimerRef = useRef(null);
+  useEffect(() => {
+    return () => { if (messageTimerRef.current) clearTimeout(messageTimerRef.current); };
+  }, []);
+
   /* 인증 상태 및 네비게이션 */
   const { isAuthenticated, user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
@@ -200,7 +206,7 @@ export default function PaymentPage() {
     if (!user?.id) return;
     setIsLoadingSubscription(true);
     try {
-      const data = await getSubscriptionStatus(user.id);
+      const data = await getSubscriptionStatus();
       setSubscriptionStatus(data);
     } catch (err) {
       console.error('구독 상태 조회 실패:', err);
@@ -217,7 +223,7 @@ export default function PaymentPage() {
     if (!user?.id) return;
     setIsLoadingOrders(true);
     try {
-      const data = await getOrders(user.id, {
+      const data = await getOrders({
         page: orderPage,
         size: ORDER_PAGE_SIZE,
       });
@@ -266,7 +272,8 @@ export default function PaymentPage() {
       setSuccessMsg(message);
       setError(null);
     }
-    setTimeout(() => {
+    if (messageTimerRef.current) clearTimeout(messageTimerRef.current);
+    messageTimerRef.current = setTimeout(() => {
       setError(null);
       setSuccessMsg(null);
     }, 3000);
@@ -286,7 +293,6 @@ export default function PaymentPage() {
     try {
       /* 주문 생성 */
       const order = await createOrder({
-        userId: user.id,
         orderType: 'SUBSCRIPTION',
         amount: plan.price,
         planCode: plan.planCode,
@@ -334,7 +340,6 @@ export default function PaymentPage() {
     try {
       /* 주문 생성 */
       const order = await createOrder({
-        userId: user.id,
         orderType: 'POINT_CHARGE',
         amount: pack.price,
         pointsAmount: pack.points,
@@ -374,7 +379,7 @@ export default function PaymentPage() {
     setError(null);
 
     try {
-      await cancelSubscription(user.id);
+      await cancelSubscription();
       showMessage('success', '구독이 취소되었습니다. 만료일까지 이용 가능합니다.');
       /* 구독 상태 갱신 */
       await loadSubscriptionStatus();

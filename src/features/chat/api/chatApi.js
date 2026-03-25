@@ -43,10 +43,17 @@ export async function sendChatMessage(
   { onSession, onStatus, onMovieCard, onClarification, onToken, onPointUpdate, onDone, onError } = {},
   signal,
 ) {
+  // JWT 토큰 조회 (인증된 사용자는 토큰으로 userId 전달)
+  const token = localStorage.getItem('monglepick_auth_token');
+  const headers = { 'Content-Type': 'application/json' };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   // POST 요청 전송
   const response = await fetch(`${API_BASE}/chat`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify({
       user_id: userId,
       session_id: sessionId,
@@ -72,39 +79,44 @@ export async function sendChatMessage(
     console.log('[SSE] 스트림 시작, Content-Type:', response.headers.get('content-type'));
   }
 
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-      if (import.meta.env.DEV) {
-        console.log('[SSE] 스트림 종료 (done=true)');
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) {
+        if (import.meta.env.DEV) {
+          console.log('[SSE] 스트림 종료 (done=true)');
+        }
+        break;
       }
-      break;
+
+      // 수신된 청크를 버퍼에 추가 (CRLF → LF 정규화: sse_starlette는 \r\n 사용)
+      const chunk = decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
+      buffer += chunk;
+      if (import.meta.env.DEV) {
+        console.log('[SSE] 청크 수신:', chunk.length, '바이트, 내용:', chunk.substring(0, 200));
+      }
+
+      // 완성된 SSE 이벤트 블록(\n\n으로 구분) 추출 및 처리
+      const blocks = buffer.split('\n\n');
+      // 마지막 블록은 아직 불완전할 수 있으므로 버퍼에 보관
+      buffer = blocks.pop() || '';
+
+      for (const block of blocks) {
+        if (!block.trim()) continue;
+        parseSSEBlock(block, { onSession, onStatus, onMovieCard, onClarification, onToken, onPointUpdate, onDone, onError });
+      }
     }
 
-    // 수신된 청크를 버퍼에 추가 (CRLF → LF 정규화: sse_starlette는 \r\n 사용)
-    const chunk = decoder.decode(value, { stream: true }).replace(/\r\n/g, '\n');
-    buffer += chunk;
-    if (import.meta.env.DEV) {
-      console.log('[SSE] 청크 수신:', chunk.length, '바이트, 내용:', chunk.substring(0, 200));
+    // 잔여 버퍼 처리
+    if (buffer.trim()) {
+      if (import.meta.env.DEV) {
+        console.log('[SSE] 잔여 버퍼 처리:', buffer.substring(0, 200));
+      }
+      parseSSEBlock(buffer, { onSession, onStatus, onMovieCard, onClarification, onToken, onPointUpdate, onDone, onError });
     }
-
-    // 완성된 SSE 이벤트 블록(\n\n으로 구분) 추출 및 처리
-    const blocks = buffer.split('\n\n');
-    // 마지막 블록은 아직 불완전할 수 있으므로 버퍼에 보관
-    buffer = blocks.pop() || '';
-
-    for (const block of blocks) {
-      if (!block.trim()) continue;
-      parseSSEBlock(block, { onSession, onStatus, onMovieCard, onClarification, onToken, onPointUpdate, onDone, onError });
-    }
-  }
-
-  // 잔여 버퍼 처리
-  if (buffer.trim()) {
-    if (import.meta.env.DEV) {
-      console.log('[SSE] 잔여 버퍼 처리:', buffer.substring(0, 200));
-    }
-    parseSSEBlock(buffer, { onSession, onStatus, onMovieCard, onClarification, onToken, onPointUpdate, onDone, onError });
+  } finally {
+    // 예외 발생 시에도 reader를 반드시 해제하여 스트림 리소스 누수 방지
+    reader.cancel().catch(() => {});
   }
 }
 
