@@ -135,6 +135,31 @@
   cursor: not-allowed;
 }
 
+/* 테스트 유저 로그인 버튼 — 개발/테스트 환경용 */
+.login-form__test-login {
+  width: 100%;
+  padding: var(--space-md) var(--space-lg);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  border: 1px dashed var(--border-default);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.login-form__test-login:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(124, 108, 240, 0.05);
+}
+
+.login-form__test-login:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* 하단 링크 */
 .login-form__footer {
   font-size: var(--text-sm);

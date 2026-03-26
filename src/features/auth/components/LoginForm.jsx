@@ -148,6 +148,35 @@ export default function LoginForm() {
         {isSubmitting ? '로그인 중...' : '로그인'}
       </button>
 
+      {/* 테스트 유저 로그인 버튼 — 개발/테스트 환경용 */}
+      <button
+        type="button"
+        className="login-form__test-login"
+        disabled={isSubmitting}
+        onClick={async () => {
+          setIsSubmitting(true);
+          setServerError('');
+          try {
+            const response = await loginAPI({
+              email: 'e2e_v2@monglepick.com',
+              password: 'Test1234!',
+            });
+            login({
+              accessToken: response.accessToken,
+              refreshToken: response.refreshToken,
+              user: response.user,
+            });
+            navigate(ROUTES.HOME);
+          } catch (err) {
+            setServerError(err.message || '테스트 유저 로그인에 실패했습니다.');
+          } finally {
+            setIsSubmitting(false);
+          }
+        }}
+      >
+        테스트 유저로 로그인
+      </button>
+
       {/* 소셜 로그인 구분선 */}
       <div className="login-form__divider">
         <span>또는</span>

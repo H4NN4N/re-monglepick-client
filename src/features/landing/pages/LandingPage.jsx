@@ -184,7 +184,7 @@ export default function LandingPage() {
               <a href="#lp-features" onClick={e => scrollTo(e, 'lp-features')} className="lp-btn lp-btn--glass">서비스 둘러보기</a>
             </div>
             <div className="lp-hero__checks">
-              <span><span className="lp-check-icon">&#10003;</span> 무료 서비스</span>
+              <span><span className="lp-check-icon">&#10003;</span> 무료 서비스(부분 유료)</span>
               <span><span className="lp-check-icon">&#10003;</span> 소셜 로그인</span>
               <span><span className="lp-check-icon">&#10003;</span> OTT 연동</span>
             </div>
