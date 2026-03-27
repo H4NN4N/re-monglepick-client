@@ -13,6 +13,8 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
+/* react-router-dom — 뒤로가기 네비게이션용 */
+import { useNavigate } from 'react-router-dom';
 /* 커스텀 모달 훅 — window.confirm/alert 대체 */
 import { useModal } from '../../../shared/components/Modal';
 /* 인증 Context 훅 — app/providers에서 가져옴 (userId 전달용) */
@@ -32,6 +34,8 @@ const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp
 const DEFAULT_MAX_INPUT_LENGTH = 200;
 
 export default function ChatWindow() {
+  /* 뒤로가기 네비게이션 */
+  const navigate = useNavigate();
   /* 커스텀 모달 — window.confirm/alert 대체 */
   const { showAlert, showConfirm } = useModal();
 
@@ -244,6 +248,12 @@ export default function ChatWindow() {
       {/* ── 헤더 ── */}
       <S.ChatHeader>
         <S.ChatHeaderLeft>
+          {/* 뒤로가기 버튼 — 이전 페이지로 이동 */}
+          <S.BackButton onClick={() => navigate(-1)} title="뒤로가기">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </S.BackButton>
           {/*
             헤더 몽글이: idle 상태 고정.
             isLoading일 때 헤더 캐릭터까지 바뀌면 시선이 분산되므로

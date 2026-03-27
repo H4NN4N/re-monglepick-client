@@ -150,11 +150,39 @@ export const ChatHeader = styled.header`
   flex-shrink: 0;
 `;
 
-/** 헤더 좌측 영역 (아바타 + 텍스트) */
+/** 헤더 좌측 영역 (뒤로가기 + 아바타 + 텍스트) */
 export const ChatHeaderLeft = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
+`;
+
+/**
+ * 뒤로가기 버튼.
+ * 원형 hover 효과 + 보라색 아이콘.
+ */
+export const BackButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    background: rgba(124, 108, 240, 0.15);
+    color: ${({ theme }) => theme.colors.primary || '#7c6cf0'};
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
 `;
 
 /** 몽글픽 로고 이미지 (36×36) */
