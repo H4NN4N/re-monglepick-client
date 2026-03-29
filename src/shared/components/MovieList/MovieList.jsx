@@ -27,6 +27,18 @@ import Skeleton from '../Skeleton/Skeleton';
 import EmptyState from '../EmptyState/EmptyState';
 import * as S from './MovieList.styled';
 
+/**
+ * genres를 배열로 안전하게 변환한다.
+ * Backend API는 genres를 JSON 문자열로 반환하므로 파싱이 필요하다.
+ */
+function parseGenres(genres) {
+  if (Array.isArray(genres)) return genres;
+  if (typeof genres === 'string') {
+    try { return JSON.parse(genres); } catch { return []; }
+  }
+  return [];
+}
+
 export default function MovieList({ movies = [], title, loading = false }) {
   // 로딩 중 — Skeleton 카드 6개 표시
   if (loading) {
@@ -62,15 +74,15 @@ export default function MovieList({ movies = [], title, loading = false }) {
       <S.Grid>
         {movies.map((movie, index) => (
           <S.Card
-            key={movie.id}
-            to={buildPath(ROUTES.MOVIE_DETAIL, { id: movie.id })}
+            key={movie.id || movie.movieId}
+            to={buildPath(ROUTES.MOVIE_DETAIL, { id: movie.id || movie.movieId })}
             $index={index}
           >
             {/* 포스터 이미지 */}
             <S.Poster>
-              {movie.poster_path || movie.posterUrl ? (
+              {movie.poster_path || movie.posterPath || movie.posterUrl ? (
                 <S.PosterImg
-                  src={movie.poster_path || movie.posterUrl}
+                  src={movie.poster_path || movie.posterPath || movie.posterUrl}
                   alt={`${movie.title || movie.title_ko} 포스터`}
                   loading="lazy"
                 />
@@ -101,21 +113,24 @@ export default function MovieList({ movies = [], title, loading = false }) {
                 {truncateText(movie.title || movie.title_ko, 20)}
               </S.Name>
 
-              {/* 장르 태그 (최대 2개) */}
-              {movie.genres && movie.genres.length > 0 && (
-                <S.Genres>
-                  {movie.genres.slice(0, 2).map((genre) => (
-                    <S.GenreTag key={typeof genre === 'string' ? genre : (genre.name || genre.id)}>
-                      {genreMapper(genre)}
-                    </S.GenreTag>
-                  ))}
-                </S.Genres>
-              )}
+              {/* 장르 태그 (최대 2개) — genres가 JSON 문자열일 수 있으므로 parseGenres로 변환 */}
+              {(() => {
+                const genreList = parseGenres(movie.genres);
+                return genreList.length > 0 ? (
+                  <S.Genres>
+                    {genreList.slice(0, 2).map((genre) => (
+                      <S.GenreTag key={typeof genre === 'string' ? genre : (genre.name || genre.id)}>
+                        {genreMapper(genre)}
+                      </S.GenreTag>
+                    ))}
+                  </S.Genres>
+                ) : null;
+              })()}
 
-              {/* 개봉 연도 */}
-              {movie.release_date && (
+              {/* 개봉 연도 — Backend 응답은 releaseYear(정수), Recommend는 release_date(문자열) */}
+              {(movie.releaseYear || movie.release_date) && (
                 <S.Year>
-                  {new Date(movie.release_date).getFullYear()}
+                  {movie.releaseYear || new Date(movie.release_date).getFullYear()}
                 </S.Year>
               )}
             </S.Info>

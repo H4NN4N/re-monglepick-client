@@ -1,0 +1,256 @@
+/**
+ * SearchPage 스타일.
+ *
+ * gradient-text 제목 + glass 검색바(포커스 글로우) +
+ * 활성 장르 그라데이션 배경 + fadeInUp stagger 결과 +
+ * 배경 gradient-glow.
+ */
+
+/* 페이지 컨테이너 */
+.search-page {
+  width: 100%;
+  padding: var(--space-xl) var(--space-lg);
+  position: relative;
+}
+
+/* 내부 컨테이너 */
+.search-page__inner {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  position: relative;
+  z-index: 1;
+}
+
+/* 페이지 제목 — gradient-text */
+.search-page__title {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  margin: 0;
+  background: var(--gradient-text);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease infinite;
+}
+
+/* ── 검색 입력 폼 ── */
+.search-page__form {
+  width: 100%;
+}
+
+/* 입력 래퍼 — 아이콘 + 인풋 + 버튼 가로 배치 */
+.search-page__input-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  position: relative;
+}
+
+/* 검색 아이콘 — 입력창 왼쪽에 배치 */
+.search-page__input-icon {
+  position: absolute;
+  left: var(--space-md);
+  font-size: var(--text-lg);
+  z-index: 1;
+  pointer-events: none;
+  line-height: 1;
+}
+
+/* 검색 입력 필드 — glass 스타일 + 포커스 글로우 */
+.search-page__input {
+  flex: 1;
+  height: 48px;
+  padding: var(--space-md) var(--space-lg);
+  padding-left: 44px;
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+  font-size: var(--text-base);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.search-page__input:focus {
+  border-color: var(--primary);
+  box-shadow: var(--glow-primary);
+  outline: none;
+}
+
+/* 검색 버튼 — 그라데이션 */
+.search-page__search-btn {
+  height: 48px;
+  padding: 0 var(--space-xl);
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.search-page__search-btn:hover:not(:disabled) {
+  box-shadow: var(--glow-primary);
+  transform: translateY(-1px);
+}
+
+.search-page__search-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ── 필터 영역 ── */
+.search-page__filters {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+
+/* 장르 필터 — 버튼 크기 확대 */
+.search-page__genres {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.search-page__genre-btn {
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-secondary);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-default);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.search-page__genre-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background-color: var(--primary-light);
+}
+
+/* 활성 장르 — 그라데이션 배경 + 글로우 */
+.search-page__genre-btn--active {
+  background: var(--gradient-primary);
+  border-color: transparent;
+  color: white;
+  box-shadow: 0 0 15px rgba(124,108,240,0.3);
+}
+
+.search-page__genre-btn--active:hover {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: var(--glow-primary);
+}
+
+/* ── 정렬 — 커스텀 셀렉트 래퍼 ── */
+.search-page__sort-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.search-page__sort-select {
+  padding: var(--space-sm) var(--space-xl) var(--space-sm) var(--space-md);
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  min-width: 120px;
+  transition: border-color var(--transition-fast);
+}
+
+.search-page__sort-select:hover,
+.search-page__sort-select:focus {
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* 커스텀 화살표 아이콘 */
+.search-page__sort-arrow {
+  position: absolute;
+  right: var(--space-sm);
+  color: var(--text-muted);
+  pointer-events: none;
+  font-size: var(--text-sm);
+}
+
+/* ── 검색 결과 ── */
+.search-page__results {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  position: relative;
+}
+
+/* 결과 배경 글로우 */
+.search-page__results::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  height: 400px;
+  background: var(--gradient-glow);
+  pointer-events: none;
+  opacity: 0.3;
+  z-index: -1;
+}
+
+.search-page__result-count {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.search-page__result-count strong {
+  color: var(--primary);
+  font-weight: var(--font-semibold);
+}
+
+/* ── Skeleton 그리드 — 로딩 중 표시 ── */
+.search-page__skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-lg);
+}
+
+/* ── 반응형: 640px 이하 ── */
+@media (max-width: 640px) {
+  .search-page__input-wrap {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* 모바일에서 아이콘 위치 유지 */
+  .search-page__input-icon {
+    top: 14px;
+  }
+
+  .search-page__search-btn {
+    width: 100%;
+  }
+
+  .search-page__skeleton-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: var(--space-md);
+  }
+}

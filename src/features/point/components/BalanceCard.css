@@ -1,0 +1,120 @@
+/**
+ * BalanceCard 컴포넌트 스타일.
+ *
+ * 포인트 요약 카드 — gradient-accent 배경 + pulseGlow.
+ * BEM 네이밍: .point-page__summary-*
+ */
+
+/* 포인트 요약 — gradient-accent 배경 + pulseGlow */
+.point-page__summary {
+  background: linear-gradient(135deg, rgba(124,108,240,0.15) 0%, rgba(6,214,160,0.1) 50%, rgba(239,71,111,0.08) 100%);
+  border-color: rgba(124,108,240,0.3);
+  border-width: 1px;
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+.point-page__summary-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-lg);
+}
+
+/* 좌측: 잔액 정보 */
+.point-page__summary-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.point-page__summary-label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.point-page__summary-balance {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.point-page__summary-unit {
+  font-size: var(--text-2xl);
+  color: var(--primary);
+  margin-left: var(--space-xs);
+}
+
+.point-page__summary-earned {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* 우측: 등급 + 충전 버튼 */
+.point-page__summary-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-md);
+}
+
+/* 등급 배지 — gradient + 글로우 */
+.point-page__grade-badge {
+  padding: var(--space-xs) var(--space-lg);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: var(--font-bold);
+  border: none;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--gradient-accent);
+  color: white;
+  box-shadow: 0 0 12px rgba(239,71,111,0.2);
+}
+
+/* 충전 버튼 — gradient */
+.point-page__charge-btn {
+  padding: var(--space-sm) var(--space-xl);
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.point-page__charge-btn:hover {
+  box-shadow: var(--glow-primary);
+  transform: translateY(-1px);
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .point-page__summary-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+
+  .point-page__summary-right {
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .point-page__summary-balance {
+    font-size: var(--text-3xl);
+  }
+}
+
+@media (max-width: 480px) {
+  .point-page__summary-balance {
+    font-size: var(--text-2xl);
+  }
+}

@@ -1,0 +1,133 @@
+/**
+ * PointPage 페이지 레이아웃 스타일.
+ *
+ * 페이지 컨테이너, 제목, 에러, 공통 섹션 기반 스타일만 포함.
+ * 각 섹션별 상세 스타일은 하위 컴포넌트 CSS로 분리됨:
+ *   - BalanceCard.css
+ *   - AttendanceCalendar.css
+ *   - ItemExchange.css
+ *   - PointHistory.css
+ *
+ * BEM 네이밍: .point-page__*
+ * 모든 색상은 CSS 변수(variables.css) 참조.
+ */
+
+/* ═══════════════════════════════════
+   페이지 컨테이너
+   ═══════════════════════════════════ */
+
+.point-page {
+  width: 100%;
+  padding: var(--space-xl) var(--space-lg);
+}
+
+/* 내부 컨테이너 — 최대 폭 제한 + 등장 애니메이션 */
+.point-page__inner {
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* 페이지 제목 — gradient-text */
+.point-page__title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0;
+  background: var(--gradient-text);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease infinite;
+}
+
+/* 글로벌 에러 메시지 */
+.point-page__error {
+  padding: var(--space-md) var(--space-lg);
+  background-color: var(--error-bg);
+  border: 1px solid var(--error);
+  border-radius: var(--radius-md);
+  color: var(--error);
+  font-size: var(--text-sm);
+  animation: point-page-fade-in 0.3s ease;
+}
+
+/* ═══════════════════════════════════
+   공통 섹션 스타일 (하위 컴포넌트에서 공유)
+   ═══════════════════════════════════ */
+
+.point-page__section {
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px) saturate(1.4);
+  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+}
+
+.point-page__section-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-lg) 0;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+/* ═══════════════════════════════════
+   애니메이션 키프레임
+   ═══════════════════════════════════ */
+
+/* 페이드 인 — 에러 메시지 등 */
+@keyframes point-page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 바운스 인 — 출석 결과 */
+@keyframes point-page-bounce-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  60% {
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ═══════════════════════════════════
+   반응형
+   ═══════════════════════════════════ */
+
+/* 태블릿 (768px 이하) */
+@media (max-width: 768px) {
+  .point-page {
+    padding: var(--space-lg) var(--space-md);
+  }
+
+  .point-page__section {
+    padding: var(--space-lg);
+  }
+}
+
+/* 모바일 (480px 이하) */
+@media (max-width: 480px) {
+  .point-page__title {
+    font-size: var(--text-xl);
+  }
+}

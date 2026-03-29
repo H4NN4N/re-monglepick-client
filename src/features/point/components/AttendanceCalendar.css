@@ -1,0 +1,215 @@
+/**
+ * AttendanceCalendar 컴포넌트 스타일.
+ *
+ * 출석 체크 섹션 — 통계, 보너스, 달력 그리드, 결과 애니메이션, 체크 버튼.
+ * BEM 네이밍: .point-page__attendance-*, .point-page__calendar-*
+ */
+
+.point-page__attendance-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* 출석 통계 (연속 출석 / 총 출석) */
+.point-page__attendance-stats {
+  display: flex;
+  gap: var(--space-xl);
+}
+
+.point-page__attendance-stat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.point-page__attendance-stat-value {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--primary);
+}
+
+.point-page__attendance-stat-label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* 보너스 안내 태그 */
+.point-page__attendance-bonus-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.point-page__attendance-bonus-tag {
+  padding: var(--space-xs) var(--space-md);
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  color: var(--text-secondary);
+}
+
+.point-page__attendance-bonus-tag--highlight {
+  background-color: var(--info-bg);
+  border-color: var(--info);
+  color: var(--info);
+}
+
+.point-page__attendance-bonus-tag--premium {
+  background-color: var(--warning-bg);
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+/* ── 달력 ── */
+
+.point-page__calendar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* 달력 헤더 */
+.point-page__calendar-header {
+  text-align: center;
+  padding-bottom: var(--space-sm);
+}
+
+.point-page__calendar-month {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+}
+
+/* 요일 라벨 행 */
+.point-page__calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-xs);
+  text-align: center;
+}
+
+.point-page__calendar-weekday {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+  padding: var(--space-xs) 0;
+}
+
+/* 날짜 그리드 */
+.point-page__calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-xs);
+}
+
+/* 날짜 셀 — 기본 */
+.point-page__calendar-cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-elevated);
+  transition: all var(--transition-fast);
+  min-height: 36px;
+}
+
+/* 빈 셀 (이전/다음 달) */
+.point-page__calendar-cell--empty {
+  background-color: transparent;
+}
+
+/* 오늘 날짜 셀 — 테두리 하이라이트 */
+.point-page__calendar-cell--today {
+  border: 2px solid var(--primary);
+}
+
+/* 출석 완료 셀 — gradient 배경 + 글로우 */
+.point-page__calendar-cell--checked {
+  background: linear-gradient(135deg, rgba(124,108,240,0.2), rgba(6,214,160,0.15));
+  box-shadow: 0 0 8px rgba(124,108,240,0.15);
+}
+
+/* 날짜 숫자 */
+.point-page__calendar-day {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--text-primary);
+}
+
+/* 출석 체크 아이콘 */
+.point-page__calendar-check-icon {
+  font-size: 10px;
+  color: var(--primary);
+  line-height: 1;
+}
+
+/* 출석 결과 애니메이션 */
+.point-page__attendance-result {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background-color: var(--success-bg);
+  border: 1px solid var(--success);
+  border-radius: var(--radius-md);
+  animation: point-page-bounce-in 0.5s ease;
+}
+
+.point-page__attendance-result-points {
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--success);
+}
+
+.point-page__attendance-result-text {
+  font-size: var(--text-sm);
+  color: var(--success);
+}
+
+/* 출석 체크 버튼 */
+.point-page__attendance-btn {
+  width: 100%;
+  padding: var(--space-md);
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.point-page__attendance-btn:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  box-shadow: var(--shadow-glow);
+}
+
+/* 비활성 상태 (이미 출석 완료) */
+.point-page__attendance-btn--disabled,
+.point-page__attendance-btn:disabled {
+  background-color: var(--bg-elevated);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .point-page__calendar-cell {
+    min-height: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .point-page__attendance-stats {
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+}

@@ -10,9 +10,14 @@
  * - 장르 태그, 무드 태그
  * - 평점, 개봉연도, 관람등급
  * - 추천 이유 (explanation)
- * - 트레일러 링크
+ * - 트레일러 (YouTube embed 모달)
  * - OTT 플랫폼
  */
+
+import { useState, useCallback } from 'react';
+
+/* 영화 카드 전용 CSS — CSS 변수 의존 없이 색상 직접 지정 */
+import './MovieCard.css';
 
 /**
  * TMDB 포스터 이미지 URL 생성.
@@ -24,10 +29,49 @@
  */
 function getPosterUrl(posterPath, size = 'w342') {
   if (!posterPath) {
-    // 포스터 없을 때 플레이스홀더
     return `https://placehold.co/342x513/1a1a2e/666?text=No+Poster`;
   }
   return `https://image.tmdb.org/t/p/${size}${posterPath}`;
+}
+
+/**
+ * YouTube URL에서 영상 ID를 추출하여 embed URL을 반환한다.
+ * 지원하는 URL 형식:
+ *   - https://www.youtube.com/watch?v=VIDEO_ID
+ *   - https://youtu.be/VIDEO_ID
+ *   - https://www.youtube.com/embed/VIDEO_ID
+ *
+ * YouTube URL이 아니면 null을 반환한다.
+ *
+ * @param {string} url - 트레일러 URL
+ * @returns {string|null} YouTube embed URL 또는 null
+ */
+function getYouTubeEmbedUrl(url) {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    let videoId = null;
+
+    /* youtube.com/watch?v=xxx */
+    if (parsed.hostname.includes('youtube.com') && parsed.searchParams.get('v')) {
+      videoId = parsed.searchParams.get('v');
+    }
+    /* youtu.be/xxx */
+    else if (parsed.hostname === 'youtu.be') {
+      videoId = parsed.pathname.slice(1);
+    }
+    /* youtube.com/embed/xxx */
+    else if (parsed.hostname.includes('youtube.com') && parsed.pathname.startsWith('/embed/')) {
+      videoId = parsed.pathname.split('/embed/')[1];
+    }
+
+    if (videoId) {
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`;
+    }
+  } catch {
+    /* URL 파싱 실패 시 무시 */
+  }
+  return null;
 }
 
 /**
@@ -69,6 +113,22 @@ export default function MovieCard({ movie }) {
     trailer_url,
     explanation,
   } = movie;
+
+  /* 트레일러 모달 표시 상태 */
+  const [showTrailer, setShowTrailer] = useState(false);
+
+  /* YouTube embed URL (YouTube가 아니면 null → 외부 링크 폴백) */
+  const embedUrl = getYouTubeEmbedUrl(trailer_url);
+
+  /**
+   * 트레일러 모달 배경 클릭 시 닫기.
+   * 이벤트 버블링으로 iframe 위 클릭은 전파되지 않으므로 자연스럽게 동작한다.
+   */
+  const handleOverlayClick = useCallback((e) => {
+    if (e.target === e.currentTarget) {
+      setShowTrailer(false);
+    }
+  }, []);
 
   return (
     <div className="movie-card">
@@ -148,18 +208,55 @@ export default function MovieCard({ movie }) {
           </div>
         )}
 
-        {/* 트레일러 링크 */}
+        {/* 트레일러 버튼 — YouTube이면 모달, 아니면 외부 링크 */}
         {trailer_url && (
-          <a
-            href={trailer_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="movie-card__trailer"
-          >
-            ▶ 트레일러 보기
-          </a>
+          embedUrl ? (
+            <button
+              type="button"
+              className="movie-card__trailer"
+              onClick={() => setShowTrailer(true)}
+            >
+              ▶ 트레일러 보기
+            </button>
+          ) : (
+            <a
+              href={trailer_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="movie-card__trailer"
+            >
+              ▶ 트레일러 보기
+            </a>
+          )
         )}
       </div>
+
+      {/* YouTube 트레일러 모달 오버레이 */}
+      {showTrailer && embedUrl && (
+        <div className="trailer-modal" onClick={handleOverlayClick}>
+          <div className="trailer-modal__content">
+            {/* 닫기 버튼 */}
+            <button
+              type="button"
+              className="trailer-modal__close"
+              onClick={() => setShowTrailer(false)}
+            >
+              ✕
+            </button>
+            {/* 영화 제목 */}
+            <p className="trailer-modal__title">{title} 트레일러</p>
+            {/* YouTube iframe */}
+            <div className="trailer-modal__player">
+              <iframe
+                src={embedUrl}
+                title={`${title} 트레일러`}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
