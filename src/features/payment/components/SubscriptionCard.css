@@ -1,0 +1,172 @@
+/**
+ * SubscriptionCard 컴포넌트 스타일.
+ *
+ * 구독 상품 카드의 레이아웃과 시각 효과.
+ * BEM 네이밍: .subscription-card__*
+ */
+
+/* 구독 상품 카드 — glass-card */
+.subscription-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xl) var(--space-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(8px) saturate(1.4);
+  -webkit-backdrop-filter: blur(8px) saturate(1.4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  text-align: center;
+  transition: all var(--transition-fast);
+  overflow: hidden;
+}
+
+/* 카드 hover shine */
+.subscription-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent);
+  pointer-events: none;
+}
+
+.subscription-card:hover::after {
+  animation: cardShine 0.8s ease forwards;
+}
+
+.subscription-card:hover {
+  border-color: rgba(124,108,240,0.4);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg), 0 0 20px rgba(124,108,240,0.1);
+}
+
+/* BEST 카드 — animated borderGlow */
+.subscription-card--best {
+  border-color: rgba(124,108,240,0.5);
+  box-shadow: var(--glow-primary);
+  animation: borderGlow 3s ease infinite;
+}
+
+/* BEST 배지 — gradient-accent */
+.subscription-card__badge {
+  position: absolute;
+  top: -10px;
+  right: var(--space-md);
+  padding: 2px var(--space-md);
+  background: var(--gradient-accent);
+  color: white;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  letter-spacing: 0.05em;
+  box-shadow: 0 0 12px rgba(239,71,111,0.3);
+}
+
+/* 상품명 */
+.subscription-card__name {
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* 가격 — gradient-text */
+.subscription-card__price {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-xs);
+}
+
+.subscription-card__price-amount {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  background: var(--gradient-text);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 4s ease infinite;
+}
+
+.subscription-card__price-unit {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* 포인트 지급량 */
+.subscription-card__points {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--primary);
+  margin: 0;
+}
+
+/* 가성비 표시 */
+.subscription-card__value {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* 설명 */
+.subscription-card__desc {
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: var(--leading-normal);
+}
+
+/* 구독 버튼 */
+.subscription-card__btn {
+  width: 100%;
+  padding: var(--space-sm) var(--space-lg);
+  background: none;
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-lg);
+  color: var(--primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-top: var(--space-sm);
+}
+
+.subscription-card__btn:hover:not(:disabled) {
+  background: var(--gradient-primary);
+  border-color: transparent;
+  color: white;
+  box-shadow: var(--glow-primary);
+}
+
+/* BEST 카드의 구독 버튼 — gradient 배경 */
+.subscription-card__btn--best {
+  background: var(--gradient-primary);
+  border-color: transparent;
+  color: white;
+}
+
+.subscription-card__btn--best:hover:not(:disabled) {
+  box-shadow: var(--glow-primary);
+  transform: translateY(-1px);
+}
+
+.subscription-card__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 반응형 */
+@media (max-width: 480px) {
+  .subscription-card {
+    padding: var(--space-lg) var(--space-md);
+  }
+
+  .subscription-card__price-amount {
+    font-size: var(--text-xl);
+  }
+}

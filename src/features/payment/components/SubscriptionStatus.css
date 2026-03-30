@@ -1,0 +1,88 @@
+/**
+ * SubscriptionStatus 컴포넌트 스타일.
+ *
+ * 구독 상태 카드와 취소 버튼.
+ * BEM 네이밍: .subscription-status__*
+ */
+
+/* 구독 없음 안내 */
+.subscription-status__empty {
+  text-align: center;
+  padding: var(--space-xl);
+}
+
+.subscription-status__empty-text {
+  font-size: var(--text-base);
+  color: var(--text-secondary);
+  margin: 0 0 var(--space-sm) 0;
+}
+
+.subscription-status__empty-hint {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* 구독 정보 카드 */
+.subscription-status__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.subscription-status__info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.subscription-status__field {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.subscription-status__label {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--text-muted);
+  min-width: 80px;
+}
+
+.subscription-status__value {
+  font-size: var(--text-base);
+  color: var(--text-primary);
+  font-weight: var(--font-medium);
+}
+
+/* 구독 취소 버튼 */
+.subscription-status__cancel-btn {
+  align-self: flex-start;
+  padding: var(--space-sm) var(--space-xl);
+  background: none;
+  border: 1px solid var(--error);
+  border-radius: var(--radius-md);
+  color: var(--error);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.subscription-status__cancel-btn:hover:not(:disabled) {
+  background-color: var(--error-bg);
+}
+
+.subscription-status__cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .subscription-status__field {
+    flex-direction: column;
+    gap: var(--space-xs);
+    align-items: flex-start;
+  }
+}

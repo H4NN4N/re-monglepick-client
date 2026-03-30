@@ -87,13 +87,20 @@ export async function searchMovies({
 
 /**
  * 인기 영화 목록을 조회한다.
+ * Spring Data Page 응답(content)을 { movies, total } 형식으로 변환한다.
  *
- * @param {number} [page=1] - 페이지 번호
+ * @param {number} [page=1] - 페이지 번호 (1-based, API 호출 시 0-based로 변환)
  * @param {number} [size=20] - 페이지 크기
  * @returns {Promise<Object>} 인기 영화 목록 ({ movies: [], total: number })
  */
 export async function getPopularMovies(page = 1, size = 20) {
-  return backendApi.get(MOVIE_ENDPOINTS.POPULAR, { params: { page, size } });
+  const result = await backendApi.get(MOVIE_ENDPOINTS.POPULAR, {
+    params: { page: page - 1, size },
+  });
+  return {
+    movies: result?.content || [],
+    total: result?.totalElements || 0,
+  };
 }
 
 /**
