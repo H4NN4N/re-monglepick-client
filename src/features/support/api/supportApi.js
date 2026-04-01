@@ -82,3 +82,15 @@ export async function getMyTickets(page = 0, size = 10) {
   requireAuth();
   return api.get(SUPPORT_ENDPOINTS.MY_TICKETS, { params: { page, size } });
 }
+
+/**
+ * 상담 티켓 상세 정보를 조회한다 (답변 이력 포함).
+ * 인증된 사용자만 본인 티켓을 조회할 수 있다.
+ *
+ * @param {number|string} ticketId - 티켓 ID
+ * @returns {Promise<Object>} 티켓 상세 (ticket 정보 + replies 배열)
+ */
+export async function getTicketDetail(ticketId) {
+  requireAuth();
+  return api.get(SUPPORT_ENDPOINTS.TICKET_DETAIL(ticketId));
+}

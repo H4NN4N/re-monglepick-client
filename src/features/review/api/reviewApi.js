@@ -39,3 +39,53 @@ export async function getReviews(movieId, { page = 1, size = 10, sort = 'latest'
 export async function createReview(movieId, { content, rating }) {
   return api.post(COMMUNITY_ENDPOINTS.CREATE_REVIEW(movieId), { content, rating });
 }
+
+/**
+ * 영화 리뷰를 수정한다.
+ * 인증이 필요하며 본인 리뷰만 수정 가능하다.
+ *
+ * @param {number|string} movieId - 영화 ID
+ * @param {number|string} reviewId - 리뷰 ID
+ * @param {Object} reviewData - 수정할 리뷰 데이터
+ * @param {string} reviewData.content - 리뷰 내용
+ * @param {number} reviewData.rating - 평점 (1~10)
+ * @returns {Promise<Object>} 수정된 리뷰 정보
+ */
+export async function updateReview(movieId, reviewId, { content, rating }) {
+  return api.put(COMMUNITY_ENDPOINTS.REVIEW_DETAIL(movieId, reviewId), { content, rating });
+}
+
+/**
+ * 영화 리뷰를 삭제한다.
+ * 인증이 필요하며 본인 리뷰만 삭제 가능하다.
+ *
+ * @param {number|string} movieId - 영화 ID
+ * @param {number|string} reviewId - 리뷰 ID
+ * @returns {Promise<void>}
+ */
+export async function deleteReview(movieId, reviewId) {
+  return api.delete(COMMUNITY_ENDPOINTS.REVIEW_DETAIL(movieId, reviewId));
+}
+
+/**
+ * 리뷰에 좋아요를 추가한다.
+ * 인증이 필요하며 동일 리뷰에 중복 좋아요는 불가하다.
+ *
+ * @param {number|string} movieId - 영화 ID
+ * @param {number|string} reviewId - 리뷰 ID
+ * @returns {Promise<Object>} 좋아요 결과
+ */
+export async function likeReview(movieId, reviewId) {
+  return api.post(COMMUNITY_ENDPOINTS.REVIEW_LIKE(movieId, reviewId));
+}
+
+/**
+ * 리뷰 좋아요를 취소한다.
+ *
+ * @param {number|string} movieId - 영화 ID
+ * @param {number|string} reviewId - 리뷰 ID
+ * @returns {Promise<void>}
+ */
+export async function unlikeReview(movieId, reviewId) {
+  return api.delete(COMMUNITY_ENDPOINTS.REVIEW_LIKE(movieId, reviewId));
+}

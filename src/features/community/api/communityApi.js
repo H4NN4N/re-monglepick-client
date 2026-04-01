@@ -49,3 +49,29 @@ export async function getPostDetail(postId) {
 export async function createPost({ title, content, category = 'general' }) {
   return api.post(COMMUNITY_ENDPOINTS.CREATE_POST, { title, content, category });
 }
+
+/**
+ * 게시글을 수정한다.
+ * 인증이 필요하며 본인 게시글만 수정 가능하다.
+ *
+ * @param {number|string} postId - 게시글 ID
+ * @param {Object} postData - 수정할 데이터
+ * @param {string} postData.title - 게시글 제목
+ * @param {string} postData.content - 게시글 내용
+ * @param {string} [postData.category] - 카테고리
+ * @returns {Promise<Object>} 수정된 게시글 정보
+ */
+export async function updatePost(postId, { title, content, category }) {
+  return api.put(COMMUNITY_ENDPOINTS.UPDATE_POST(postId), { title, content, category });
+}
+
+/**
+ * 게시글을 삭제한다.
+ * 인증이 필요하며 본인 게시글만 삭제 가능하다.
+ *
+ * @param {number|string} postId - 게시글 ID
+ * @returns {Promise<void>}
+ */
+export async function deletePost(postId) {
+  return api.delete(COMMUNITY_ENDPOINTS.UPDATE_POST(postId));
+}

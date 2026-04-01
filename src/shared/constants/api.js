@@ -76,6 +76,12 @@ export const COMMUNITY_ENDPOINTS = {
   REVIEWS: (movieId) => `${API_VERSION}/movies/${movieId}/reviews`,
   /** 리뷰 작성 - POST (movieId 파라미터 필요) */
   CREATE_REVIEW: (movieId) => `${API_VERSION}/movies/${movieId}/reviews`,
+  /** 리뷰 수정 - PUT / 삭제 - DELETE (movieId, reviewId 파라미터 필요) */
+  REVIEW_DETAIL: (movieId, reviewId) => `${API_VERSION}/movies/${movieId}/reviews/${reviewId}`,
+  /** 리뷰 좋아요 - POST / 취소 - DELETE (movieId, reviewId 파라미터 필요) */
+  REVIEW_LIKE: (movieId, reviewId) => `${API_VERSION}/movies/${movieId}/reviews/${reviewId}/like`,
+  /** 게시글 수정 - PUT / 삭제 - DELETE (postId 파라미터 필요) */
+  UPDATE_POST: (postId) => `${API_VERSION}/posts/${postId}`,
 };
 
 /**
@@ -184,4 +190,6 @@ export const SUPPORT_ENDPOINTS = {
   CREATE_TICKET: `${API_VERSION}/support/tickets`,
   /** 내 티켓 목록 - GET (query: page, size) */
   MY_TICKETS: `${API_VERSION}/support/tickets`,
+  /** 티켓 상세 조회 - GET (ticketId 파라미터 필요) */
+  TICKET_DETAIL: (ticketId) => `${API_VERSION}/support/tickets/${ticketId}`,
 };
