@@ -43,8 +43,8 @@ export const Item = styled.article`
     box-shadow ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    border-color: rgba(124, 108, 240, 0.3);
-    box-shadow: 0 0 15px rgba(124, 108, 240, 0.08);
+    border-color: ${({ theme }) => theme.glass.border};
+    box-shadow: ${({ theme }) => theme.shadows.glow};
   }
 `;
 

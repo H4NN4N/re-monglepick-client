@@ -105,10 +105,10 @@ export const Item = styled.article`
   }
 
   &:hover {
-    border-color: rgba(124, 108, 240, 0.3);
-    background: rgba(26, 26, 46, 0.75);
+    border-color: ${({ theme }) => theme.glass.border};
+    background: ${({ theme }) => theme.glass.bg};
     transform: translateX(4px);
-    box-shadow: 0 0 20px rgba(124, 108, 240, 0.08);
+    box-shadow: ${({ theme }) => theme.shadows.glow};
   }
 `;
 

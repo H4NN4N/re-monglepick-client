@@ -23,10 +23,10 @@ const GlobalStyle = createGlobalStyle`
     padding: 0;
   }
 
-  /* HTML 기본 설정 */
+  /* HTML 기본 설정 — color-scheme을 테마 모드에 따라 동적 반영 */
   html {
     font-size: 16px;
-    color-scheme: dark;
+    color-scheme: ${({ theme }) => theme.mode};
     -webkit-text-size-adjust: 100%;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -35,8 +35,9 @@ const GlobalStyle = createGlobalStyle`
     scroll-behavior: smooth;
   }
 
-  /* Body 기본 스타일 — 다크 테마 배경 */
+  /* Body 기본 스타일 — 테마 전환 트랜지션 포함 */
   body {
+    transition: background-color 0.3s ease, color 0.3s ease;
     font-family: ${({ theme }) => theme.typography.fontFamily};
     font-size: ${({ theme }) => theme.typography.textBase};
     font-weight: ${({ theme }) => theme.typography.fontNormal};

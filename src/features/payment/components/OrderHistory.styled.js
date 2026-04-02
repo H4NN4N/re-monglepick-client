@@ -69,7 +69,8 @@ export const Td = styled.td`
 /* 테이블 행 — 호버 시 glass 강조 */
 export const Tr = styled.tr`
   &:hover {
-    background-color: rgba(124, 108, 240, 0.05);
+    /* hover bg — primaryLight 토큰으로 대체 */
+    background-color: ${({ theme }) => theme.colors.primaryLight};
   }
 `;
 

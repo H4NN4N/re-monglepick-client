@@ -29,6 +29,7 @@ import Loading from '../../../shared/components/Loading/Loading';
 import FaqTab from '../components/FaqTab';
 import HelpTab from '../components/HelpTab';
 import TicketTab from '../components/TicketTab';
+import ChatbotTab from '../components/ChatbotTab';
 
 /* 포맷 유틸 — shared/utils에서 가져옴 */
 import { formatDate } from '../../../shared/utils/formatters';
@@ -40,6 +41,7 @@ import * as S from './SupportPage.styled';
 
 /** 메인 섹션 탭 목록 */
 const SECTION_TABS = [
+  { key: 'chatbot', label: 'AI 챗봇' },
   { key: 'faq', label: 'FAQ' },
   { key: 'help', label: '도움말' },
   { key: 'ticket', label: '문의하기' },
@@ -130,7 +132,7 @@ export default function SupportPage() {
   const authLoading = useAuthStore((s) => s.isLoading);
 
   /* ── 섹션/탭 상태 ── */
-  const [activeSection, setActiveSection] = useState('faq');
+  const [activeSection, setActiveSection] = useState('chatbot');
 
   /* ── FAQ 상태 ── */
   const [faqs, setFaqs] = useState([]);
@@ -399,6 +401,13 @@ export default function SupportPage() {
             );
           })}
         </S.Nav>
+
+        {/* AI 챗봇 탭 */}
+        {activeSection === 'chatbot' && (
+          <ChatbotTab
+            onSwitchToTicket={() => setActiveSection('ticket')}
+          />
+        )}
 
         {/* FAQ 탭 */}
         {activeSection === 'faq' && (

@@ -117,7 +117,8 @@ export const NavBtn = styled.button`
   white-space: nowrap;
   border-bottom: 2px solid ${({ $isActive }) => $isActive ? 'currentColor' : 'transparent'};
   border-image: ${({ $isActive, theme }) => $isActive ? `${theme.gradients.primary} 1` : 'none'};
-  text-shadow: ${({ $isActive }) => $isActive ? '0 0 12px rgba(124,108,240,0.3)' : 'none'};
+  /* text-shadow glow — theme 토큰으로 대체 */
+  text-shadow: ${({ $isActive, theme }) => $isActive ? theme.shadows.glow : 'none'};
   transition: color ${({ theme }) => theme.transitions.fast},
     border-color ${({ theme }) => theme.transitions.fast};
 
@@ -185,7 +186,8 @@ export const CategoryTab = styled.button`
   font-size: ${({ theme }) => theme.typography.textSm};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
-  box-shadow: ${({ $isActive }) => $isActive ? '0 0 10px rgba(124,108,240,0.2)' : 'none'};
+  /* 활성 탭 glow — glows.primary 토큰으로 대체 */
+  box-shadow: ${({ $isActive, theme }) => $isActive ? theme.glows.primary : 'none'};
   flex-shrink: 0;
 
   &:hover {
@@ -266,8 +268,10 @@ export const FaqItem = styled.div`
     box-shadow ${({ theme }) => theme.transitions.base};
 
   &:hover {
-    border-color: rgba(124,108,240,0.4);
-    box-shadow: 0 0 15px rgba(124,108,240,0.08);
+    /* hover border — glass.border 토큰으로 대체 */
+    border-color: ${({ theme }) => theme.glass.border};
+    /* hover shadow — shadows.glow 토큰으로 대체 */
+    box-shadow: ${({ theme }) => theme.shadows.glow};
   }
 `;
 
@@ -467,9 +471,11 @@ export const HelpCard = styled.div`
   }
 
   &:hover {
-    border-color: rgba(124,108,240,0.4);
+    /* hover border — glass.border 토큰으로 대체 */
+    border-color: ${({ theme }) => theme.glass.border};
     transform: translateY(-4px);
-    box-shadow: ${({ theme }) => theme.shadows.lg}, 0 0 20px rgba(124,108,240,0.1);
+    /* hover glow — glows.primary 토큰으로 대체 */
+    box-shadow: ${({ theme }) => theme.shadows.lg}, ${({ theme }) => theme.glows.primary};
   }
 
   ${media.mobile} {

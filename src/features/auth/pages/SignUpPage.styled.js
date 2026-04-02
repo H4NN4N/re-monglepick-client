@@ -7,6 +7,7 @@
 
 import styled from 'styled-components';
 import { floatUpDown } from '../../../shared/styles/animations';
+import { media } from '../../../shared/styles/media';
 
 /** 회원가입 페이지 전체 컨테이너 — 세로 중앙 정렬, orb overflow 숨김 */
 export const SignUpPageWrapper = styled.div`
@@ -21,6 +22,11 @@ export const SignUpPageWrapper = styled.div`
   padding: ${({ theme }) => theme.spacing.xl} ${({ theme }) => theme.spacing.lg};
   position: relative;
   overflow: hidden;
+
+  ${media.mobile} {
+    padding: ${({ theme }) => theme.spacing.md};
+    min-height: 100vh;
+  }
 `;
 
 /** 공통 배경 Floating Orb 기반 스타일 */
@@ -37,11 +43,8 @@ export const Orb1 = styled(OrbBase)`
   height: 450px;
   top: -120px;
   right: -120px;
-  background: radial-gradient(
-    circle,
-    rgba(124, 108, 240, 0.2) 0%,
-    transparent 70%
-  );
+  /* radial-gradient 글로우 — theme 토큰으로 대체 */
+  background: ${({ theme }) => theme.gradients.glow};
   filter: blur(100px);
   animation: ${floatUpDown} 8s ease-in-out infinite;
 `;

@@ -34,11 +34,11 @@ export const SummarySection = styled.section`
   /* 3색 그라디언트 배경 */
   background: linear-gradient(
     135deg,
-    rgba(124, 108, 240, 0.15) 0%,
+    ${({ theme }) => theme.colors.primaryLight} 0%,
     rgba(6, 214, 160, 0.1) 50%,
     rgba(239, 71, 111, 0.08) 100%
   );
-  border-color: rgba(124, 108, 240, 0.3);
+  border-color: ${({ theme }) => theme.glass.border};
   border-width: 1px;
   /* pulseGlow 애니메이션 — 4s 무한 반복 */
   animation: ${pulseGlow} 4s ease-in-out infinite;

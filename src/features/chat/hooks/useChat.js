@@ -60,6 +60,8 @@ export function useChat({ userId = '' } = {}) {
   const abortControllerRef = useRef(null);
   // 세션 ID — storage 래퍼를 통해 localStorage에서 복원하여 대화 연속성 유지
   const sessionIdRef = useRef(getSessionId() || '');
+  // 세션 ID state (사이드바 활성 세션 강조 표시 등 리렌더링 트리거용)
+  const [currentSessionId, setCurrentSessionId] = useState(getSessionId() || '');
   // 현재 스트리밍 중인 봇 응답을 누적하는 ref (토큰 스트리밍용)
   const pendingResponseRef = useRef('');
   // 현재 스트리밍 중인 영화 카드를 누적하는 ref
@@ -112,6 +114,7 @@ export function useChat({ userId = '' } = {}) {
           onSession: (data) => {
             if (data.session_id) {
               sessionIdRef.current = data.session_id;
+              setCurrentSessionId(data.session_id);
               setSessionId(data.session_id);
             }
           },
@@ -271,6 +274,7 @@ export function useChat({ userId = '' } = {}) {
     setQuotaError(null);
     // 세션 ID 초기화 + localStorage 삭제 (storage 래퍼 사용)
     sessionIdRef.current = '';
+    setCurrentSessionId('');
     removeSessionId();
   }, []);
 
@@ -291,6 +295,55 @@ export function useChat({ userId = '' } = {}) {
     setQuotaError(null);
   }, []);
 
+  /**
+   * 기존 세션을 로드하여 이전 대화를 이어서 진행한다.
+   * 사이드바에서 세션을 선택했을 때 호출된다.
+   *
+   * @param {string} sessionId - 세션 UUID
+   * @param {Array} sessionMessages - 파싱된 메시지 배열 [{role, content, ...}]
+   */
+  const loadExistingSession = useCallback((sessionId, sessionMessages) => {
+    // messages 포맷 변환: Agent 저장 형식 → useChat 내부 형식
+    const formattedMessages = [];
+    for (const msg of sessionMessages) {
+      if (msg.role === 'user') {
+        formattedMessages.push({
+          role: 'user',
+          content: msg.content || '',
+          image: msg.image || null,
+          timestamp: msg.timestamp ? new Date(msg.timestamp).getTime() : Date.now(),
+        });
+      } else if (msg.role === 'assistant') {
+        // 영화 카드가 있으면 movie_cards 메시지로 분리
+        if (msg.movies && msg.movies.length > 0) {
+          formattedMessages.push({
+            role: 'movie_cards',
+            movies: msg.movies,
+            timestamp: msg.timestamp ? new Date(msg.timestamp).getTime() : Date.now(),
+          });
+        }
+        // 텍스트 응답
+        if (msg.content) {
+          formattedMessages.push({
+            role: 'bot',
+            content: msg.content,
+            timestamp: msg.timestamp ? new Date(msg.timestamp).getTime() : Date.now(),
+          });
+        }
+      }
+    }
+
+    setMessages(formattedMessages);
+    setStatus('');
+    setError(null);
+    setClarification(null);
+    setPointInfo(null);
+    setQuotaError(null);
+    sessionIdRef.current = sessionId;
+    setCurrentSessionId(sessionId);
+    setSessionId(sessionId);
+  }, []);
+
   return {
     messages,
     status,
@@ -303,5 +356,8 @@ export function useChat({ userId = '' } = {}) {
     clearMessages,
     cancelRequest,
     dismissQuotaError,
+    loadExistingSession,
+    /** 현재 세션 ID (사이드바에서 활성 세션 강조 표시용, state로 관리하여 리렌더링 트리거) */
+    currentSessionId,
   };
 }

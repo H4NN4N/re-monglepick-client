@@ -6,8 +6,10 @@
  * 위시리스트 토글, 리뷰 목록 등 부가 기능을 제공한다.
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
+/* Phase 2: 사용자 행동 이벤트 추적 */
+import { trackEvent } from '../../../shared/utils/eventTracker';
 /* 커스텀 모달 훅 — window.alert 대체 */
 import { useModal } from '../../../shared/components/Modal';
 /* 영화 API — 같은 feature 내의 movieApi에서 가져옴 */
@@ -16,10 +18,14 @@ import { getMovie } from '../api/movieApi';
 import { getReviews } from '../../review/api/reviewApi';
 /* 위시리스트 API — features/user에서 가져옴 */
 import { addToWishlist, removeFromWishlist } from '../../user/api/userApi';
+/* Phase 5-2: 시청 기록 저장용 Backend API */
+import { backendApi } from '../../../shared/api/axiosInstance';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
 import useAuthStore from '../../../shared/stores/useAuthStore';
 /* 영화 상세 카드 — 같은 feature 내의 components에서 가져옴 */
 import MovieDetailCard from '../components/MovieDetailCard';
+/* Phase 5-2: 시청 후 평점 팝업 */
+import PostWatchFeedback from '../components/PostWatchFeedback';
 /* 리뷰 목록 — features/review에서 가져옴 */
 import ReviewList from '../../review/components/ReviewList';
 /* 로딩 스피너 — shared/components에서 가져옴 */
@@ -48,7 +54,29 @@ export default function MovieDetailPage() {
   // API 404 응답 여부 (영화를 찾을 수 없을 때 NotFoundPage 렌더링용)
   const [isNotFound, setIsNotFound] = useState(false);
 
+  // Phase 5-2: 시청 후 평점 팝업 상태
+  const [showFeedback, setShowFeedback] = useState(false);
+
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
+
+  /* Phase 2: 페이지 진입 시각 기록 (체류 시간 측정용) */
+  const enterTimeRef = useRef(null);
+
+  /**
+   * Phase 2: 영화 상세 페이지 체류 시간 이벤트.
+   * 마운트 시 진입 시각 기록, 언마운트 시 체류 시간 전송.
+   */
+  useEffect(() => {
+    enterTimeRef.current = Date.now();
+    trackEvent('movie_detail_view', id);
+
+    return () => {
+      if (enterTimeRef.current) {
+        const durationSec = Math.round((Date.now() - enterTimeRef.current) / 1000);
+        trackEvent('movie_detail_leave', id, { duration_sec: durationSec });
+      }
+    };
+  }, [id]);
 
   /**
    * 영화 상세 정보와 리뷰를 로드한다.
@@ -129,6 +157,36 @@ export default function MovieDetailPage() {
     }
   };
 
+  /**
+   * Phase 5-2: "시청 완료" 버튼 핸들러.
+   * 시청 후 평점 팝업을 표시한다.
+   */
+  const handleWatchComplete = () => {
+    if (!isAuthenticated) {
+      showAlert({ title: '로그인 필요', message: '시청 기록을 남기려면 로그인이 필요합니다.', type: 'warning' });
+      return;
+    }
+    setShowFeedback(true);
+  };
+
+  /**
+   * Phase 5-2: 평점 제출 콜백.
+   * WatchHistory API에 시청 기록 + 평점을 저장한다.
+   */
+  const handleFeedbackSubmit = async (rating) => {
+    try {
+      await backendApi.post('/api/v1/watch-history', {
+        movieId: id,
+        rating,
+        watchSource: 'detail',
+        completionStatus: 'COMPLETED',
+      });
+    } catch {
+      // 저장 실패해도 UX 차단하지 않음
+    }
+    setShowFeedback(false);
+  };
+
   // 로딩 중
   if (isLoading) {
     return (
@@ -163,6 +221,16 @@ export default function MovieDetailPage() {
           movie={movie}
           onWishlistToggle={handleWishlistToggle}
           isWishlisted={isWishlisted}
+          onWatchComplete={handleWatchComplete}
+        />
+
+        {/* Phase 5-2: 시청 후 평점 팝업 */}
+        <PostWatchFeedback
+          isOpen={showFeedback}
+          movieTitle={movie?.title || ''}
+          movieId={id}
+          onSubmit={handleFeedbackSubmit}
+          onClose={() => setShowFeedback(false)}
         />
 
         {/* 리뷰 섹션 */}

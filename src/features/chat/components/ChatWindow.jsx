@@ -13,17 +13,21 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
-/* react-router-dom — 뒤로가기 네비게이션용 */
-import { useNavigate } from 'react-router-dom';
+/* react-router-dom — 뒤로가기 네비게이션 + URL 세션 ID 관리 */
+import { useNavigate, useParams } from 'react-router-dom';
 /* 커스텀 모달 훅 — window.confirm/alert 대체 */
 import { useModal } from '../../../shared/components/Modal';
 /* 인증 Context 훅 — app/providers에서 가져옴 (userId 전달용) */
 import useAuthStore from '../../../shared/stores/useAuthStore';
 /* 채팅 상태 관리 훅 — 같은 feature 내의 hooks에서 가져옴 */
 import { useChat } from '../hooks/useChat';
+/* 채팅 이력 관리 훅 — 사이드바 세션 목록 */
+import { useSessionHistory } from '../hooks/useSessionHistory';
 import MovieCard from './MovieCard';
 /* 몽글이 캐릭터 애니메이션 컴포넌트 */
 import MonggleCharacter from '../../../shared/components/MonggleCharacter/MonggleCharacter';
+/* 채팅 이력 사이드바 */
+import SessionSidebar from './SessionSidebar';
 import * as S from './ChatWindow.styled';
 
 /** 이미지 최대 크기 (10MB) */
@@ -34,13 +38,15 @@ const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp
 const DEFAULT_MAX_INPUT_LENGTH = 200;
 
 export default function ChatWindow() {
-  /* 뒤로가기 네비게이션 */
+  /* 뒤로가기 네비게이션 + URL 세션 ID */
   const navigate = useNavigate();
+  const { sessionId: urlSessionId } = useParams();
   /* 커스텀 모달 — window.confirm/alert 대체 */
   const { showAlert, showConfirm } = useModal();
 
   // 인증 상태에서 사용자 ID를 가져와 포인트 시스템 연동에 사용
   const user = useAuthStore((s) => s.user);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
 
   // 채팅 상태 훅 — userId를 전달하여 포인트 차감/쿼터 검증이 동작하도록 한다
   const {
@@ -55,8 +61,24 @@ export default function ChatWindow() {
     clearMessages,
     cancelRequest,
     dismissQuotaError,
+    loadExistingSession,
+    currentSessionId,
   } = useChat({ userId: user?.id || '' });
 
+  // 채팅 이력 훅 — 사이드바 세션 목록 관리
+  const {
+    sessions,
+    isLoading: isHistoryLoading,
+    hasMore,
+    loadSessions,
+    loadMoreSessions,
+    loadSessionMessages,
+    removeSession,
+    addSessionToTop,
+  } = useSessionHistory();
+
+  // 사이드바 열림 상태
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   // 입력 필드 상태
   const [inputText, setInputText] = useState('');
   // 첨부 이미지 상태 (미리보기 URL + base64 데이터)
@@ -69,6 +91,78 @@ export default function ChatWindow() {
   const inputRef = useRef(null);
   // 숨겨진 파일 입력 ref
   const fileInputRef = useRef(null);
+
+  /**
+   * 사이드바 열 때 세션 목록 로드 (인증된 사용자만).
+   */
+  const handleOpenSidebar = async () => {
+    setIsSidebarOpen(true);
+    if (isAuthenticated) {
+      await loadSessions(true);
+    }
+  };
+
+  /**
+   * 사이드바에서 세션 선택 시: 메시지 로드 + URL 업데이트.
+   */
+  const handleSelectSession = async (session) => {
+    try {
+      const detail = await loadSessionMessages(session.sessionId);
+      loadExistingSession(detail.sessionId, detail.messages);
+      navigate(`/chat/${detail.sessionId}`, { replace: true });
+    } catch (err) {
+      showAlert({
+        title: '로드 실패',
+        message: '대화를 불러올 수 없습니다.',
+        type: 'warning',
+      });
+    }
+  };
+
+  /**
+   * 사이드바에서 세션 삭제.
+   */
+  const handleDeleteSession = async (sessionId) => {
+    const confirmed = await showConfirm({
+      title: '대화 삭제',
+      message: '이 대화를 삭제할까요?',
+      type: 'confirm',
+      confirmLabel: '삭제',
+      cancelLabel: '취소',
+    });
+    if (!confirmed) return;
+
+    try {
+      await removeSession(sessionId);
+      // 현재 보고 있는 세션을 삭제한 경우 초기화
+      if (currentSessionId === sessionId) {
+        clearMessages();
+        navigate('/chat', { replace: true });
+      }
+    } catch (err) {
+      showAlert({
+        title: '삭제 실패',
+        message: '대화 삭제에 실패했습니다.',
+        type: 'warning',
+      });
+    }
+  };
+
+  /**
+   * URL의 sessionId가 변경되면 해당 세션을 로드한다 (브라우저 뒤로가기/직접 접근).
+   */
+  useEffect(() => {
+    if (urlSessionId && urlSessionId !== currentSessionId && isAuthenticated) {
+      loadSessionMessages(urlSessionId)
+        .then((detail) => {
+          loadExistingSession(detail.sessionId, detail.messages);
+        })
+        .catch(() => {
+          // 세션을 찾을 수 없으면 /chat으로 리다이렉트
+          navigate('/chat', { replace: true });
+        });
+    }
+  }, [urlSessionId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /**
    * 새 메시지가 추가되면 자동 스크롤.
@@ -245,9 +339,39 @@ export default function ChatWindow() {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
+      {/* ── 사이드바 (이전 대화 목록) ── */}
+      <SessionSidebar
+        isOpen={isSidebarOpen}
+        onClose={() => setIsSidebarOpen(false)}
+        sessions={sessions}
+        currentSessionId={currentSessionId}
+        onSelectSession={handleSelectSession}
+        onDeleteSession={handleDeleteSession}
+        onNewChat={() => {
+          clearMessages();
+          setInputText('');
+          setAttachedImage(null);
+          navigate('/chat', { replace: true });
+          inputRef.current?.focus();
+        }}
+        isLoading={isHistoryLoading}
+        hasMore={hasMore}
+        onLoadMore={loadMoreSessions}
+      />
+
       {/* ── 헤더 ── */}
       <S.ChatHeader>
         <S.ChatHeaderLeft>
+          {/* 이전 대화 목록 버튼 (인증된 사용자만 표시) */}
+          {isAuthenticated && (
+            <S.BackButton onClick={handleOpenSidebar} title="이전 대화 목록">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            </S.BackButton>
+          )}
           {/* 뒤로가기 버튼 — 이전 페이지로 이동 */}
           <S.BackButton onClick={() => navigate(-1)} title="뒤로가기">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -283,6 +407,8 @@ export default function ChatWindow() {
             /* ChatWindow 로컬 상태 초기화 */
             setInputText('');
             setAttachedImage(null);
+            /* URL 리셋 */
+            navigate('/chat', { replace: true });
             /* 입력 필드에 포커스 */
             inputRef.current?.focus();
           }}

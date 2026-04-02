@@ -154,7 +154,7 @@ export const HeroBtnSecondary = styled.a`
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
     color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 15px rgba(124, 108, 240, 0.15);
+    box-shadow: ${({ theme }) => theme.shadows.glow};
   }
 `;
 
@@ -166,7 +166,7 @@ export const HeroGlow = styled.div`
   transform: translate(-50%, -50%);
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(124, 108, 240, 0.12) 0%, transparent 70%);
+  background: ${({ theme }) => theme.gradients.glow};
   pointer-events: none;
 
   ${media.tablet} {
@@ -195,7 +195,7 @@ export const HeroOrb1 = styled.div`
   left: 10%;
   width: 300px;
   height: 300px;
-  background: radial-gradient(circle, rgba(124, 108, 240, 0.2) 0%, transparent 70%);
+  background: ${({ theme }) => theme.gradients.glow};
   animation: ${floatUpDown} 8s ease-in-out infinite;
 `;
 
@@ -261,7 +261,7 @@ export const SuggestionsTitle = styled.h2`
     background: ${({ theme }) => theme.colors.primary};
     margin-left: ${({ theme }) => theme.spacing.sm};
     vertical-align: middle;
-    box-shadow: 0 0 10px rgba(124, 108, 240, 0.6), 0 0 20px rgba(124, 108, 240, 0.3);
+    box-shadow: ${({ theme }) => theme.glows.primary};
   }
 `;
 
@@ -303,9 +303,9 @@ export const SuggestionsCard = styled.button`
   ${staggerDelay}
 
   &:hover {
-    border-color: rgba(124, 108, 240, 0.4);
+    border-color: ${({ theme }) => theme.glass.border};
     transform: translateY(-4px);
-    box-shadow: ${({ theme }) => theme.shadows.lg}, 0 0 30px rgba(124, 108, 240, 0.1);
+    box-shadow: ${({ theme }) => theme.shadows.lg}, ${({ theme }) => theme.shadows.glow};
   }
 `;
 
@@ -381,7 +381,7 @@ export const MoviesMore = styled.a`
   transition: all ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    text-shadow: 0 0 12px rgba(124, 108, 240, 0.3);
+    text-shadow: ${({ theme }) => theme.shadows.glow};
     text-decoration: underline;
   }
 `;

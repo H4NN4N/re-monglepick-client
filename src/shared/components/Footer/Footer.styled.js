@@ -14,7 +14,7 @@ import { media } from '../../styles/media';
 /** 푸터 전체 컨테이너 — 글래스 배경 */
 export const FooterWrapper = styled.footer`
   width: 100%;
-  background-color: rgba(26, 26, 46, 0.7);
+  background-color: ${({ theme }) => theme.footer.bg};
   backdrop-filter: blur(12px) saturate(1.4);
   -webkit-backdrop-filter: blur(12px) saturate(1.4);
   border-top: none;
@@ -131,7 +131,7 @@ export const NavLink = styled(Link)`
 
   &:hover {
     color: ${({ theme }) => theme.colors.primary};
-    text-shadow: 0 0 12px rgba(124, 108, 240, 0.3);
+    text-shadow: ${({ theme }) => theme.shadows.glow};
   }
 `;
 

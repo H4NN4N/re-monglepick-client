@@ -42,16 +42,19 @@ export const Wrapper = styled.div`
   ${({ $isBest, theme }) =>
     $isBest &&
     css`
-    border-color: rgba(124,108,240,0.5);
+    /* BEST 카드 border — glass.border 토큰으로 대체 */
+    border-color: ${theme.colors.primary};
     box-shadow: ${theme.glows.primary};
     animation: ${borderGlow} 3s ease infinite;
   `}
 
   /* hover 시 카드가 위로 떠오르며 테두리 강조 */
   &:hover {
-    border-color: rgba(124, 108, 240, 0.4);
+    /* hover border — glass.border 토큰으로 대체 */
+    border-color: ${({ theme }) => theme.glass.border};
     transform: translateY(-4px);
-    box-shadow: ${({ theme }) => theme.shadows.lg}, 0 0 20px rgba(124, 108, 240, 0.1);
+    /* hover glow — glows.primary 토큰으로 대체 */
+    box-shadow: ${({ theme }) => theme.shadows.lg}, ${({ theme }) => theme.glows.primary};
   }
 
   /* hover shine — 좌→우 광선 효과 */

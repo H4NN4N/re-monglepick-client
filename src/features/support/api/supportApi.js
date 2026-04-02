@@ -94,3 +94,19 @@ export async function getTicketDetail(ticketId) {
   requireAuth();
   return api.get(SUPPORT_ENDPOINTS.TICKET_DETAIL(ticketId));
 }
+
+// ── AI 챗봇 ──
+
+/**
+ * AI 고객센터 챗봇에 메시지를 전송한다.
+ * FAQ 매칭 + LLM 자동응답을 수행하며,
+ * 해결되지 않으면 상담원 이관을 안내한다.
+ *
+ * @param {Object} params
+ * @param {string} params.message - 사용자 메시지
+ * @param {string} [params.sessionId] - 세션 ID (맥락 유지용)
+ * @returns {Promise<{answer: string, matchedFaqs: Array, needsHumanAgent: boolean, sessionId: string}>}
+ */
+export async function sendChatbotMessage({ message, sessionId }) {
+  return api.post(SUPPORT_ENDPOINTS.CHATBOT, { message, sessionId });
+}

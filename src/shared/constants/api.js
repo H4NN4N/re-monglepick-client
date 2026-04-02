@@ -176,6 +176,89 @@ export const MATCH_ENDPOINTS = {
 };
 
 /**
+ * 추천 내역(Recommendation) 관련 엔드포인트.
+ * AI 추천 이력 조회, 찜/봤어요 토글, 만족도 피드백을 처리한다.
+ */
+export const RECOMMENDATION_ENDPOINTS = {
+  /** 추천 이력 목록 - GET (query: page, size, status?) */
+  LIST: `${API_VERSION}/recommendations`,
+  /** 찜(위시리스트) 토글 - POST (path: recommendationId) */
+  WISHLIST: (id) => `${API_VERSION}/recommendations/${id}/wishlist`,
+  /** 봤어요 토글 - POST (path: recommendationId) */
+  WATCHED: (id) => `${API_VERSION}/recommendations/${id}/watched`,
+  /** 만족도 피드백 - POST (path: recommendationId, body: {rating, comment}) */
+  FEEDBACK: (id) => `${API_VERSION}/recommendations/${id}/feedback`,
+};
+
+/**
+ * 플레이리스트(Playlist) 관련 엔드포인트.
+ * 사용자 영화 플레이리스트 CRUD를 처리한다.
+ */
+export const PLAYLIST_ENDPOINTS = {
+  /** 플레이리스트 목록 - GET (query: page, size) */
+  LIST: `${API_VERSION}/playlists`,
+  /** 플레이리스트 생성 - POST (body: {title, description}) */
+  CREATE: `${API_VERSION}/playlists`,
+  /** 플레이리스트 상세 - GET (path: playlistId) */
+  DETAIL: (id) => `${API_VERSION}/playlists/${id}`,
+  /** 플레이리스트 수정 - PUT (path: playlistId) */
+  UPDATE: (id) => `${API_VERSION}/playlists/${id}`,
+  /** 플레이리스트 삭제 - DELETE (path: playlistId) */
+  DELETE: (id) => `${API_VERSION}/playlists/${id}`,
+  /** 플레이리스트에 영화 추가 - POST (path: playlistId, body: {movieId}) */
+  ADD_MOVIE: (id) => `${API_VERSION}/playlists/${id}/movies`,
+  /** 플레이리스트에서 영화 제거 - DELETE (path: playlistId, movieId) */
+  REMOVE_MOVIE: (playlistId, movieId) => `${API_VERSION}/playlists/${playlistId}/movies/${movieId}`,
+};
+
+/**
+ * 업적(Achievement) 관련 엔드포인트.
+ * 사용자 업적/도장깨기 조회를 처리한다.
+ */
+export const ACHIEVEMENT_ENDPOINTS = {
+  /** 업적 목록 - GET (query: category?) */
+  LIST: `${API_VERSION}/users/me/achievements`,
+  /** 업적 상세 - GET (path: achievementId) */
+  DETAIL: (id) => `${API_VERSION}/users/me/achievements/${id}`,
+  /** 도장깨기 목록 - GET */
+  STAMP_RALLY: `${API_VERSION}/users/me/stamp-rally`,
+  /** 도장깨기 진행 상황 - GET (path: rallyId) */
+  STAMP_RALLY_DETAIL: (id) => `${API_VERSION}/users/me/stamp-rally/${id}`,
+};
+
+/**
+ * 월드컵(Worldcup) 관련 엔드포인트.
+ * 영화 이상형 월드컵 게임을 처리한다.
+ */
+export const WORLDCUP_ENDPOINTS = {
+  /** 월드컵 시작 - POST (body: {round, genre?}) */
+  START: `${API_VERSION}/worldcup/start`,
+  /** 선택 제출 - POST (body: {matchId, winnerId}) */
+  PICK: `${API_VERSION}/worldcup/pick`,
+  /** 결과 조회 - GET (path: gameId) */
+  RESULT: (gameId) => `${API_VERSION}/worldcup/result/${gameId}`,
+  /** 최근 결과 목록 - GET (query: page, size) */
+  HISTORY: `${API_VERSION}/worldcup/history`,
+};
+
+/**
+ * 로드맵(Roadmap) 관련 엔드포인트.
+ * 영화 학습 코스/로드맵을 처리한다.
+ */
+export const ROADMAP_ENDPOINTS = {
+  /** 코스 목록 - GET (query: category?) */
+  COURSES: `${API_VERSION}/roadmap/courses`,
+  /** 코스 상세 - GET (path: courseId) */
+  COURSE_DETAIL: (id) => `${API_VERSION}/roadmap/courses/${id}`,
+  /** 코스 진행 상황 - GET (path: courseId) */
+  COURSE_PROGRESS: (id) => `${API_VERSION}/roadmap/courses/${id}/progress`,
+  /** 코스 시작 - POST (path: courseId) */
+  START_COURSE: (id) => `${API_VERSION}/roadmap/courses/${id}/start`,
+  /** 영화 시청 완료 마킹 - POST (path: courseId, movieId) */
+  COMPLETE_MOVIE: (courseId, movieId) => `${API_VERSION}/roadmap/courses/${courseId}/movies/${movieId}/complete`,
+};
+
+/**
  * 고객센터(Support) 관련 엔드포인트.
  * FAQ, 도움말, 상담 티켓을 처리한다.
  */
@@ -192,4 +275,6 @@ export const SUPPORT_ENDPOINTS = {
   MY_TICKETS: `${API_VERSION}/support/tickets`,
   /** 티켓 상세 조회 - GET (ticketId 파라미터 필요) */
   TICKET_DETAIL: (ticketId) => `${API_VERSION}/support/tickets/${ticketId}`,
+  /** AI 챗봇 대화 - POST (body: {message, sessionId?}) */
+  CHATBOT: `${API_VERSION}/support/chatbot`,
 };

@@ -14,10 +14,36 @@
  * - OTT 플랫폼
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
+import { trackEvent } from '../../../shared/utils/eventTracker';
 
-/* 영화 카드 전용 CSS — CSS 변수 의존 없이 색상 직접 지정 */
-import './MovieCard.css';
+/* styled-components 기반 스타일 — theme 토큰으로 다크/라이트 모드 자동 대응 */
+import {
+  Card,
+  RankBadge,
+  PosterWrapper,
+  InfoArea,
+  Title,
+  TitleEn,
+  Meta,
+  Crew,
+  Tags,
+  GenreTag,
+  MoodTag,
+  Overview,
+  Explanation,
+  OttList,
+  OttBadge,
+  TrailerLink,
+  TrailerAnchor,
+  TrailerModal,
+  ModalContent,
+  CloseButton,
+  ModalTitle,
+  PlayerWrapper,
+  NotInterestedButton,
+  CardFadeWrapper,
+} from './MovieCard.styled';
 
 /**
  * TMDB 포스터 이미지 URL 생성.
@@ -117,8 +143,14 @@ export default function MovieCard({ movie }) {
   /* 트레일러 모달 표시 상태 */
   const [showTrailer, setShowTrailer] = useState(false);
 
+  /* Phase 5-1: "관심 없음" 클릭 시 fade-out */
+  const [dismissed, setDismissed] = useState(false);
+
   /* YouTube embed URL (YouTube가 아니면 null → 외부 링크 폴백) */
   const embedUrl = getYouTubeEmbedUrl(trailer_url);
+
+  /* Phase 2: 호버 시작 시각 추적용 ref */
+  const hoverStartRef = useRef(null);
 
   /**
    * 트레일러 모달 배경 클릭 시 닫기.
@@ -130,133 +162,168 @@ export default function MovieCard({ movie }) {
     }
   }, []);
 
+  /* Phase 2: 카드 호버 시작 — 시각 기록 */
+  const handleMouseEnter = useCallback(() => {
+    hoverStartRef.current = Date.now();
+  }, []);
+
+  /* Phase 2: 카드 호버 종료 — 300ms 이상이면 이벤트 전송 */
+  const handleMouseLeave = useCallback(() => {
+    if (hoverStartRef.current) {
+      const durationMs = Date.now() - hoverStartRef.current;
+      if (durationMs >= 300) {
+        trackEvent('recommendation_card_hover', movie.id, {
+          rank, duration_ms: durationMs, source: 'chat',
+        });
+      }
+      hoverStartRef.current = null;
+    }
+  }, [movie.id, rank]);
+
+  /* Phase 2: 트레일러 재생 이벤트 */
+  const handleTrailerClick = useCallback(() => {
+    trackEvent('trailer_play', movie.id, { rank, source: 'chat' });
+    setShowTrailer(true);
+  }, [movie.id, rank]);
+
+  /* Phase 5-1: "관심 없음" 클릭 핸들러 — fade-out + 이벤트 전송 */
+  const handleNotInterested = useCallback(() => {
+    setDismissed(true);
+    trackEvent('not_interested', movie.id, { rank, source: 'chat' });
+  }, [movie.id, rank]);
+
   return (
-    <div className="movie-card">
+    <CardFadeWrapper $dismissed={dismissed}>
+    <Card
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       {/* 순위 배지 */}
-      {rank && <span className="movie-card__rank">#{rank}</span>}
+      {rank && <RankBadge>#{rank}</RankBadge>}
 
       {/* 포스터 이미지 */}
-      <div className="movie-card__poster">
+      <PosterWrapper>
         <img
           src={getPosterUrl(poster_path)}
           alt={`${title} 포스터`}
           loading="lazy"
         />
-      </div>
+      </PosterWrapper>
 
       {/* 카드 정보 영역 */}
-      <div className="movie-card__info">
+      <InfoArea>
         {/* 제목 */}
-        <h3 className="movie-card__title">{title}</h3>
-        {title_en && <p className="movie-card__title-en">{title_en}</p>}
+        <Title>{title}</Title>
+        {title_en && <TitleEn>{title_en}</TitleEn>}
 
         {/* 메타 정보 (연도, 평점, 관람등급) */}
-        <div className="movie-card__meta">
+        <Meta>
           {release_year && <span>{release_year}</span>}
           {rating != null && <span>★ {rating.toFixed(1)}</span>}
           {certification && <span>{certification}</span>}
-        </div>
+        </Meta>
 
         {/* 감독 · 출연 */}
         {director && (
-          <p className="movie-card__crew">
+          <Crew>
             감독: {director}
             {cast.length > 0 && ` | 출연: ${cast.slice(0, 3).join(', ')}`}
-          </p>
+          </Crew>
         )}
 
         {/* 장르 태그 */}
         {genres.length > 0 && (
-          <div className="movie-card__tags">
+          <Tags>
             {genres.map((g) => (
-              <span key={g} className="movie-card__tag movie-card__tag--genre">
-                {g}
-              </span>
+              <GenreTag key={g}>{g}</GenreTag>
             ))}
-          </div>
+          </Tags>
         )}
 
         {/* 무드 태그 */}
         {mood_tags.length > 0 && (
-          <div className="movie-card__tags">
+          <Tags>
             {mood_tags.map((m) => (
-              <span key={m} className="movie-card__tag movie-card__tag--mood">
-                {m}
-              </span>
+              <MoodTag key={m}>{m}</MoodTag>
             ))}
-          </div>
+          </Tags>
         )}
 
         {/* 줄거리 (최대 100자) */}
         {overview && (
-          <p className="movie-card__overview">
+          <Overview>
             {overview.length > 100 ? overview.slice(0, 100) + '...' : overview}
-          </p>
+          </Overview>
         )}
 
         {/* 추천 이유 */}
         {explanation && (
-          <p className="movie-card__explanation">{explanation}</p>
+          <Explanation>{explanation}</Explanation>
         )}
 
         {/* OTT 플랫폼 */}
         {ott_platforms.length > 0 && (
-          <div className="movie-card__ott">
+          <OttList>
             {ott_platforms.map((p) => (
-              <span key={p} className="movie-card__ott-badge">{p}</span>
+              <OttBadge key={p}>{p}</OttBadge>
             ))}
-          </div>
+          </OttList>
         )}
 
         {/* 트레일러 버튼 — YouTube이면 모달, 아니면 외부 링크 */}
         {trailer_url && (
           embedUrl ? (
-            <button
+            <TrailerLink
               type="button"
-              className="movie-card__trailer"
-              onClick={() => setShowTrailer(true)}
+              onClick={handleTrailerClick}
             >
               ▶ 트레일러 보기
-            </button>
+            </TrailerLink>
           ) : (
-            <a
+            <TrailerAnchor
               href={trailer_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="movie-card__trailer"
             >
               ▶ 트레일러 보기
-            </a>
+            </TrailerAnchor>
           )
         )}
-      </div>
+
+        {/* Phase 5-1: "관심 없음" 버튼 */}
+        {!dismissed && (
+          <NotInterestedButton type="button" onClick={handleNotInterested}>
+            ✕ 관심 없음
+          </NotInterestedButton>
+        )}
+      </InfoArea>
 
       {/* YouTube 트레일러 모달 오버레이 */}
       {showTrailer && embedUrl && (
-        <div className="trailer-modal" onClick={handleOverlayClick}>
-          <div className="trailer-modal__content">
+        <TrailerModal onClick={handleOverlayClick}>
+          <ModalContent>
             {/* 닫기 버튼 */}
-            <button
+            <CloseButton
               type="button"
-              className="trailer-modal__close"
               onClick={() => setShowTrailer(false)}
             >
               ✕
-            </button>
+            </CloseButton>
             {/* 영화 제목 */}
-            <p className="trailer-modal__title">{title} 트레일러</p>
+            <ModalTitle>{title} 트레일러</ModalTitle>
             {/* YouTube iframe */}
-            <div className="trailer-modal__player">
+            <PlayerWrapper>
               <iframe
                 src={embedUrl}
                 title={`${title} 트레일러`}
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
-            </div>
-          </div>
-        </div>
+            </PlayerWrapper>
+          </ModalContent>
+        </TrailerModal>
       )}
-    </div>
+    </Card>
+    </CardFadeWrapper>
   );
 }

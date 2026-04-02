@@ -1,0 +1,334 @@
+/**
+ * 영화 추천 카드 styled-components.
+ *
+ * 기존 MovieCard.css의 className 기반 스타일을 styled-components로 전환.
+ * 모든 색상을 theme 토큰으로 참조하여 다크/라이트 모드 자동 대응.
+ *
+ * 구조:
+ *   Card > RankBadge + PosterWrapper + InfoArea > Title, Meta, Tags, ...
+ *   TrailerModal > ModalContent > CloseButton + ModalTitle + PlayerWrapper
+ */
+
+import styled, { keyframes } from 'styled-components';
+
+/* ── 트레일러 모달 페이드인 애니메이션 ── */
+const trailerFadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+
+/* ── 개별 영화 카드 ── */
+export const Card = styled.div`
+  flex-shrink: 0;
+  width: 260px;
+  background-color: ${({ theme }) => theme.colors.bgCard};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  overflow: hidden;
+  border: 1px solid ${({ theme }) => theme.colors.borderDefault};
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${({ theme }) => theme.shadows.md};
+  }
+`;
+
+/* ── 순위 배지 ── */
+export const RankBadge = styled.span`
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: ${({ theme }) => theme.colors.primary};
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  z-index: 1;
+`;
+
+/* ── 포스터 이미지 래퍼 ── */
+export const PosterWrapper = styled.div`
+  width: 100%;
+  height: 160px;
+  overflow: hidden;
+  background-color: ${({ theme }) => theme.colors.bgMain};
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+/* ── 카드 정보 영역 ── */
+export const InfoArea = styled.div`
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+/* ── 한국어 제목 ── */
+export const Title = styled.h3`
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.3;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  /* 2줄 초과 시 말줄임 */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+/* ── 영어 제목 ── */
+export const TitleEn = styled.p`
+  font-size: 11px;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+/* ── 메타 정보 (연도, 평점, 관람등급) ── */
+export const Meta = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+
+  span:not(:last-child)::after {
+    content: '\u00B7';
+    margin-left: 8px;
+    color: ${({ theme }) => theme.colors.textMuted};
+  }
+`;
+
+/* ── 감독/출연 ── */
+export const Crew = styled.p`
+  font-size: 11px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+/* ── 태그 목록 (장르, 무드) ── */
+export const Tags = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+`;
+
+/* ── 공통 태그 베이스 ── */
+const TagBase = styled.span`
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  line-height: 1.4;
+`;
+
+/* ── 장르 태그 ── */
+export const GenreTag = styled(TagBase)`
+  background-color: ${({ theme }) => theme.colors.bgTertiary};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+/* ── 무드 태그 ── */
+export const MoodTag = styled(TagBase)`
+  background-color: ${({ theme }) => theme.colors.bgSecondary};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+/* ── 줄거리 ── */
+export const Overview = styled.p`
+  font-size: 11px;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin: 0;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+/* ── 추천 이유 ── */
+export const Explanation = styled.p`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.primary};
+  margin: 0;
+  line-height: 1.5;
+  padding: 6px 8px;
+  background-color: ${({ theme }) => theme.colors.primaryLight};
+  border-radius: 6px;
+  border-left: 3px solid ${({ theme }) => theme.colors.primary};
+`;
+
+/* ── OTT 플랫폼 배지 목록 ── */
+export const OttList = styled.div`
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+`;
+
+/* ── OTT 개별 배지 ── */
+export const OttBadge = styled.span`
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: ${({ theme }) => theme.colors.successBg};
+  color: ${({ theme }) => theme.colors.success};
+`;
+
+/* ── 트레일러 링크/버튼 공통 ── */
+export const TrailerLink = styled.button`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.primary};
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primaryHover};
+    text-decoration: underline;
+  }
+`;
+
+/* ── 트레일러 외부 링크 (a 태그) ── */
+export const TrailerAnchor = styled.a`
+  font-size: 12px;
+  color: ${({ theme }) => theme.colors.primary};
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+
+  &:hover {
+    color: ${({ theme }) => theme.colors.primaryHover};
+    text-decoration: underline;
+  }
+`;
+
+/* ============================================================
+ * 트레일러 YouTube 모달 오버레이
+ * ============================================================ */
+
+/* ── 전체 화면 반투명 배경 ── */
+export const TrailerModal = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background-color: ${({ theme }) => theme.colors.bgOverlay};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ${trailerFadeIn} 0.2s ease-out;
+`;
+
+/* ── 모달 콘텐츠 박스 ── */
+export const ModalContent = styled.div`
+  position: relative;
+  width: 90vw;
+  max-width: 800px;
+`;
+
+/* ── 닫기 버튼 (우상단) ── */
+export const CloseButton = styled.button`
+  position: absolute;
+  top: -36px;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.25);
+  }
+`;
+
+/* ── 영화 제목 (모달 상단) ── */
+export const ModalTitle = styled.p`
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+/* ── 16:9 비율 유지 플레이어 래퍼 ── */
+export const PlayerWrapper = styled.div`
+  position: relative;
+  width: 100%;
+  padding-top: 56.25%; /* 16:9 */
+  background-color: #000;
+  border-radius: ${({ theme }) => theme.radius.md};
+  overflow: hidden;
+
+  iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+  }
+`;
+
+/**
+ * Phase 5-1: "관심 없음" 버튼 — 추천 카드 하단에 배치.
+ * 클릭 시 카드가 fade-out되며 not_interested 피드백을 전송한다.
+ */
+export const NotInterestedButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  border: 1px solid ${({ theme }) => theme.colors.border};
+  border-radius: ${({ theme }) => theme.radius.sm};
+  background: transparent;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.danger || '#ef4444'};
+    color: ${({ theme }) => theme.colors.danger || '#ef4444'};
+    background: ${({ theme }) => (theme.colors.danger || '#ef4444') + '10'};
+  }
+`;
+
+/**
+ * Phase 5-1: 카드 fade-out 래퍼.
+ * dismissed=true일 때 opacity 0 + height 축소 애니메이션.
+ */
+export const CardFadeWrapper = styled.div`
+  transition: opacity 0.4s ease, max-height 0.4s ease, margin 0.4s ease;
+  opacity: ${({ $dismissed }) => ($dismissed ? 0 : 1)};
+  max-height: ${({ $dismissed }) => ($dismissed ? '0px' : '2000px')};
+  overflow: hidden;
+  margin-bottom: ${({ $dismissed }) => ($dismissed ? '0px' : '16px')};
+`;

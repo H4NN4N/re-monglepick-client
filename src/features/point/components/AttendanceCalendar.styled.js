@@ -204,8 +204,8 @@ export const CalendarCell = styled.div`
   ${({ $isChecked }) =>
     $isChecked &&
     css`
-      background: linear-gradient(135deg, rgba(124, 108, 240, 0.2), rgba(6, 214, 160, 0.15));
-      box-shadow: 0 0 8px rgba(124, 108, 240, 0.15);
+      background: linear-gradient(135deg, ${theme.colors.primaryLight}, rgba(6, 214, 160, 0.15));
+      box-shadow: ${theme.shadows.glow};
     `}
 
   ${media.tablet} {

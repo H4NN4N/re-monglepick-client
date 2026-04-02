@@ -18,7 +18,7 @@ export const HeaderWrapper = styled.header`
   z-index: ${({ theme }) => theme.zIndex.sticky};
   width: 100%;
   height: ${({ theme }) => theme.layout.headerHeight};
-  background-color: rgba(15, 15, 26, 0.85);
+  background-color: ${({ theme }) => theme.header.bg};
   backdrop-filter: blur(20px) saturate(1.8);
   -webkit-backdrop-filter: blur(20px) saturate(1.8);
   border-bottom: none;
@@ -88,7 +88,7 @@ export const Nav = styled.nav`
     bottom: 0;
     flex-direction: column;
     padding: ${({ theme }) => theme.spacing.lg};
-    background-color: rgba(15, 15, 26, 0.95);
+    background-color: ${({ theme }) => theme.header.mobileBg};
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-top: 1px solid ${({ theme }) => theme.colors.borderDefault};
@@ -130,8 +130,7 @@ export const NavLink = styled(Link)`
         height: 6px;
         border-radius: ${theme.radius.full};
         background-color: ${theme.colors.primary};
-        box-shadow: 0 0 8px rgba(124, 108, 240, 0.6),
-          0 0 16px rgba(124, 108, 240, 0.3);
+        box-shadow: ${theme.glows.primary};
       }
     `}
 
@@ -256,6 +255,15 @@ export const UserName = styled.span`
   font-size: ${({ theme }) => theme.typography.textSm};
   color: ${({ theme }) => theme.colors.textPrimary};
   font-weight: ${({ theme }) => theme.typography.fontMedium};
+`;
+
+/** 모바일에서만 표시 (데스크톱 Nav 내부 중복 요소 숨김용) */
+export const MobileOnly = styled.div`
+  display: none;
+
+  ${media.tablet} {
+    display: block;
+  }
 `;
 
 /** 모바일 햄버거 메뉴 버튼 */

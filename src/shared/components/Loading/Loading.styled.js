@@ -56,11 +56,11 @@ export const SpinnerRing = styled.div`
   height: 100%;
   border-radius: ${({ theme }) => theme.radius.full};
   border: ${({ $size }) => spinnerSizeMap[$size]?.border || spinnerSizeMap.md.border} solid
-    rgba(124, 108, 240, 0.15);
+    ${({ theme }) => theme.glass.border};
   border-top-color: ${({ theme }) => theme.colors.primary};
   border-right-color: rgba(6, 214, 160, 0.5);
   animation: ${loadingSpin} 0.8s linear infinite;
-  box-shadow: 0 0 15px rgba(124, 108, 240, 0.15);
+  box-shadow: ${({ theme }) => theme.shadows.glow};
 `;
 
 /** 로딩 메시지 */

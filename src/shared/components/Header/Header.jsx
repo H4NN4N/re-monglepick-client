@@ -12,6 +12,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../stores/useAuthStore';
 /* 라우트 경로 상수 — shared/constants에서 가져옴 */
 import { ROUTES, NAV_ITEMS } from '../../constants/routes';
+import ThemeToggle from './ThemeToggle';
 import * as S from './Header.styled';
 
 export default function Header() {
@@ -81,6 +82,11 @@ export default function Header() {
             </S.NavLink>
           ))}
 
+          {/* ── 테마 토글 (모바일 메뉴 내부 전용 — 데스크톱에서는 숨김) ── */}
+          <S.MobileOnly>
+            <ThemeToggle />
+          </S.MobileOnly>
+
           {/* ── 인증 버튼 (모바일 메뉴 내부) ── */}
           <S.AuthSection $mobile>
             {isAuthenticated ? (
@@ -107,6 +113,9 @@ export default function Header() {
             )}
           </S.AuthSection>
         </S.Nav>
+
+        {/* ── 테마 토글 (데스크톱) ── */}
+        <ThemeToggle />
 
         {/* ── 인증 버튼 (데스크톱) ── */}
         <S.AuthSection $desktop>

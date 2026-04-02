@@ -104,7 +104,7 @@ export const DragOverlay = styled.div`
   position: absolute;
   inset: 0;
   z-index: 100;
-  background-color: rgba(15, 15, 26, 0.85);
+  background-color: ${({ theme }) => theme.header.bg};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -176,8 +176,8 @@ export const BackButton = styled.button`
   transition: all ${({ theme }) => theme.transitions.fast};
 
   &:hover {
-    background: rgba(124, 108, 240, 0.15);
-    color: ${({ theme }) => theme.colors.primary || '#7c6cf0'};
+    background: ${({ theme }) => theme.colors.primaryLight};
+    color: ${({ theme }) => theme.colors.primary};
   }
 
   &:active {
@@ -217,17 +217,17 @@ export const HeaderClearBtn = styled.button`
   font-weight: 600;
   padding: 6px 14px;
   border-radius: 16px;
-  border: 1px solid rgba(124, 108, 240, 0.5);
+  border: 1px solid ${({ theme }) => theme.colors.primary};
   background: transparent;
-  color: ${({ theme }) => theme.colors.primary || '#7c6cf0'};
+  color: ${({ theme }) => theme.colors.primary};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
   white-space: nowrap;
 
   &:hover {
-    background: rgba(124, 108, 240, 0.15);
-    border-color: ${({ theme }) => theme.colors.primary || '#7c6cf0'};
-    color: #e8e8f0;
+    background: ${({ theme }) => theme.colors.primaryLight};
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.textPrimary};
   }
 
   &:active {
@@ -700,7 +700,7 @@ export const MovieCardExplanation = styled.p`
   margin: 0;
   line-height: 1.5;
   padding: 6px 8px;
-  background-color: rgba(124, 108, 240, 0.08);
+  background-color: ${({ theme }) => theme.colors.primaryLight};
   border-radius: ${({ theme }) => theme.radius.sm};
   border-left: 3px solid ${({ theme }) => theme.colors.primary};
 `;
@@ -1041,7 +1041,7 @@ export const InputBtn = styled.button`
 
           &:hover:not(:disabled) {
             color: ${theme.colors.primary};
-            background-color: rgba(124, 108, 240, 0.1);
+            background-color: ${theme.colors.primaryLight};
           }
 
           &:disabled {
