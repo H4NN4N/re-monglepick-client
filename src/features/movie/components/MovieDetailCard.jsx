@@ -27,7 +27,7 @@ import { formatRating, formatRatingStars, formatRuntime, formatDate } from '../.
 /* styled-components — MovieDetailCard.styled.js */
 import * as S from './MovieDetailCard.styled';
 
-export default function MovieDetailCard({ movie, onWishlistToggle, isWishlisted = false }) {
+export default function MovieDetailCard({ movie, onWishlistToggle, isWishlisted = false, onWatchComplete }) {
   // 줄거리 펼치기/접기 상태
   const [isOverviewExpanded, setIsOverviewExpanded] = useState(false);
   // 트레일러 표시 상태
@@ -156,6 +156,13 @@ export default function MovieDetailCard({ movie, onWishlistToggle, isWishlisted 
               >
                 {isWishlisted ? '♥ 위시리스트에 추가됨' : '♡ 위시리스트에 추가'}
               </S.WishlistBtn>
+            )}
+
+            {/* Phase 5-2: 시청 완료 버튼 */}
+            {onWatchComplete && (
+              <S.TrailerBtn onClick={onWatchComplete}>
+                ✓ 시청 완료
+              </S.TrailerBtn>
             )}
 
             {/* 트레일러 버튼 */}

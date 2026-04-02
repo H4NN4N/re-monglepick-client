@@ -18,6 +18,8 @@ export const ROUTES = {
 
   /** AI 채팅 추천 페이지 */
   CHAT: '/chat',
+  /** AI 채팅 이어하기 (이전 세션 복원, 동적 파라미터 :sessionId) */
+  CHAT_SESSION: '/chat/:sessionId',
 
   /** 영화 상세 페이지 (동적 파라미터 :id) */
   MOVIE_DETAIL: '/movie/:id',
@@ -56,6 +58,21 @@ export const ROUTES = {
 
   /** Movie Match 페이지 — 두 영화 교집합 기반 함께 볼 영화 추천 */
   MATCH: '/match',
+
+  /** 추천 내역 페이지 — AI 추천 이력 조회, 찜/봤어요/피드백 */
+  RECOMMENDATIONS: '/recommendations',
+  /** 플레이리스트 페이지 — 사용자 영화 플레이리스트 관리 */
+  PLAYLIST: '/playlist',
+  /** 플레이리스트 상세 — 동적 파라미터 :id */
+  PLAYLIST_DETAIL: '/playlist/:id',
+  /** 업적/도장깨기 페이지 — 사용자 업적 및 도장깨기 진행 */
+  ACHIEVEMENT: '/achievement',
+  /** 월드컵 페이지 — 영화 이상형 월드컵 */
+  WORLDCUP: '/worldcup',
+  /** 로드맵 페이지 — 영화 학습 코스 */
+  ROADMAP: '/roadmap',
+  /** 로드맵 코스 상세 — 동적 파라미터 :id */
+  ROADMAP_DETAIL: '/roadmap/:id',
 };
 
 /**
@@ -83,9 +100,10 @@ export function buildPath(route, params = {}) {
  * Header 컴포넌트에서 반복 렌더링에 사용한다.
  */
 export const NAV_ITEMS = [
-  { path: ROUTES.HOME, label: '홈' },           // /home (영화 목록)
-  { path: ROUTES.CHAT, label: 'AI 추천' },       // /chat (SSE 스트리밍 채팅)
-  { path: ROUTES.MATCH, label: '둘이 영화 고르기' },  // /match (두 영화 교집합 추천)
-  { path: ROUTES.COMMUNITY, label: '커뮤니티' }, // /community (게시판 + 리뷰)
-  { path: ROUTES.SEARCH, label: '검색' },        // /search (키워드 + 필터)
+  { path: ROUTES.HOME, label: '홈' },              // /home (영화 목록)
+  { path: ROUTES.CHAT, label: 'AI 추천' },          // /chat (SSE 스트리밍 채팅)
+  { path: ROUTES.MATCH, label: '둘이 영화 고르기' },    // /match (두 영화 교집합 추천)
+  { path: ROUTES.WORLDCUP, label: '영화 월드컵' },    // /worldcup (이상형 월드컵)
+  { path: ROUTES.COMMUNITY, label: '커뮤니티' },     // /community (게시판 + 리뷰)
+  { path: ROUTES.SEARCH, label: '검색' },           // /search (키워드 + 필터)
 ];

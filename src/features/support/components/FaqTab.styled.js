@@ -114,8 +114,8 @@ export const Item = styled.div`
     box-shadow ${({ theme }) => theme.transitions.base};
 
   &:hover {
-    border-color: rgba(124, 108, 240, 0.4);
-    box-shadow: 0 0 15px rgba(124, 108, 240, 0.08);
+    border-color: ${({ theme }) => theme.glass.border};
+    box-shadow: ${({ theme }) => theme.shadows.glow};
   }
 `;
 

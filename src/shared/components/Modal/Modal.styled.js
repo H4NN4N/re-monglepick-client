@@ -103,7 +103,7 @@ export const Container = styled.div`
   /* 그림자 + 글로우 */
   box-shadow:
     ${({ theme }) => theme.shadows.xl},
-    0 0 40px rgba(124, 108, 240, 0.15);
+    ${({ theme }) => theme.shadows.glow};
 
   /* 등장/퇴장 애니메이션 */
   animation: ${({ $closing }) =>

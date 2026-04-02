@@ -157,7 +157,7 @@ export const PlanCard = styled.div`
   backdrop-filter: blur(8px) saturate(1.4);
   -webkit-backdrop-filter: blur(8px) saturate(1.4);
   border: 1px solid ${({ $isBest, theme }) =>
-    $isBest ? 'rgba(124,108,240,0.5)' : theme.glass.border};
+    $isBest ? theme.colors.primary : theme.glass.border};
   border-radius: ${({ theme }) => theme.radius.lg};
   text-align: center;
   transition: all ${({ theme }) => theme.transitions.fast};
@@ -184,9 +184,9 @@ export const PlanCard = styled.div`
   }
 
   &:hover {
-    border-color: rgba(124,108,240,0.4);
+    border-color: ${({ theme }) => theme.glass.border};
     transform: translateY(-4px);
-    box-shadow: ${({ theme }) => theme.shadows.lg}, 0 0 20px rgba(124,108,240,0.1);
+    box-shadow: ${({ theme }) => theme.shadows.lg}, ${({ theme }) => theme.shadows.glow};
   }
 
   ${media.mobile} {
@@ -551,7 +551,7 @@ export const OrdersTable = styled.table`
 
   /* 행 호버 — glass 효과 */
   tbody tr:hover {
-    background-color: rgba(124,108,240,0.05);
+    background-color: ${({ theme }) => theme.colors.primaryLight};
   }
 `;
 

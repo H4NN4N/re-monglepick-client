@@ -15,6 +15,8 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 /* 영화 검색 API — features/movie에서 가져옴 */
 import { searchMovies } from '../../movie/api/movieApi';
+/* Phase 2: 사용자 행동 이벤트 추적 */
+import { trackEvent } from '../../../shared/utils/eventTracker';
 /* 영화 목록 컴포넌트 — shared/components에서 가져옴 */
 import MovieList from '../../../shared/components/MovieList/MovieList';
 /* 스켈레톤 로더 — shared/components에서 가져옴 */
@@ -121,6 +123,14 @@ export default function SearchPage() {
       setTotalCount(nextTotal);
       setCurrentPage(page);
       setHasMore(page * PAGE_SIZE < nextTotal);
+
+      /* Phase 2: 검색 실행 이벤트 (첫 페이지만 기록) */
+      if (!append) {
+        trackEvent('search', null, {
+          query: searchQuery, searchType: currentSearchType,
+          genre: searchGenre, sort: searchSort, resultCount: nextTotal,
+        });
+      }
     } catch {
       if (!append) {
         setMovies([]);

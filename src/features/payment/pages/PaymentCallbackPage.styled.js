@@ -99,7 +99,8 @@ export const Details = styled.div`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.sm};
   padding: ${({ theme }) => theme.spacing.lg};
-  background: rgba(124, 108, 240, 0.05);
+  /* 상세 정보 bg — primaryLight 토큰으로 대체 */
+  background: ${({ theme }) => theme.colors.primaryLight};
   border-radius: ${({ theme }) => theme.radius.md};
 `;
 

@@ -15,6 +15,7 @@
 
 import styled, { css, keyframes } from 'styled-components';
 import { fadeInUp, cardShine } from '../../../shared/styles/animations';
+import { media } from '../../../shared/styles/media';
 
 const overlayFadeIn = keyframes`
   from { opacity: 0; }
@@ -26,8 +27,8 @@ const modalSlideUp = keyframes`
   to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 `;
 
-/* ── 640px 이하 모바일 브레이크포인트 ── */
-const mediaMobile = '@media (max-width: 640px)';
+/* media.js의 tablet(768px)로 통일 — 기존 640px보다 넓은 범위에서 반응형 적용 */
+const mediaMobile = media.tablet;
 
 /* ── 페이지 컨테이너 ── */
 
@@ -373,7 +374,7 @@ export const ProfileField = styled.div`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.lg};
   padding-bottom: ${({ theme }) => theme.spacing.md};
-  border-bottom: 1px solid rgba(124, 108, 240, 0.1);
+  border-bottom: 1px solid ${({ theme }) => theme.colors.primaryLight};
 
   &:last-child {
     border-bottom: none;
@@ -480,7 +481,7 @@ export const ModalContainer = styled.div`
   padding: ${({ theme }) => theme.spacing.xl};
   animation: ${modalSlideUp} 0.25s ease;
 
-  @media (max-width: 520px) {
+  ${media.mobile} {
     max-width: calc(100vw - 32px);
     padding: ${({ theme }) => theme.spacing.lg};
   }
@@ -521,7 +522,7 @@ export const ModalSection = styled.div`
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.md};
   padding-bottom: ${({ theme }) => theme.spacing.xl};
-  border-bottom: 1px solid rgba(124, 108, 240, 0.1);
+  border-bottom: 1px solid ${({ theme }) => theme.colors.primaryLight};
   margin-bottom: ${({ theme }) => theme.spacing.xl};
 
   &:last-of-type {
@@ -570,7 +571,7 @@ export const FormInput = styled.input`
   &:focus {
     outline: none;
     border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 0 2px rgba(124, 108, 240, 0.15);
+    box-shadow: ${({ theme }) => theme.glows.primary};
   }
 
   ${({ $error, theme }) =>
@@ -689,7 +690,7 @@ export const PreferencesTag = styled.button`
     color: ${({ theme }) => theme.colors.primary};
     background-color: ${({ theme }) => theme.colors.primaryLight};
     transform: translateY(-1px);
-    box-shadow: 0 0 12px rgba(124, 108, 240, 0.15);
+    box-shadow: ${({ theme }) => theme.shadows.glow};
   }
 
   /* 활성 태그 (선택됨) — 확장 대비 */

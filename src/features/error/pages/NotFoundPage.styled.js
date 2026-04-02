@@ -86,7 +86,7 @@ export const Wrapper = styled.div`
     width: 400px;
     height: 400px;
     border-radius: ${({ theme }) => theme.radius.full};
-    background: radial-gradient(circle, rgba(124, 108, 240, 0.18) 0%, transparent 70%);
+    background: ${({ theme }) => theme.gradients.glow};
     filter: blur(100px);
     pointer-events: none;
     animation: ${floatUpDown} 8s ease-in-out infinite;
@@ -228,7 +228,7 @@ export const SearchLink = styled.a`
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 15px rgba(124, 108, 240, 0.15);
+    box-shadow: ${({ theme }) => theme.shadows.glow};
     transform: translateY(-2px);
   }
 `;

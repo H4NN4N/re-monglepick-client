@@ -23,29 +23,30 @@ import styled, { keyframes, css } from 'styled-components';
 /* media 헬퍼는 랜딩 전용 브레이크포인트를 사용하므로 직접 @media 사용 */
 
 /* ================================================================
-   랜딩 전용 색상 상수 — theme에 없는 고유 값
+   랜딩 전용 색상 상수 — 고정 브랜드 색상 (theme 무관)
    ================================================================ */
-const LP_PRIMARY       = '#7c6cf0';
-const LP_PRIMARY_HOVER = '#6b5ce0';
-const LP_PRIMARY_DARK  = '#5a4cc0';
-const LP_PRIMARY_LIGHT = 'rgba(124, 108, 240, 0.15)';
-const LP_PRIMARY_GLOW  = 'rgba(124, 108, 240, 0.4)';
-
-const LP_BG_MAIN       = '#0a0a14';
-const LP_BG_CARD       = 'rgba(26, 26, 46, 0.6)';
-const LP_BG_GLASS      = 'rgba(26, 26, 46, 0.35)';
-
-const LP_BORDER        = 'rgba(124, 108, 240, 0.15)';
-const LP_BORDER_HOVER  = 'rgba(124, 108, 240, 0.4)';
-
+/* 아래 4개는 테마 전환과 무관한 고정 브랜드 강조색이므로 const 유지 */
 const LP_ACCENT_CYAN   = '#06d6a0';
 const LP_ACCENT_PINK   = '#ef476f';
 const LP_ACCENT_YELLOW = '#ffd166';
 const LP_ACCENT_BLUE   = '#118ab2';
 
-const LP_TEXT_PRIMARY   = '#eeeef5';
-const LP_TEXT_SECONDARY = '#9999b8';
-const LP_TEXT_MUTED     = '#555570';
+/*
+ * 나머지 13개 LP_* 상수는 theme 토큰으로 전환됨:
+ *   LP_PRIMARY        → theme.colors.primary
+ *   LP_PRIMARY_HOVER  → theme.colors.primaryHover
+ *   LP_PRIMARY_DARK   → theme.colors.primaryDark
+ *   LP_PRIMARY_LIGHT  → theme.colors.primaryLight
+ *   LP_PRIMARY_GLOW   → theme.landing.primaryGlow
+ *   LP_BG_MAIN        → theme.landing.bgMain
+ *   LP_BG_CARD        → theme.landing.bgCard
+ *   LP_BG_GLASS       → theme.landing.bgGlass
+ *   LP_BORDER         → theme.landing.border
+ *   LP_BORDER_HOVER   → theme.landing.borderHover
+ *   LP_TEXT_PRIMARY   → theme.landing.textPrimary
+ *   LP_TEXT_SECONDARY → theme.landing.textSecondary
+ *   LP_TEXT_MUTED     → theme.landing.textMuted
+ */
 
 const LP_FONT_EN = "'Inter', sans-serif";
 
@@ -121,10 +122,10 @@ const lpFadeInDown = keyframes`
 
 /** 글래스 패널 — 랜딩 전용 (더 투명한 배경 + 블러) */
 const lpGlassPanel = css`
-  background: ${LP_BG_GLASS};
+  background: ${({ theme }) => theme.landing.bgGlass};
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid ${LP_BORDER};
+  border: 1px solid ${({ theme }) => theme.landing.border};
 `;
 
 /* ================================================================
@@ -137,21 +138,21 @@ const lpGlassPanel = css`
  */
 export const LandingWrapper = styled.div`
   font-family: 'Noto Sans KR', sans-serif;
-  background: ${LP_BG_MAIN};
-  color: ${LP_TEXT_PRIMARY};
+  background: ${({ theme }) => theme.landing.bgMain};
+  color: ${({ theme }) => theme.landing.textPrimary};
   overflow-x: hidden;
   line-height: 1.6;
   min-height: 100vh;
 
   /* 랜딩 내부 앵커 링크 색상 */
   a {
-    color: ${LP_PRIMARY};
+    color: ${({ theme }) => theme.colors.primary};
     text-decoration: none;
   }
 
   /* 랜딩 전용 스크롤바 */
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: ${LP_BG_MAIN}; }
+  ::-webkit-scrollbar-track { background: ${({ theme }) => theme.landing.bgMain}; }
   ::-webkit-scrollbar-thumb {
     background: rgba(124, 108, 240, 0.3);
     border-radius: 100px;
@@ -179,7 +180,7 @@ const BgOrbBase = styled.div`
 export const BgOrb1 = styled(BgOrbBase)`
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, ${LP_PRIMARY} 0%, transparent 70%);
+  background: radial-gradient(circle, ${({ theme }) => theme.colors.primary} 0%, transparent 70%);
   top: -200px;
   left: -100px;
   animation: ${lpOrbFloat1} 20s ease-in-out infinite;
@@ -237,14 +238,15 @@ export const Nav = styled.nav`
   justify-content: space-between;
   backdrop-filter: blur(20px) saturate(1.8);
   -webkit-backdrop-filter: blur(20px) saturate(1.8);
-  background: rgba(10, 10, 20, 0.7);
-  border-bottom: 1px solid ${LP_BORDER};
+  /* 테마에 맞는 배경 — 다크: 반투명 어두운 색, 라이트: 반투명 흰색 */
+  background: ${({ theme }) => theme.header.bg};
+  border-bottom: 1px solid ${({ theme }) => theme.landing.border};
   transition: all 0.3s ease;
 
   /* 스크롤 시 더 불투명하게 + 그림자 */
-  ${({ $scrolled }) => $scrolled && css`
-    background: rgba(10, 10, 20, 0.92);
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  ${({ $scrolled, theme }) => $scrolled && css`
+    background: ${theme.header.mobileBg};
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
   `}
 
   /* 태블릿 */
@@ -265,7 +267,7 @@ export const NavLogo = styled.div`
 
   /* 로고 텍스트 그라데이션 */
   span {
-    background: linear-gradient(135deg, ${LP_PRIMARY}, ${LP_ACCENT_CYAN});
+    background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${LP_ACCENT_CYAN});
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -286,7 +288,7 @@ export const NavLinks = styled.div`
   align-items: center;
 
   a {
-    color: ${LP_TEXT_SECONDARY};
+    color: ${({ theme }) => theme.landing.textSecondary};
     font-size: 0.88rem;
     font-weight: 500;
     transition: color 0.2s;
@@ -300,12 +302,12 @@ export const NavLinks = styled.div`
       left: 0;
       width: 0;
       height: 2px;
-      background: ${LP_PRIMARY};
+      background: ${({ theme }) => theme.colors.primary};
       transition: width 0.3s ease;
     }
 
     &:hover {
-      color: ${LP_TEXT_PRIMARY};
+      color: ${({ theme }) => theme.landing.textPrimary};
     }
 
     &:hover::after {
@@ -323,7 +325,7 @@ export const NavLinks = styled.div`
 /** 네비게이션 CTA 버튼 */
 export const NavCta = styled.a`
   padding: 8px 20px;
-  background: linear-gradient(135deg, ${LP_PRIMARY}, ${LP_PRIMARY_DARK});
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.primaryDark});
   color: #fff !important;
   -webkit-text-fill-color: #fff;
   border-radius: 8px;
@@ -333,7 +335,7 @@ export const NavCta = styled.a`
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 15px ${LP_PRIMARY_GLOW};
+    box-shadow: 0 4px 15px ${({ theme }) => theme.landing.primaryGlow};
   }
 
   /* 언더라인 숨김 */
@@ -363,7 +365,7 @@ export const SectionLabel = styled.div`
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 3px;
-  color: ${LP_PRIMARY};
+  color: ${({ theme }) => theme.colors.primary};
   margin-bottom: 16px;
 
   /* 좌측 장식선 */
@@ -371,7 +373,7 @@ export const SectionLabel = styled.div`
     content: '';
     width: 30px;
     height: 2px;
-    background: ${LP_PRIMARY};
+    background: ${({ theme }) => theme.colors.primary};
   }
 `;
 
@@ -391,7 +393,7 @@ export const SectionTitle = styled.h2`
 /** 섹션 부제목 */
 export const SectionSubtitle = styled.p`
   font-size: 1.05rem;
-  color: ${LP_TEXT_SECONDARY};
+  color: ${({ theme }) => theme.landing.textSecondary};
   max-width: 600px;
   line-height: 1.7;
 `;
@@ -401,7 +403,7 @@ export const SectionSubtitle = styled.p`
  * SectionTitle 또는 CTA 내부 span에 사용한다.
  */
 export const GradientText = styled.span`
-  background: linear-gradient(135deg, ${LP_PRIMARY}, ${LP_ACCENT_CYAN});
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${LP_ACCENT_CYAN});
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -466,7 +468,7 @@ export const HeroParticles = styled.div`
     position: absolute;
     width: 4px;
     height: 4px;
-    background: ${LP_PRIMARY};
+    background: ${({ theme }) => theme.colors.primary};
     border-radius: 50%;
     opacity: 0;
     animation: ${lpParticleFloat} 8s ease-in-out infinite;
@@ -497,12 +499,12 @@ export const HeroBadge = styled.div`
   align-items: center;
   gap: 8px;
   padding: 8px 20px;
-  background: ${LP_BG_GLASS};
+  background: ${({ theme }) => theme.landing.bgGlass};
   backdrop-filter: blur(10px);
-  border: 1px solid ${LP_BORDER};
+  border: 1px solid ${({ theme }) => theme.landing.border};
   border-radius: 100px;
   font-size: 0.85rem;
-  color: ${LP_TEXT_SECONDARY};
+  color: ${({ theme }) => theme.landing.textSecondary};
   margin-bottom: 28px;
   animation: ${lpFadeInDown} 0.8s ease both;
 `;
@@ -528,7 +530,7 @@ export const HeroTitle = styled.h1`
   span {
     background: linear-gradient(
       135deg,
-      ${LP_PRIMARY} 0%,
+      ${({ theme }) => theme.colors.primary} 0%,
       #a78bfa 40%,
       ${LP_ACCENT_CYAN} 70%,
       ${LP_ACCENT_PINK} 100%
@@ -544,7 +546,7 @@ export const HeroTitle = styled.h1`
 /** 히어로 설명 텍스트 */
 export const HeroDesc = styled.p`
   font-size: 1.1rem;
-  color: ${LP_TEXT_SECONDARY};
+  color: ${({ theme }) => theme.landing.textSecondary};
   line-height: 1.8;
   max-width: 520px;
   margin-bottom: 36px;
@@ -566,7 +568,7 @@ export const HeroChecks = styled.div`
   margin-top: 32px;
   animation: ${lpFadeInUp} 0.8s ease 0.8s both;
   font-size: 0.88rem;
-  color: ${LP_TEXT_MUTED};
+  color: ${({ theme }) => theme.landing.textMuted};
 
   span {
     display: flex;
@@ -609,28 +611,28 @@ const BtnBase = styled.button`
 
 /** 주요 버튼 — 그라데이션 배경 */
 export const BtnPrimary = styled(BtnBase)`
-  background: linear-gradient(135deg, ${LP_PRIMARY}, ${LP_PRIMARY_DARK});
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${({ theme }) => theme.colors.primaryDark});
   color: #fff !important;
   -webkit-text-fill-color: #fff;
-  box-shadow: 0 4px 20px ${LP_PRIMARY_GLOW};
+  box-shadow: 0 4px 20px ${({ theme }) => theme.landing.primaryGlow};
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px ${LP_PRIMARY_GLOW};
+    box-shadow: 0 8px 30px ${({ theme }) => theme.landing.primaryGlow};
     color: #fff;
   }
 `;
 
 /** 글래스 버튼 — 반투명 배경 */
 export const BtnGlass = styled(BtnBase)`
-  background: ${LP_BG_GLASS};
+  background: ${({ theme }) => theme.landing.bgGlass};
   backdrop-filter: blur(10px);
-  color: ${LP_TEXT_PRIMARY};
-  border: 1px solid ${LP_BORDER};
+  color: ${({ theme }) => theme.landing.textPrimary};
+  border: 1px solid ${({ theme }) => theme.landing.border};
 
   &:hover {
-    background: ${LP_BG_CARD};
-    border-color: ${LP_BORDER_HOVER};
+    background: ${({ theme }) => theme.landing.bgCard};
+    border-color: ${({ theme }) => theme.landing.borderHover};
     transform: translateY(-2px);
   }
 `;
@@ -662,8 +664,8 @@ export const HeroCards = styled.div`
 export const MovieFloat = styled.div`
   position: absolute;
   width: 155px;
-  background: ${LP_BG_CARD};
-  border: 1px solid ${LP_BORDER};
+  background: ${({ theme }) => theme.landing.bgCard};
+  border: 1px solid ${({ theme }) => theme.landing.border};
   border-radius: 12px;
   padding: 12px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
@@ -704,7 +706,7 @@ export const MovieFloatTitle = styled.div`
 /** 플로팅 카드 장르 */
 export const MovieFloatGenre = styled.div`
   font-size: 0.7rem;
-  color: ${LP_TEXT_MUTED};
+  color: ${({ theme }) => theme.landing.textMuted};
 `;
 
 /** 플로팅 카드 하단 메타 (평점 + 연도) */
@@ -722,7 +724,7 @@ export const MovieFloatRating = styled.span`
 
 /** 플로팅 카드 연도 */
 export const MovieFloatYear = styled.span`
-  color: ${LP_TEXT_MUTED};
+  color: ${({ theme }) => theme.landing.textMuted};
 `;
 
 /* ================================================================
@@ -761,7 +763,7 @@ export const ChatWindowHeader = styled.div`
   align-items: center;
   gap: 10px;
   padding-bottom: 16px;
-  border-bottom: 1px solid ${LP_BORDER};
+  border-bottom: 1px solid ${({ theme }) => theme.landing.border};
   margin-bottom: 20px;
 `;
 
@@ -805,15 +807,15 @@ export const ChatBubble = styled.div`
   ${({ $isUser }) => $isUser ? css`
     /* 사용자 말풍선 — 우측 */
     margin-left: auto;
-    background: ${LP_PRIMARY_LIGHT};
+    background: ${({ theme }) => theme.colors.primaryLight};
     border: 1px solid rgba(124, 108, 240, 0.25);
     color: #c4b5fd;
     border-bottom-right-radius: 4px;
   ` : css`
     /* AI 말풍선 — 좌측 */
     background: rgba(255, 255, 255, 0.04);
-    border: 1px solid ${LP_BORDER};
-    color: ${LP_TEXT_SECONDARY};
+    border: 1px solid ${({ theme }) => theme.landing.border};
+    color: ${({ theme }) => theme.landing.textSecondary};
     border-bottom-left-radius: 4px;
   `}
 `;
@@ -829,14 +831,14 @@ export const ChatRecoCards = styled.div`
 export const ChatRecoCard = styled.div`
   flex: 1;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid ${LP_BORDER};
+  border: 1px solid ${({ theme }) => theme.landing.border};
   border-radius: 10px;
   padding: 12px;
   transition: all 0.3s;
   cursor: pointer;
 
   &:hover {
-    border-color: ${LP_BORDER_HOVER};
+    border-color: ${({ theme }) => theme.landing.borderHover};
     transform: translateY(-2px);
   }
 `;
@@ -851,7 +853,7 @@ export const ChatRecoCardTitle = styled.div`
 /** 추천 카드 장르 */
 export const ChatRecoCardGenre = styled.div`
   font-size: 0.7rem;
-  color: ${LP_TEXT_MUTED};
+  color: ${({ theme }) => theme.landing.textMuted};
   margin-bottom: 8px;
 `;
 
@@ -908,9 +910,9 @@ export const FeaturesPills = styled.div`
 export const FeaturePill = styled.button`
   padding: 8px 20px;
   border-radius: 100px;
-  border: 1px solid ${LP_BORDER};
+  border: 1px solid ${({ theme }) => theme.landing.border};
   background: transparent;
-  color: ${LP_TEXT_MUTED};
+  color: ${({ theme }) => theme.landing.textMuted};
   font-size: 0.85rem;
   font-family: 'Noto Sans KR', sans-serif;
   cursor: pointer;
@@ -924,10 +926,10 @@ export const FeaturePill = styled.button`
   }
 
   /* 활성 상태 — 피처 고유 색상 적용 */
-  ${({ $active, $color }) => $active && css`
-    border-color: ${$color || LP_PRIMARY};
-    background: ${$color ? $color + '1f' : LP_PRIMARY_LIGHT};
-    color: ${$color || LP_PRIMARY};
+  ${({ $active, $color, theme }) => $active && css`
+    border-color: ${$color || theme.colors.primary};
+    background: ${$color ? $color + '1f' : theme.colors.primaryLight};
+    color: ${$color || theme.colors.primary};
   `}
 `;
 
@@ -937,9 +939,9 @@ export const FeaturePill = styled.button`
  * @prop {string} $accent - 피처 고유 색상 (보더 색상에 33 투명도 적용)
  */
 export const FeatureDisplay = styled.div`
-  background: ${LP_BG_GLASS};
+  background: ${({ theme }) => theme.landing.bgGlass};
   backdrop-filter: blur(20px);
-  border: 1px solid ${({ $accent }) => $accent ? $accent + '33' : LP_BORDER};
+  border: 1px solid ${({ $accent, theme }) => $accent ? $accent + '33' : theme.landing.border};
   border-radius: 20px;
   padding: 48px 40px;
   display: flex;
@@ -969,8 +971,8 @@ export const FeatureDisplayTag = styled.div`
   font-weight: 600;
   letter-spacing: 1px;
   margin-bottom: 12px;
-  background: ${({ $color }) => $color ? $color + '22' : LP_PRIMARY_LIGHT};
-  color: ${({ $color }) => $color || LP_PRIMARY};
+  background: ${({ $color, theme }) => $color ? $color + '22' : theme.colors.primaryLight};
+  color: ${({ $color, theme }) => $color || theme.colors.primary};
 `;
 
 /** 피처 상세 제목 */
@@ -983,7 +985,7 @@ export const FeatureDisplayTitle = styled.h3`
 /** 피처 상세 설명 */
 export const FeatureDisplayDesc = styled.p`
   font-size: 0.95rem;
-  color: ${LP_TEXT_SECONDARY};
+  color: ${({ theme }) => theme.landing.textSecondary};
   line-height: 1.7;
   max-width: 480px;
 `;
@@ -1012,19 +1014,19 @@ export const FeaturesMiniGrid = styled.div`
  */
 export const FeatureMini = styled.div`
   padding: 20px;
-  background: ${LP_BG_GLASS};
-  border: 1px solid ${LP_BORDER};
+  background: ${({ theme }) => theme.landing.bgGlass};
+  border: 1px solid ${({ theme }) => theme.landing.border};
   border-radius: 14px;
   cursor: pointer;
   transition: all 0.3s;
 
   &:hover {
-    border-color: ${LP_BORDER_HOVER};
+    border-color: ${({ theme }) => theme.landing.borderHover};
     transform: translateY(-3px);
   }
 
   ${({ $active }) => $active && css`
-    border-color: ${LP_BORDER_HOVER};
+    border-color: ${({ theme }) => theme.landing.borderHover};
     background: rgba(124, 108, 240, 0.06);
   `}
 `;
@@ -1072,7 +1074,7 @@ export const HowToSteps = styled.div`
     height: 2px;
     background: linear-gradient(
       90deg,
-      ${LP_PRIMARY},
+      ${({ theme }) => theme.colors.primary},
       ${LP_ACCENT_CYAN},
       ${LP_ACCENT_PINK}
     );
@@ -1098,8 +1100,8 @@ export const StepCard = styled.div`
 
   /* 원형 아이콘 호버 효과 */
   &:hover .step-circle {
-    border-color: ${LP_BORDER_HOVER};
-    box-shadow: 0 0 20px ${LP_PRIMARY_GLOW};
+    border-color: ${({ theme }) => theme.landing.borderHover};
+    box-shadow: 0 0 20px ${({ theme }) => theme.landing.primaryGlow};
     transform: scale(1.08);
   }
 `;
@@ -1109,8 +1111,8 @@ export const StepCircle = styled.div`
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: ${LP_PRIMARY_LIGHT};
-  border: 1px solid ${LP_BORDER};
+  background: ${({ theme }) => theme.colors.primaryLight};
+  border: 1px solid ${({ theme }) => theme.landing.border};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1126,7 +1128,7 @@ export const StepNum = styled.div`
   font-family: ${LP_FONT_EN};
   font-size: 0.7rem;
   letter-spacing: 3px;
-  color: ${LP_PRIMARY};
+  color: ${({ theme }) => theme.colors.primary};
   margin-bottom: 10px;
   font-weight: 600;
 `;
@@ -1141,7 +1143,7 @@ export const StepTitle = styled.h3`
 /** 스텝 설명 */
 export const StepDesc = styled.p`
   font-size: 0.88rem;
-  color: ${LP_TEXT_SECONDARY};
+  color: ${({ theme }) => theme.landing.textSecondary};
   line-height: 1.7;
   white-space: pre-line;
 `;
@@ -1162,7 +1164,7 @@ export const DiffBox = styled.div`
     rgba(124, 108, 240, 0.08),
     rgba(6, 214, 160, 0.05)
   );
-  border: 1px solid ${LP_BORDER};
+  border: 1px solid ${({ theme }) => theme.landing.border};
   border-radius: 24px;
   padding: 56px;
   display: grid;
@@ -1191,12 +1193,12 @@ export const DiffItem = styled.div`
   gap: 14px;
   padding: 14px 16px;
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid ${LP_BORDER};
+  border: 1px solid ${({ theme }) => theme.landing.border};
   border-radius: 12px;
   transition: all 0.3s;
 
   &:hover {
-    border-color: ${LP_BORDER_HOVER};
+    border-color: ${({ theme }) => theme.landing.borderHover};
     transform: translateX(4px);
   }
 `;
@@ -1218,7 +1220,7 @@ export const DiffItemText = styled.div`
 /** 차별점 부 텍스트 */
 export const DiffItemSub = styled.div`
   font-size: 0.78rem;
-  color: ${LP_TEXT_MUTED};
+  color: ${({ theme }) => theme.landing.textMuted};
 `;
 
 /* ================================================================
@@ -1256,9 +1258,9 @@ export const TeamGrid = styled.div`
  */
 export const TeamCard = styled.div`
   position: relative;
-  background: ${LP_BG_GLASS};
+  background: ${({ theme }) => theme.landing.bgGlass};
   backdrop-filter: blur(20px);
-  border: 1px solid ${LP_BORDER};
+  border: 1px solid ${({ theme }) => theme.landing.border};
   border-radius: 20px;
   padding: 32px 28px;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1272,17 +1274,17 @@ export const TeamCard = styled.div`
     left: 0;
     right: 0;
     height: 3px;
-    background: ${({ $accent }) => $accent || LP_PRIMARY};
+    background: ${({ $accent, theme }) => $accent || theme.colors.primary};
     opacity: 0;
     transition: opacity 0.3s;
   }
 
   &:hover {
     transform: translateY(-8px);
-    border-color: ${LP_BORDER_HOVER};
+    border-color: ${({ theme }) => theme.landing.borderHover};
     box-shadow:
       0 20px 40px rgba(0, 0, 0, 0.4),
-      0 0 30px ${LP_PRIMARY_LIGHT};
+      0 0 30px ${({ theme }) => theme.colors.primaryLight};
   }
 
   &:hover::before {
@@ -1315,7 +1317,7 @@ export const TeamCardAvatar = styled.div`
   font-weight: 700;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   flex-shrink: 0;
-  background: ${({ $bg }) => $bg || LP_PRIMARY};
+  background: ${({ $bg, theme }) => $bg || theme.colors.primary};
   color: ${({ $color }) => $color || '#fff'};
 `;
 
@@ -1338,13 +1340,13 @@ export const TeamCardRole = styled.div`
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: ${({ $color }) => $color || LP_PRIMARY};
+  color: ${({ $color, theme }) => $color || theme.colors.primary};
 `;
 
 /** 팀원 설명 */
 export const TeamCardDesc = styled.p`
   font-size: 0.88rem;
-  color: ${LP_TEXT_SECONDARY};
+  color: ${({ theme }) => theme.landing.textSecondary};
   line-height: 1.7;
   margin-bottom: 16px;
 `;
@@ -1370,9 +1372,9 @@ export const Tag = styled.span`
   font-size: 0.72rem;
   font-weight: 500;
   white-space: nowrap;
-  border: 1px solid ${({ $border }) => $border || LP_BORDER};
+  border: 1px solid ${({ $border, theme }) => $border || theme.landing.border};
   background: ${({ $bg }) => $bg || 'transparent'};
-  color: ${({ $color }) => $color || LP_TEXT_SECONDARY};
+  color: ${({ $color, theme }) => $color || theme.landing.textSecondary};
 `;
 
 /** 진행률 헤더 */
@@ -1386,7 +1388,7 @@ export const ProgressHeader = styled.div`
 /** 진행률 레이블 */
 export const ProgressLabel = styled.span`
   font-size: 0.78rem;
-  color: ${LP_TEXT_MUTED};
+  color: ${({ theme }) => theme.landing.textMuted};
 `;
 
 /**
@@ -1398,7 +1400,7 @@ export const ProgressValue = styled.span`
   font-family: ${LP_FONT_EN};
   font-size: 0.85rem;
   font-weight: 700;
-  color: ${({ $color }) => $color || LP_PRIMARY};
+  color: ${({ $color, theme }) => $color || theme.colors.primary};
 `;
 
 /** 진행률 바 배경 */
@@ -1421,7 +1423,7 @@ export const ProgressFill = styled.div`
   border-radius: 100px;
   width: 0;
   transition: width 1.5s cubic-bezier(0.4, 0, 0.2, 1);
-  background: ${({ $gradient }) => $gradient || `linear-gradient(90deg, ${LP_PRIMARY}, ${LP_ACCENT_CYAN})`};
+  background: ${({ $gradient }) => $gradient || `linear-gradient(90deg, ${({ theme }) => theme.colors.primary}, ${LP_ACCENT_CYAN})`};
 `;
 
 /**
@@ -1440,9 +1442,9 @@ export const TeamCardReq = styled.div`
   border-radius: 100px;
   font-size: 0.75rem;
   font-weight: 500;
-  border: 1px solid ${({ $border }) => $border || LP_BORDER};
+  border: 1px solid ${({ $border, theme }) => $border || theme.landing.border};
   background: ${({ $bg }) => $bg || 'transparent'};
-  color: ${({ $color }) => $color || LP_TEXT_SECONDARY};
+  color: ${({ $color, theme }) => $color || theme.landing.textSecondary};
 `;
 
 /* ================================================================
@@ -1469,15 +1471,15 @@ export const TechCategories = styled.div`
 
 /** 기술 카테고리 카드 */
 export const TechCategory = styled.div`
-  background: ${LP_BG_GLASS};
+  background: ${({ theme }) => theme.landing.bgGlass};
   backdrop-filter: blur(20px);
-  border: 1px solid ${LP_BORDER};
+  border: 1px solid ${({ theme }) => theme.landing.border};
   border-radius: 16px;
   padding: 28px 24px;
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: ${LP_BORDER_HOVER};
+    border-color: ${({ theme }) => theme.landing.borderHover};
     transform: translateY(-4px);
   }
 `;
@@ -1488,7 +1490,7 @@ export const TechCategoryTitle = styled.h3`
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: ${LP_PRIMARY};
+  color: ${({ theme }) => theme.colors.primary};
   margin-bottom: 16px;
 `;
 
@@ -1505,7 +1507,7 @@ export const TechItem = styled.div`
   align-items: center;
   gap: 10px;
   font-size: 0.88rem;
-  color: ${LP_TEXT_SECONDARY};
+  color: ${({ theme }) => theme.landing.textSecondary};
 `;
 
 /**
@@ -1518,7 +1520,7 @@ export const TechItemDot = styled.span`
   height: 6px;
   border-radius: 50%;
   flex-shrink: 0;
-  background: ${({ $bg }) => $bg || LP_PRIMARY};
+  background: ${({ $bg, theme }) => $bg || theme.colors.primary};
 `;
 
 /* ================================================================
@@ -1545,16 +1547,16 @@ export const DataGrid = styled.div`
 
 /** 데이터 수치 카드 */
 export const DataCard = styled.div`
-  background: ${LP_BG_GLASS};
+  background: ${({ theme }) => theme.landing.bgGlass};
   backdrop-filter: blur(20px);
-  border: 1px solid ${LP_BORDER};
+  border: 1px solid ${({ theme }) => theme.landing.border};
   border-radius: 16px;
   padding: 28px 20px;
   text-align: center;
   transition: all 0.3s ease;
 
   &:hover {
-    border-color: ${LP_BORDER_HOVER};
+    border-color: ${({ theme }) => theme.landing.borderHover};
     transform: translateY(-4px);
   }
 `;
@@ -1564,7 +1566,7 @@ export const DataCardValue = styled.div`
   font-family: ${LP_FONT_EN};
   font-size: 2rem;
   font-weight: 800;
-  background: linear-gradient(135deg, ${LP_PRIMARY}, ${LP_ACCENT_CYAN});
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${LP_ACCENT_CYAN});
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1574,13 +1576,13 @@ export const DataCardValue = styled.div`
 /** 데이터 레이블 */
 export const DataCardLabel = styled.div`
   font-size: 0.85rem;
-  color: ${LP_TEXT_MUTED};
+  color: ${({ theme }) => theme.landing.textMuted};
 `;
 
 /** 데이터 부제 */
 export const DataCardSub = styled.div`
   font-size: 0.72rem;
-  color: ${LP_TEXT_MUTED};
+  color: ${({ theme }) => theme.landing.textMuted};
   margin-top: 4px;
   opacity: 0.7;
 `;
@@ -1616,7 +1618,7 @@ export const TimelineList = styled.div`
     width: 2px;
     background: linear-gradient(
       180deg,
-      ${LP_PRIMARY},
+      ${({ theme }) => theme.colors.primary},
       ${LP_ACCENT_CYAN},
       ${LP_ACCENT_PINK}
     );
@@ -1648,8 +1650,8 @@ export const TimelineDot = styled.div`
   z-index: 1;
 
   /* 기본 — 보라 */
-  background: ${LP_PRIMARY};
-  box-shadow: 0 0 12px ${LP_PRIMARY_GLOW};
+  background: ${({ theme }) => theme.colors.primary};
+  box-shadow: 0 0 12px ${({ theme }) => theme.landing.primaryGlow};
 
   /* 완료 — 시안 */
   ${({ $variant }) => $variant === 'done' && css`
@@ -1675,7 +1677,7 @@ export const TimelineContent = styled.div`
 
   p {
     font-size: 0.85rem;
-    color: ${LP_TEXT_MUTED};
+    color: ${({ theme }) => theme.landing.textMuted};
     margin: 0;
   }
 `;
@@ -1708,7 +1710,7 @@ export const TimelineBadge = styled.span`
   /* 예정 */
   ${({ $variant }) => $variant === 'pending' && css`
     background: rgba(85, 85, 112, 0.2);
-    color: ${LP_TEXT_MUTED};
+    color: ${({ theme }) => theme.landing.textMuted};
   `}
 `;
 
@@ -1739,7 +1741,7 @@ export const CtaTitle = styled.h2`
 /** CTA 설명 */
 export const CtaDesc = styled.p`
   font-size: 1rem;
-  color: ${LP_TEXT_SECONDARY};
+  color: ${({ theme }) => theme.landing.textSecondary};
   max-width: 480px;
   margin: 0 auto 36px;
   line-height: 1.7;
@@ -1756,7 +1758,7 @@ export const CtaButtons = styled.div`
 /** CTA 하단 안내 텍스트 */
 export const CtaSub = styled.p`
   font-size: 0.78rem;
-  color: ${LP_TEXT_MUTED};
+  color: ${({ theme }) => theme.landing.textMuted};
   margin-top: 20px;
 `;
 
@@ -1783,7 +1785,7 @@ export const CtaBtnGlass = styled(BtnGlass)`
 /** 랜딩 전용 푸터 */
 export const LpFooter = styled.footer`
   padding: 48px 0;
-  border-top: 1px solid ${LP_BORDER};
+  border-top: 1px solid ${({ theme }) => theme.landing.border};
   position: relative;
   z-index: 1;
 `;
@@ -1800,12 +1802,12 @@ export const FooterInner = styled.div`
 /** 푸터 텍스트 */
 export const FooterText = styled.span`
   font-size: 0.85rem;
-  color: ${LP_TEXT_MUTED};
+  color: ${({ theme }) => theme.landing.textMuted};
   margin: 0;
 
   /* MONGLEPICK 강조 */
   span {
-    color: ${LP_PRIMARY};
+    color: ${({ theme }) => theme.colors.primary};
     font-weight: 600;
   }
 `;
@@ -1815,5 +1817,5 @@ export const FooterLinks = styled.div`
   display: flex;
   gap: 24px;
   font-size: 0.8rem;
-  color: ${LP_TEXT_MUTED};
+  color: ${({ theme }) => theme.landing.textMuted};
 `;

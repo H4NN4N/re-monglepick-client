@@ -62,7 +62,7 @@ export const Poster = styled.div`
     left: 0;
     right: 0;
     height: 60px;
-    background: linear-gradient(to top, rgba(26, 26, 46, 0.8), transparent);
+    background: linear-gradient(to top, ${({ theme }) => theme.glass.bg}, transparent);
     pointer-events: none;
   }
 
@@ -321,7 +321,7 @@ export const Trailer = styled.div`
   border-radius: ${({ theme }) => theme.radius.lg};
   overflow: hidden;
   background-color: ${({ theme }) => theme.colors.bgMain};
-  box-shadow: 0 0 40px rgba(124, 108, 240, 0.1), 0 0 80px rgba(124, 108, 240, 0.05);
+  box-shadow: ${({ theme }) => theme.glows.primary};
 `;
 
 /* 트레일러 iframe */
@@ -433,7 +433,7 @@ export const CastItem = styled.div`
   /* 호버 시 아바타 테두리 + 글로우 강조 */
   &:hover > div {
     border-color: ${({ theme }) => theme.colors.primary};
-    box-shadow: 0 0 12px rgba(124, 108, 240, 0.3);
+    box-shadow: ${({ theme }) => theme.shadows.glow};
   }
 `;
 

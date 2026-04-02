@@ -78,8 +78,8 @@ export const Card = styled(Link)`
   &:hover {
     transform: translateY(-6px);
     box-shadow: ${({ theme }) => theme.shadows.lg},
-      0 0 30px rgba(124, 108, 240, 0.15);
-    border-color: rgba(124, 108, 240, 0.3);
+      ${({ theme }) => theme.shadows.glow};
+    border-color: ${({ theme }) => theme.glass.border};
   }
 `;
 
@@ -152,8 +152,8 @@ export const Overlay = styled.div`
   inset: 0;
   background: linear-gradient(
     to top,
-    rgba(15, 15, 26, 0.8) 0%,
-    rgba(124, 108, 240, 0.1) 40%,
+    ${({ theme }) => theme.colors.bgOverlay} 0%,
+    ${({ theme }) => theme.colors.primaryLight} 40%,
     transparent 100%
   );
   display: flex;
@@ -176,7 +176,7 @@ export const OverlayText = styled.span`
   padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.md}`};
   background: ${({ theme }) => theme.gradients.primary};
   border-radius: ${({ theme }) => theme.radius.full};
-  box-shadow: 0 0 15px rgba(124, 108, 240, 0.4);
+  box-shadow: ${({ theme }) => theme.shadows.glow};
 `;
 
 /** 영화 정보 영역 */

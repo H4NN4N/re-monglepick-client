@@ -11,9 +11,10 @@
 
 import styled, { css } from 'styled-components';
 import { gradientText } from '../../../shared/styles/mixins';
+import { media } from '../../../shared/styles/media';
 
-/* SearchPage는 640px 전용 브레이크포인트를 사용하므로 media.js(480/768)와 별도로 로컬 정의 */
-const mediaSmall = '@media (max-width: 640px)';
+/* media.js의 tablet(768px)로 통일 — 기존 640px보다 넓은 범위에서 반응형 적용 */
+const mediaSmall = media.tablet;
 
 /**
  * 페이지 최상위 컨테이너.
@@ -261,7 +262,7 @@ export const GenreButton = styled.button`
       background: ${theme.gradients.primary};
       border-color: transparent;
       color: white;
-      box-shadow: 0 0 15px rgba(124, 108, 240, 0.3);
+      box-shadow: ${theme.shadows.glow};
 
       &:hover {
         background: ${theme.gradients.primary};

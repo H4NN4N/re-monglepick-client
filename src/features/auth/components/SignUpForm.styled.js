@@ -11,6 +11,7 @@
 import styled, { css } from 'styled-components';
 import { fadeInUp } from '../../../shared/styles/animations';
 import { gradientText } from '../../../shared/styles/mixins';
+import { media } from '../../../shared/styles/media';
 
 /**
  * 폼 컨테이너 — glass-card + borderGlow 호버 + fadeInUp 등장.
@@ -36,6 +37,13 @@ export const Form = styled.form`
 
   &:hover {
     border-color: rgba(6, 214, 160, 0.5);
+  }
+
+  /* 모바일 — 풀너비 + 패딩 축소 */
+  ${media.mobile} {
+    max-width: 100%;
+    padding: ${({ theme }) => theme.spacing.lg};
+    gap: ${({ theme }) => theme.spacing.md};
   }
 `;
 
@@ -413,8 +421,9 @@ export const TermsBadge = styled.span`
   font-weight: ${({ theme }) => theme.typography.fontMedium};
   padding: 1px 6px;
   border-radius: ${({ theme }) => theme.radius.full};
-  background: ${({ $required }) =>
-    $required ? 'rgba(248, 113, 113, 0.15)' : 'rgba(124, 108, 240, 0.15)'};
+  /* 선택 항목 배지 bg — primaryLight 토큰으로 대체 */
+  background: ${({ $required, theme }) =>
+    $required ? 'rgba(248, 113, 113, 0.15)' : theme.colors.primaryLight};
   color: ${({ $required, theme }) =>
     $required ? theme.colors.error : theme.colors.primary};
 `;
@@ -438,6 +447,7 @@ export const TextLink = styled.a`
 
   &:hover {
     text-decoration: underline;
-    text-shadow: 0 0 8px rgba(124, 108, 240, 0.3);
+    /* text-shadow glow — theme 토큰으로 대체 */
+    text-shadow: ${({ theme }) => theme.shadows.glow};
   }
 `;

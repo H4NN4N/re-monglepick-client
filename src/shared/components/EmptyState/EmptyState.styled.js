@@ -25,7 +25,7 @@ export const Icon = styled.div`
   line-height: 1;
   margin-bottom: ${({ theme }) => theme.spacing.sm};
   animation: ${floatUpDown} 3s ease-in-out infinite;
-  filter: drop-shadow(0 0 15px rgba(124, 108, 240, 0.2));
+  filter: drop-shadow(${({ theme }) => theme.shadows.glow});
 `;
 
 /** 제목 — 굵고 눈에 띄는 텍스트 */

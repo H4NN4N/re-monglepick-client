@@ -61,13 +61,22 @@ import PaymentPage from '../features/payment/pages/PaymentPage';
 import SupportPage from '../features/support/pages/SupportPage';
 /* 둘이 영화 고르기 페이지 — features/match에서 가져옴 (비로그인 가능) */
 import MatchPage from '../features/match/pages/MatchPage';
+/* 추천 내역 페이지 — features/recommendation에서 가져옴 */
+import RecommendationPage from '../features/recommendation/pages/RecommendationPage';
+/* 플레이리스트 페이지 — features/playlist에서 가져옴 */
+import PlaylistPage from '../features/playlist/pages/PlaylistPage';
+/* 업적/도장깨기 페이지 — features/achievement에서 가져옴 */
+import AchievementPage from '../features/achievement/pages/AchievementPage';
+/* 영화 월드컵 페이지 — features/worldcup에서 가져옴 */
+import WorldcupPage from '../features/worldcup/pages/WorldcupPage';
+/* 영화 로드맵 페이지 — features/roadmap에서 가져옴 */
+import RoadmapPage from '../features/roadmap/pages/RoadmapPage';
 /* 404 에러 페이지 — features/error에서 가져옴 */
 import NotFoundPage from '../features/error/pages/NotFoundPage';
 
 /* 로딩 스피너 — shared/components에서 가져옴 (PrivateRoute 로딩 중 표시용) */
 import Loading from '../shared/components/Loading/Loading';
-/* App 전용 레이아웃 스타일 */
-import './App.css';
+/* App.css 삭제됨 — #root/.app 레이아웃은 GlobalStyle.js에서 관리 */
 
 /**
  * 인증이 필요한 라우트를 보호하는 래퍼 컴포넌트.
@@ -109,8 +118,10 @@ function App() {
         {/* OAuth 쿠키 교환 페이지 — Spring Security OAuth2 Client 방식 (쿠키→JWT 교환) */}
         <Route path="/cookie" element={<OAuthCookiePage />} />
 
-        {/* AI 채팅 추천 — 기존 전체 화면 채팅 UI (레이아웃 없음) */}
+        {/* AI 채팅 추천 — 전체 화면 채팅 UI (레이아웃 없음) */}
         <Route path="/chat" element={<div className="app"><ChatWindow /></div>} />
+        {/* AI 채팅 추천 — 이전 세션 이어하기 (URL에 sessionId 포함) */}
+        <Route path="/chat/:sessionId" element={<div className="app"><ChatWindow /></div>} />
 
         {/* ── MainLayout(Header/Footer) 포함 페이지 ── */}
 
@@ -200,13 +211,97 @@ function App() {
           }
         />
 
-        {/* 고객센터 — FAQ/도움말/문의하기/문의내역 */}
+        {/* 고객센터 — FAQ/도움말/AI챗봇/문의하기/문의내역 */}
         <Route
           path="/support"
           element={
             <MainLayout>
               <SupportPage />
             </MainLayout>
+          }
+        />
+
+        {/* 추천 내역 — AI 추천 이력 조회, 찜/봤어요/피드백 (인증 필수) */}
+        <Route
+          path="/recommendations"
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <RecommendationPage />
+              </MainLayout>
+            </PrivateRoute>
+          }
+        />
+
+        {/* 플레이리스트 목록 (인증 필수) */}
+        <Route
+          path="/playlist"
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <PlaylistPage />
+              </MainLayout>
+            </PrivateRoute>
+          }
+        />
+
+        {/* 플레이리스트 상세 (인증 필수) */}
+        <Route
+          path="/playlist/:id"
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <PlaylistPage />
+              </MainLayout>
+            </PrivateRoute>
+          }
+        />
+
+        {/* 업적/도장깨기 (인증 필수) */}
+        <Route
+          path="/achievement"
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <AchievementPage />
+              </MainLayout>
+            </PrivateRoute>
+          }
+        />
+
+        {/* 영화 이상형 월드컵 (인증 필수) */}
+        <Route
+          path="/worldcup"
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <WorldcupPage />
+              </MainLayout>
+            </PrivateRoute>
+          }
+        />
+
+        {/* 영화 로드맵 목록 (인증 필수) */}
+        <Route
+          path="/roadmap"
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <RoadmapPage />
+              </MainLayout>
+            </PrivateRoute>
+          }
+        />
+
+        {/* 영화 로드맵 코스 상세 (인증 필수) */}
+        <Route
+          path="/roadmap/:id"
+          element={
+            <PrivateRoute>
+              <MainLayout>
+                <RoadmapPage />
+              </MainLayout>
+            </PrivateRoute>
           }
         />
 

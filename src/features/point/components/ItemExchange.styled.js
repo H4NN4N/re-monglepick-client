@@ -149,10 +149,10 @@ export const Card = styled.div`
   }
 
   &:hover {
-    border-color: rgba(124, 108, 240, 0.4);
+    border-color: ${({ theme }) => theme.glass.border};
     transform: translateY(-4px);
     box-shadow: ${({ theme }) => theme.shadows.lg},
-      0 0 20px rgba(124, 108, 240, 0.1);
+      ${({ theme }) => theme.shadows.glow};
   }
 `;
 

@@ -64,7 +64,7 @@ export const cardHover = css`
   &:hover {
     transform: translateY(-4px);
     box-shadow: ${({ theme }) => theme.shadows.lg},
-      0 0 30px rgba(124, 108, 240, 0.1);
+      ${({ theme }) => theme.shadows.glow};
     border-color: ${({ theme }) => theme.glass.border};
   }
 `;

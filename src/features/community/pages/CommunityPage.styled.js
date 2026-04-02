@@ -106,8 +106,8 @@ export const Tab = styled.button`
   margin-bottom: -1px;
   border-radius: ${({ theme }) => theme.radius.md} ${({ theme }) => theme.radius.md} 0 0;
   /* 활성 탭 글로우 */
-  text-shadow: ${({ $active }) =>
-    $active ? '0 0 15px rgba(124,108,240,0.3)' : 'none'};
+  text-shadow: ${({ $active, theme }) =>
+    $active ? theme.shadows.glow : 'none'};
 
   &:hover {
     color: ${({ theme }) => theme.colors.textPrimary};
