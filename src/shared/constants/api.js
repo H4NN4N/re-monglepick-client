@@ -141,6 +141,10 @@ export const SEARCH_ENDPOINTS = {
   SEARCH: `${API_VERSION}/search`,
   /** 자동완성 - GET (query 파라미터 필요) */
   AUTOCOMPLETE: `${API_VERSION}/search/autocomplete`,
+  /** 최근 검색어 조회 - GET (JWT 필요) */
+  RECENT: `${API_VERSION}/search/recent`,
+  /** 최근 검색어 개별 삭제 - DELETE (keyword 파라미터 필요, JWT 필요) */
+  RECENT_KEYWORD: (keyword) => `${API_VERSION}/search/recent/${encodeURIComponent(keyword)}`,
   /** 검색 결과 클릭 로그 저장 - POST */
   CLICK_LOG: `${API_VERSION}/search/click`,
 };
