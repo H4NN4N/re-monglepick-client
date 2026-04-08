@@ -87,6 +87,51 @@ export async function searchMovies({
 }
 
 /**
+ * 로그인 사용자의 최근 검색 기록을 조회한다.
+ *
+ * Recommend API는 중복 제거된 최근 검색어를 최신순으로 페이지 단위 반환한다.
+ *
+ * @param {Object} [params] - 조회 파라미터
+ * @param {number} [params.offset=0] - 중복 제거된 목록 기준 시작 위치
+ * @param {number} [params.limit=30] - 페이지당 조회 개수
+ * @returns {Promise<{searches: Array, pagination: Object}>}
+ */
+export async function getRecentSearches({ offset = 0, limit = 30 } = {}) {
+  const data = await recommendApi.get(SEARCH_ENDPOINTS.RECENT, {
+    params: { offset, limit },
+  });
+
+  return {
+    searches: data?.searches || [],
+    pagination: data?.pagination || {
+      offset,
+      limit,
+      has_more: false,
+      next_offset: null,
+    },
+  };
+}
+
+/**
+ * 로그인 사용자의 특정 최근 검색어를 삭제한다.
+ *
+ * @param {string} keyword - 삭제할 검색 키워드
+ * @returns {Promise<Object>} 삭제 결과
+ */
+export async function deleteRecentSearchKeyword(keyword) {
+  return recommendApi.delete(SEARCH_ENDPOINTS.RECENT_KEYWORD(keyword));
+}
+
+/**
+ * 로그인 사용자의 최근 검색 기록을 전체 삭제한다.
+ *
+ * @returns {Promise<Object>} 삭제 결과
+ */
+export async function deleteAllRecentSearches() {
+  return recommendApi.delete(SEARCH_ENDPOINTS.RECENT);
+}
+
+/**
  * 검색 결과 클릭 로그를 저장한다.
  *
  * @param {Object} params - 클릭 로그 파라미터
