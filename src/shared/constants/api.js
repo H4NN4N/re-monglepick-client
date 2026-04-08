@@ -27,6 +27,10 @@ export const AUTH_ENDPOINTS = {
   REFRESH: `/jwt/refresh`,
   /** 로그아웃 - POST */
   LOGOUT: `${API_VERSION}/auth/logout`,
+  /** 비밀번호 찾기 — 이메일 존재 확인 - POST */
+  PASSWORD_CHECK: `${API_VERSION}/auth/password/check`,
+  /** 비밀번호 재설정 - POST */
+  PASSWORD_RESET: `${API_VERSION}/auth/password/reset`,
   /** OAuth 소셜 로그인 - POST (provider 파라미터 필요) */
   OAUTH: (provider) => `${API_VERSION}/auth/oauth/${provider}`,
 };
