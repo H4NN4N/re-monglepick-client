@@ -11,6 +11,15 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../../shared/constants/routes';
 import * as S from './LandingPage.styled';
+import {
+  InfraArchDiagram,
+  ERDDiagram,
+  CodeStructDiagram,
+  AgentFlowDiagram,
+  RAGDiagram,
+} from '../components/LandingDiagrams';
+import IAModal from '../components/IAModal';
+import PlanningModal from '../components/PlanningModal';
 
 /* ── 피처 데이터 ── */
 const FEATURES = [
@@ -21,6 +30,52 @@ const FEATURES = [
   { icon: '🎲', title: '블라인드 데이트 추천', desc: '제목은 숨기고 힌트만! 뜻밖의 명작을 발견하는 즐거움을 드려요.', tag: '서프라이즈', color: '#a78bfa' },
   { icon: '🎬', title: 'AI 퀴즈 & 씬 맞추기', desc: '매일 새로운 영화 퀴즈와 스틸컷 맞추기 게임으로 커뮤니티가 살아있어요.', tag: '커뮤니티', color: '#f97316' },
 ];
+
+/* ── 관리/모니터링/참고 링크 데이터 ── */
+const QUICK_LINKS = {
+  /* 서비스 관리 */
+  services: [
+    { icon: '🛠️', label: '관리자 페이지', url: 'http://210.109.15.187:5174', desc: 'Admin 대시보드 · 운영 도구' },
+    { icon: '📊', label: 'Grafana 대시보드', url: 'http://210.109.15.187:3000', desc: 'Prometheus 메트릭 모니터링' },
+    { icon: '📋', label: 'Kibana (ELK)', url: 'http://210.109.15.187:5601', desc: '로그 검색 · 시각화' },
+    { icon: '🔍', label: 'Prometheus', url: 'http://210.109.15.187:9090', desc: '메트릭 쿼리 · 알림 규칙' },
+  ],
+  /* 팀원별 GitHub & 참고 링크 */
+  members: [
+    {
+      name: '윤형주', role: 'Backend · AI Engineer', color: '#7c6cf0',
+      links: [
+        { label: 'GitHub', url: 'https://github.com/yhj0904' },
+      ],
+    },
+    {
+      name: '김민규', role: 'Team Lead · Backend', color: '#ef476f',
+      links: [
+        { label: 'GitHub', url: 'https://github.com/min-gyu' },
+      ],
+    },
+    {
+      name: '정한나', role: 'Search & Recommendation', color: '#06d6a0',
+      links: [
+        { label: 'GitHub', url: 'https://github.com/hanna-jeong' },
+      ],
+    },
+    {
+      name: '이민수', role: 'Community & Social', color: '#ffd166',
+      links: [
+        { label: 'GitHub', url: 'https://github.com/minsu-lee' },
+      ],
+    },
+  ],
+  /* 프로젝트 레포지토리 */
+  repos: [
+    { label: 'Backend', url: 'https://github.com/monglepick/monglepick-backend', desc: 'Spring Boot 3 + JPA' },
+    { label: 'AI Agent', url: 'https://github.com/monglepick/monglepick-agent', desc: 'FastAPI + LangGraph' },
+    { label: 'Client', url: 'https://github.com/monglepick/monglepick-client', desc: 'React + Vite' },
+    { label: 'Recommend', url: 'https://github.com/monglepick/monglepick-recommend', desc: 'FastAPI + Redis' },
+    { label: 'Admin', url: 'https://github.com/monglepick/monglepick-admin', desc: 'React + Vite' },
+  ],
+};
 
 /* ── 플로팅 무비카드 데이터 ── */
 const MOVIE_CARDS = [
@@ -69,6 +124,9 @@ export default function LandingPage() {
   const [scrolled, setScrolled] = useState(false);
   /* 모바일 햄버거 메뉴 열림/닫힘 상태 */
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  /* 정보구조도 / 초기 기획서 모달 열림 상태 */
+  const [isIAOpen, setIsIAOpen] = useState(false);
+  const [isPlanningOpen, setIsPlanningOpen] = useState(false);
   const particlesRef = useRef(null);
   const featureTimerRef = useRef(null);
 
@@ -173,6 +231,7 @@ export default function LandingPage() {
           <a href="#lp-team" onClick={e => scrollTo(e, 'lp-team')}>팀 소개</a>
           <a href="#lp-tech" onClick={e => scrollTo(e, 'lp-tech')}>기술</a>
           <a href="#lp-progress" onClick={e => scrollTo(e, 'lp-progress')}>진행현황</a>
+          <a href="#lp-links" onClick={e => scrollTo(e, 'lp-links')}>링크</a>
           <S.NavCta as={Link} to={ROUTES.HOME}>시작하기</S.NavCta>
         </S.NavLinks>
         {/* 모바일 햄버거 버튼 (600px 이하에서만 노출) */}
@@ -193,6 +252,7 @@ export default function LandingPage() {
         <a href="#lp-team" onClick={e => scrollTo(e, 'lp-team')}>팀 소개</a>
         <a href="#lp-tech" onClick={e => scrollTo(e, 'lp-tech')}>기술</a>
         <a href="#lp-progress" onClick={e => scrollTo(e, 'lp-progress')}>진행현황</a>
+        <a href="#lp-links" onClick={e => scrollTo(e, 'lp-links')}>링크</a>
         <S.NavCta as={Link} to={ROUTES.HOME} onClick={() => setIsMobileNavOpen(false)}>
           시작하기
         </S.NavCta>
@@ -661,6 +721,195 @@ export default function LandingPage() {
         </S.Container>
       </S.Cta>
 
+      {/* ── 프로젝트 허브 (프로젝트명 + 서비스 링크 + 아키텍처 다이어그램 + 팀 Git) ── */}
+      <S.QuickLinks id="lp-links">
+        <S.Container>
+
+          {/* ── 프로젝트 공식 명칭 ── */}
+          <S.Reveal className="lp-reveal">
+            <S.ProjectTitleBlock>
+              <S.ProjectAlias>몽글픽</S.ProjectAlias>
+              <S.ProjectNameKr>
+                사용자 행동 패턴과 자체 데이터를 결합하여 최적의 콘텐츠를 제안하는<br />
+                RAG 기반 파인튜닝 LLM(EXAONE 4.0 LoRA) AI컨텐츠 추천 플랫폼
+              </S.ProjectNameKr>
+              <S.ProjectNameEn>
+                AI Content Recommendation Platform Using a RAG-Based Fine-Tuned LLM
+                (EXAONE 4.0 LoRA) to Deliver Optimal Content Through the Integration
+                of User Behavior Patterns and Proprietary Data
+              </S.ProjectNameEn>
+            </S.ProjectTitleBlock>
+          </S.Reveal>
+
+          {/* ── 프로젝트 문서 버튼 (정보구조도 + 초기 기획서 모달) ── */}
+          <S.Reveal className="lp-reveal">
+            <S.DocButtonGrid>
+              <S.DocButton $color="#FF6B35" onClick={() => setIsIAOpen(true)}>
+                <S.DocButtonIcon $color="#FF6B35">📐</S.DocButtonIcon>
+                정보구조도 (IA)
+              </S.DocButton>
+              <S.DocButton $color="#7c6cf0" onClick={() => setIsPlanningOpen(true)}>
+                <S.DocButtonIcon $color="#7c6cf0">📋</S.DocButtonIcon>
+                초기 기획서
+              </S.DocButton>
+            </S.DocButtonGrid>
+          </S.Reveal>
+
+          {/* ── 서비스 관리 & 모니터링 (프로젝트명 바로 아래) ── */}
+          <S.Reveal className="lp-reveal">
+            <S.QLSubTitle>서비스 관리 & 모니터링</S.QLSubTitle>
+            <S.QLServiceGrid>
+              {QUICK_LINKS.services.map((s) => (
+                <S.QLServiceCard key={s.label} href={s.url} target="_blank" rel="noopener noreferrer">
+                  <S.QLServiceIcon>{s.icon}</S.QLServiceIcon>
+                  <S.QLServiceInfo>
+                    <S.QLServiceLabel>{s.label}</S.QLServiceLabel>
+                    <S.QLServiceDesc>{s.desc}</S.QLServiceDesc>
+                  </S.QLServiceInfo>
+                  <S.QLArrow>&rarr;</S.QLArrow>
+                </S.QLServiceCard>
+              ))}
+            </S.QLServiceGrid>
+          </S.Reveal>
+
+          {/* ── 인프라 아키텍처 (SVG 다이어그램 + 실제 이미지) ── */}
+          <S.Reveal className="lp-reveal">
+            <S.DiagramSection>
+              <S.DiagramTitle>Infrastructure Architecture</S.DiagramTitle>
+              <S.DiagramDesc>카카오 클라우드 4-VM 기반 서비스 토폴로지</S.DiagramDesc>
+              <InfraArchDiagram />
+            </S.DiagramSection>
+          </S.Reveal>
+
+          {/* ── 인프라 아키텍처 실제 다이어그램 (프로덕션 / 스테이징 / 전체) ── */}
+          <S.Reveal className="lp-reveal">
+            <S.DiagramSection>
+              <S.DiagramTitle>Infrastructure Diagrams</S.DiagramTitle>
+              <S.DiagramDesc>프로덕션 · 스테이징 · 전체 인프라 아키텍처 다이어그램</S.DiagramDesc>
+              <S.DiagramImageGrid $cols={1}>
+                <div>
+                  <S.DiagramImage src="/diagrams/infra_production.png" alt="프로덕션 인프라 아키텍처" loading="lazy" />
+                  <S.DiagramCaption>Production — 카카오 클라우드 VPC 4-VM 구성</S.DiagramCaption>
+                </div>
+              </S.DiagramImageGrid>
+              <S.DiagramImageGrid $cols={2} style={{ marginTop: 16 }}>
+                <div>
+                  <S.DiagramImage src="/diagrams/infra_staging.png" alt="스테이징 인프라 아키텍처" loading="lazy" />
+                  <S.DiagramCaption>Staging — MacBook Air Docker 환경</S.DiagramCaption>
+                </div>
+                <div>
+                  <S.DiagramImage src="/diagrams/infra_full.png" alt="전체 인프라 아키텍처" loading="lazy" />
+                  <S.DiagramCaption>Full Architecture — 스테이징 → 프로덕션 전체 흐름</S.DiagramCaption>
+                </div>
+              </S.DiagramImageGrid>
+            </S.DiagramSection>
+          </S.Reveal>
+
+          {/* ── ERD 개요 (SVG 다이어그램 + 실제 ERD 이미지) ── */}
+          <S.Reveal className="lp-reveal">
+            <S.DiagramSection>
+              <S.DiagramTitle>ERD Overview</S.DiagramTitle>
+              <S.DiagramDesc>85개 테이블 · 8개 도메인 그룹 관계도</S.DiagramDesc>
+              <ERDDiagram />
+            </S.DiagramSection>
+          </S.Reveal>
+          <S.Reveal className="lp-reveal">
+            <S.DiagramSection>
+              <S.DiagramTitle>ERD Diagram</S.DiagramTitle>
+              <S.DiagramDesc>MySQL 85개 테이블 전체 ERD</S.DiagramDesc>
+              <S.DiagramImage src="/diagrams/monglepick_ERD.png" alt="몽글픽 ERD" loading="lazy" />
+            </S.DiagramSection>
+          </S.Reveal>
+
+          {/* ── 코드 구조 ── */}
+          <S.Reveal className="lp-reveal">
+            <S.DiagramSection>
+              <S.DiagramTitle>Code Structure</S.DiagramTitle>
+              <S.DiagramDesc>5개 서비스 · 주요 디렉터리 구조</S.DiagramDesc>
+              <CodeStructDiagram />
+            </S.DiagramSection>
+          </S.Reveal>
+
+          {/* ── Agent 노드 구성 ── */}
+          <S.Reveal className="lp-reveal">
+            <S.DiagramSection>
+              <S.DiagramTitle>Chat Agent Graph</S.DiagramTitle>
+              <S.DiagramDesc>LangGraph 16노드 StateGraph · 4분기 처리 흐름</S.DiagramDesc>
+              <AgentFlowDiagram />
+            </S.DiagramSection>
+          </S.Reveal>
+
+          {/* ── RAG 파이프라인 ── */}
+          <S.Reveal className="lp-reveal">
+            <S.DiagramSection>
+              <S.DiagramTitle>RAG Pipeline</S.DiagramTitle>
+              <S.DiagramDesc>Qdrant + Elasticsearch + Neo4j → RRF 하이브리드 검색</S.DiagramDesc>
+              <RAGDiagram />
+            </S.DiagramSection>
+          </S.Reveal>
+
+          {/* ── 화면설계 (Figma → 실제 이미지) ── */}
+          <S.Reveal className="lp-reveal">
+            <S.DiagramSection>
+              <S.DiagramTitle>Screen Design</S.DiagramTitle>
+              <S.DiagramDesc>UI/UX 화면설계서</S.DiagramDesc>
+              <S.DiagramImage src="/diagrams/screen_design.png" alt="몽글픽 화면설계" loading="lazy" />
+            </S.DiagramSection>
+          </S.Reveal>
+
+          {/* ── 팀원 GitHub ── */}
+          <S.Reveal className="lp-reveal" $delay="0.1s">
+            <S.QLSubTitle>팀원 GitHub</S.QLSubTitle>
+            <S.QLMemberGrid>
+              {QUICK_LINKS.members.map((m) => (
+                <S.QLMemberCard key={m.name} $accent={m.color}>
+                  <S.QLMemberAvatar $bg={m.color}>
+                    {m.name.charAt(0)}
+                  </S.QLMemberAvatar>
+                  <S.QLMemberInfo>
+                    <S.QLMemberName>{m.name}</S.QLMemberName>
+                    <S.QLMemberRole>{m.role}</S.QLMemberRole>
+                  </S.QLMemberInfo>
+                  <S.QLMemberLinks>
+                    {m.links.map((l) => (
+                      <S.QLMemberLink
+                        key={l.label}
+                        href={l.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        $color={m.color}
+                      >
+                        {l.label}
+                      </S.QLMemberLink>
+                    ))}
+                  </S.QLMemberLinks>
+                </S.QLMemberCard>
+              ))}
+            </S.QLMemberGrid>
+          </S.Reveal>
+
+          {/* ── 프로젝트 레포지토리 ── */}
+          <S.Reveal className="lp-reveal" $delay="0.2s">
+            <S.QLSubTitle>프로젝트 레포지토리</S.QLSubTitle>
+            <S.QLRepoGrid>
+              {QUICK_LINKS.repos.map((r) => (
+                <S.QLRepoCard key={r.label} href={r.url} target="_blank" rel="noopener noreferrer">
+                  <S.QLRepoIcon>
+                    <svg viewBox="0 0 16 16" width="20" height="20" fill="currentColor">
+                      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+                    </svg>
+                  </S.QLRepoIcon>
+                  <div>
+                    <S.QLRepoName>{r.label}</S.QLRepoName>
+                    <S.QLRepoDesc>{r.desc}</S.QLRepoDesc>
+                  </div>
+                </S.QLRepoCard>
+              ))}
+            </S.QLRepoGrid>
+          </S.Reveal>
+        </S.Container>
+      </S.QuickLinks>
+
       {/* ── 푸터 ── */}
       <S.LpFooter>
         <S.Container>
@@ -675,6 +924,12 @@ export default function LandingPage() {
           </S.FooterInner>
         </S.Container>
       </S.LpFooter>
+
+      {/* ── 정보구조도 모달 ── */}
+      <IAModal isOpen={isIAOpen} onClose={() => setIsIAOpen(false)} />
+
+      {/* ── 초기 기획서 모달 ── */}
+      <PlanningModal isOpen={isPlanningOpen} onClose={() => setIsPlanningOpen(false)} />
     </S.LandingWrapper>
   );
 }

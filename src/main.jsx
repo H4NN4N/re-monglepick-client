@@ -21,6 +21,8 @@ import useThemeStore from './shared/stores/useThemeStore';
 import GlobalStyle from './shared/styles/GlobalStyle';
 /* 모달 컨텍스트 프로바이더 */
 import { ModalProvider } from './shared/components/Modal';
+/* 리워드 토스트 프로바이더 */
+import { RewardToastProvider } from './shared/components/RewardToast';
 /* 메인 App 컴포넌트 */
 import App from './app/App.jsx';
 
@@ -44,7 +46,9 @@ function Root() {
     <ThemeProvider theme={theme}>
       <GlobalStyle />
       <ModalProvider>
-        <App />
+        <RewardToastProvider>
+          <App />
+        </RewardToastProvider>
       </ModalProvider>
     </ThemeProvider>
   );

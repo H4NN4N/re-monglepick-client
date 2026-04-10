@@ -210,6 +210,68 @@ export const HeroOrb2 = styled.div`
   animation: ${floatUpDown} 10s ease-in-out infinite 2s;
 `;
 
+/* ── 공지사항 배너 섹션 ── */
+
+/** 공지 배너 래퍼 — 히어로 바로 아래 배치 */
+export const NoticeBanner = styled.section`
+  max-width: ${({ theme }) => theme.layout.contentMaxWidth};
+  margin: 0 auto;
+  padding: 0 ${({ theme }) => theme.spacing.lg};
+`;
+
+/** 개별 공지 카드 */
+export const NoticeCard = styled.a`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  background: ${({ theme }) => theme.glass.bg};
+  backdrop-filter: ${({ theme }) => theme.glass.blur};
+  -webkit-backdrop-filter: ${({ theme }) => theme.glass.blur};
+  border: 1px solid ${({ theme }) => theme.glass.border};
+  text-decoration: none;
+  cursor: ${({ href }) => (href ? 'pointer' : 'default')};
+  transition: all ${({ theme }) => theme.transitions.fast};
+  animation: ${fadeInUp} 0.4s ease both;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: ${({ theme }) => theme.shadows.glow};
+    transform: translateY(-1px);
+  }
+`;
+
+/** 공지 타입 배지 (BANNER/POPUP/MODAL) */
+export const NoticeTypeBadge = styled.span`
+  flex-shrink: 0;
+  padding: 3px 10px;
+  border-radius: ${({ theme }) => theme.radius.full};
+  font-size: ${({ theme }) => theme.typography.textXs};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  background: ${({ theme }) => theme.colors.primary};
+  color: #fff;
+`;
+
+/** 공지 제목 텍스트 */
+export const NoticeTitle = styled.span`
+  flex: 1;
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontMedium};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+/** 공지 날짜 */
+export const NoticeDate = styled.span`
+  flex-shrink: 0;
+  font-size: ${({ theme }) => theme.typography.textXs};
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
 /* ── 추천 질문 카드 섹션 ── */
 export const Suggestions = styled.section`
   padding: ${({ theme }) => theme.spacing.xxxl} ${({ theme }) => theme.spacing.lg};

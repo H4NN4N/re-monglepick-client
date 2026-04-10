@@ -21,6 +21,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import useAuthStore from '../../../shared/stores/useAuthStore';
 import { useModal } from '../../../shared/components/Modal';
+import { useRewardToast } from '../../../shared/components/RewardToast';
 import Loading from '../../../shared/components/Loading/Loading';
 import { formatRelativeTime } from '../../../shared/utils/formatters';
 import {
@@ -38,6 +39,8 @@ export default function CommentSection({ postId }) {
   /* 인증 상태 */
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
   const currentUser = useAuthStore((s) => s.user);
+  /* 리워드 획득 토스트 */
+  const { showReward } = useRewardToast();
 
   /* 커스텀 모달 */
   const { showAlert, showConfirm } = useModal();
@@ -89,6 +92,10 @@ export default function CommentSection({ postId }) {
       /* 작성 성공 시 목록 맨 아래에 추가 (서버 기본 정렬: createdAt ASC) */
       setComments((prev) => [...prev, newComment]);
       setContent('');
+      // 리워드 지급 시 토스트 알림
+      if (newComment?.rewardPoints > 0) {
+        showReward(newComment.rewardPoints, '댓글 작성');
+      }
     } catch (err) {
       await showAlert({
         title: '댓글 작성 실패',

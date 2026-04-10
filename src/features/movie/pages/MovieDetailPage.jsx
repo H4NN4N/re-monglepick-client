@@ -12,6 +12,8 @@ import { useParams } from 'react-router-dom';
 import { trackEvent } from '../../../shared/utils/eventTracker';
 /* 커스텀 모달 훅 — window.alert 대체 */
 import { useModal } from '../../../shared/components/Modal';
+/* 리워드 획득 토스트 — 활동 리워드 알림 */
+import { useRewardToast } from '../../../shared/components/RewardToast';
 /* 영화 API — 같은 feature 내의 movieApi에서 가져옴 */
 import {
   getMovie,
@@ -43,6 +45,8 @@ import * as S from './MovieDetailPage.styled';
 export default function MovieDetailPage() {
   /* 커스텀 모달 — window.alert 대체 */
   const { showAlert } = useModal();
+  /* 리워드 획득 토스트 */
+  const { showReward } = useRewardToast();
 
   // URL 파라미터에서 영화 ID 추출
   const { id } = useParams();
@@ -256,13 +260,17 @@ export default function MovieDetailPage() {
    */
   const handleFeedbackSubmit = async (rating, content) => {
     try {
-      await backendApi.post(`/api/v1/movies/${id}/reviews`, {
+      const result = await backendApi.post(`/api/v1/movies/${id}/reviews`, {
         movieId: id,
         rating,
         content: content || null,
         reviewSource: 'detail',
         reviewCategoryCode: 'AI_RECOMMEND',
       });
+      // 리워드 지급 시 토스트 알림
+      if (result?.rewardPoints > 0) {
+        showReward(result.rewardPoints, '리뷰 작성');
+      }
     } catch {
       // 중복 리뷰(409) 포함 모든 오류: UX 차단하지 않음
     }

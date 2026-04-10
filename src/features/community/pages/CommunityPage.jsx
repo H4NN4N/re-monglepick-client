@@ -24,6 +24,8 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 /* 커스텀 모달 훅 — window.alert 대체 */
 import { useModal } from '../../../shared/components/Modal';
+/* 리워드 획득 토스트 — 활동 리워드 알림 */
+import { useRewardToast } from '../../../shared/components/RewardToast';
 /* 커뮤니티 API — 같은 feature 내의 communityApi에서 가져옴 */
 import { getPosts, createPost } from '../api/communityApi';
 /* 인증 Context 훅 — app/providers에서 가져옴 */
@@ -72,6 +74,8 @@ const CATEGORY_FILTERS = [
 export default function CommunityPage() {
   /* 커스텀 모달 — window.alert 대체 */
   const { showAlert } = useModal();
+  /* 리워드 획득 토스트 */
+  const { showReward } = useRewardToast();
 
   /*
    * URL 의 ?tab= 파라미터를 활성 탭으로 사용.
@@ -173,6 +177,10 @@ export default function CommunityPage() {
       // 새 게시글을 목록 맨 앞에 추가
       setPosts((prev) => [newPost, ...prev]);
       setShowForm(false);
+      // 리워드 지급 시 토스트 알림
+      if (newPost?.rewardPoints > 0) {
+        showReward(newPost.rewardPoints, '게시글 작성');
+      }
     } catch (err) {
       await showAlert({
         title: '작성 실패',

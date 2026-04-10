@@ -1924,6 +1924,368 @@ export const CtaBtnGlass = styled(BtnGlass)`
 `;
 
 /* ================================================================
+   퀵 링크 — 관리자/모니터링/팀 Git/레포
+   ================================================================ */
+
+/** 퀵 링크 섹션 */
+export const QuickLinks = styled(SectionBase)`
+  padding: 100px 0;
+`;
+
+/* ── 프로젝트 공식 명칭 블록 ── */
+
+/** 프로젝트명 전체 래퍼 — 중앙 정렬 + 글래스 배경 */
+export const ProjectTitleBlock = styled.div`
+  text-align: center;
+  padding: 48px 32px 40px;
+  margin-bottom: 48px;
+  border-radius: 20px;
+  ${lpGlassPanel};
+  border-color: ${({ theme }) => theme.colors.primary}30;
+  position: relative;
+  overflow: hidden;
+
+  /* 상단 그라데이션 라인 */
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, ${({ theme }) => theme.colors.primary}, ${LP_ACCENT_CYAN}, transparent);
+    border-radius: 1px;
+  }
+`;
+
+/** 별칭(몽글픽) — 큰 로고 텍스트 */
+export const ProjectAlias = styled.div`
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 900;
+  background: linear-gradient(135deg, ${({ theme }) => theme.colors.primary}, ${LP_ACCENT_CYAN});
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 20px;
+  letter-spacing: -1px;
+`;
+
+/** 한글 프로젝트명 — 논문 제목 스타일 */
+export const ProjectNameKr = styled.h2`
+  font-size: clamp(0.95rem, 1.8vw, 1.25rem);
+  font-weight: 700;
+  line-height: 1.7;
+  margin-bottom: 16px;
+  color: ${({ theme }) => theme.landing.textPrimary};
+`;
+
+/** 영문 프로젝트명 — 약간 작은 크기 + 연한 색 */
+export const ProjectNameEn = styled.p`
+  font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+  font-weight: 400;
+  line-height: 1.7;
+  color: ${({ theme }) => theme.landing.textMuted};
+  font-family: ${LP_FONT_EN};
+  max-width: 800px;
+  margin: 0 auto;
+`;
+
+/* ── 다이어그램 섹션 래퍼 ── */
+
+/** 개별 다이어그램 섹션 — 제목 + 설명 + 다이어그램 본체 */
+export const DiagramSection = styled.div`
+  margin-top: 48px;
+`;
+
+/** 다이어그램 제목 */
+export const DiagramTitle = styled.h3`
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: ${({ theme }) => theme.landing.textPrimary};
+  margin-bottom: 6px;
+  font-family: ${LP_FONT_EN};
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  &::before {
+    content: '';
+    width: 4px;
+    height: 22px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, ${({ theme }) => theme.colors.primary}, ${LP_ACCENT_CYAN});
+    flex-shrink: 0;
+  }
+`;
+
+/** 다이어그램 부제 설명 */
+export const DiagramDesc = styled.p`
+  font-size: 0.82rem;
+  color: ${({ theme }) => theme.landing.textMuted};
+  margin-bottom: 16px;
+  padding-left: 14px;
+`;
+
+/** 카테고리 소제목 */
+export const QLSubTitle = styled.h3`
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 20px;
+  margin-top: 40px;
+  color: ${({ theme }) => theme.landing.textPrimary};
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &::before {
+    content: '';
+    width: 4px;
+    height: 20px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, ${({ theme }) => theme.colors.primary}, ${LP_ACCENT_CYAN});
+  }
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+`;
+
+/* ── 서비스 관리 카드 그리드 ── */
+
+/** 서비스 카드 그리드 (2×2) */
+export const QLServiceGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+/** 서비스 링크 카드 */
+export const QLServiceCard = styled.a`
+  ${lpGlassPanel};
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: ${({ theme }) => theme.landing.textPrimary};
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.landing.borderHover};
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124, 108, 240, 0.15);
+  }
+`;
+
+/** 서비스 아이콘 */
+export const QLServiceIcon = styled.span`
+  font-size: 1.8rem;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${({ theme }) => theme.landing.bgCard};
+  border-radius: 12px;
+`;
+
+/** 서비스 정보 영역 */
+export const QLServiceInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+/** 서비스 라벨 */
+export const QLServiceLabel = styled.div`
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+`;
+
+/** 서비스 설명 */
+export const QLServiceDesc = styled.div`
+  font-size: 0.78rem;
+  color: ${({ theme }) => theme.landing.textMuted};
+`;
+
+/** 화살표 아이콘 */
+export const QLArrow = styled.span`
+  font-size: 1.1rem;
+  color: ${({ theme }) => theme.landing.textMuted};
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+
+  ${QLServiceCard}:hover & {
+    transform: translateX(4px);
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+/* ── 팀원 GitHub 카드 ── */
+
+/** 팀원 카드 그리드 (4열) */
+export const QLMemberGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 500px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+/** 팀원 카드 */
+export const QLMemberCard = styled.div`
+  ${lpGlassPanel};
+  padding: 24px 20px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: ${({ $accent }) => $accent || 'inherit'}40;
+    transform: translateY(-2px);
+  }
+`;
+
+/** 팀원 아바타 */
+export const QLMemberAvatar = styled.div`
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: ${({ $bg }) => $bg};
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  flex-shrink: 0;
+`;
+
+/** 팀원 정보 영역 */
+export const QLMemberInfo = styled.div`
+  min-width: 0;
+`;
+
+/** 팀원 이름 */
+export const QLMemberName = styled.div`
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+`;
+
+/** 팀원 역할 */
+export const QLMemberRole = styled.div`
+  font-size: 0.72rem;
+  color: ${({ theme }) => theme.landing.textMuted};
+`;
+
+/** 팀원 링크 목록 */
+export const QLMemberLinks = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+`;
+
+/** 팀원 개별 링크 버튼 */
+export const QLMemberLink = styled.a`
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 14px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: ${({ $color }) => $color ? $color + '18' : 'rgba(124,108,240,0.1)'};
+  border: 1px solid ${({ $color }) => $color ? $color + '30' : 'rgba(124,108,240,0.2)'};
+  color: ${({ $color }) => $color || '#7c6cf0'};
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: ${({ $color }) => $color ? $color + '30' : 'rgba(124,108,240,0.2)'};
+    transform: translateY(-1px);
+  }
+`;
+
+/* ── 프로젝트 레포 카드 ── */
+
+/** 레포 카드 그리드 (5열 → 반응형) */
+export const QLRepoGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 500px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+`;
+
+/** 레포 카드 */
+export const QLRepoCard = styled.a`
+  ${lpGlassPanel};
+  padding: 20px 16px;
+  border-radius: 14px;
+  text-decoration: none;
+  color: ${({ theme }) => theme.landing.textPrimary};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.landing.borderHover};
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(124, 108, 240, 0.12);
+  }
+`;
+
+/** 레포 GitHub 아이콘 */
+export const QLRepoIcon = styled.div`
+  color: ${({ theme }) => theme.landing.textSecondary};
+  transition: color 0.2s ease;
+
+  ${QLRepoCard}:hover & {
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+/** 레포 이름 */
+export const QLRepoName = styled.div`
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 2px;
+`;
+
+/** 레포 설명 */
+export const QLRepoDesc = styled.div`
+  font-size: 0.72rem;
+  color: ${({ theme }) => theme.landing.textMuted};
+`;
+
+/* ================================================================
    푸터 — .lp-footer
    ================================================================ */
 
@@ -1963,4 +2325,93 @@ export const FooterLinks = styled.div`
   gap: 24px;
   font-size: 0.8rem;
   color: ${({ theme }) => theme.landing.textMuted};
+`;
+
+/* ================================================================
+   프로젝트 문서 버튼 그룹 — 정보구조도 + 초기 기획서 모달 트리거
+   ================================================================ */
+
+/** 문서 버튼 그리드 래퍼 — 프로젝트명 블록 아래 배치 */
+export const DocButtonGrid = styled.div`
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 28px;
+  flex-wrap: wrap;
+`;
+
+/** 문서 모달 트리거 버튼 — 글래스 스타일 */
+export const DocButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 24px;
+  border-radius: 14px;
+  background: ${({ theme }) => theme.landing.bgGlass};
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid ${({ $color }) => $color ? $color + '30' : 'rgba(124,108,240,0.2)'};
+  color: ${({ theme }) => theme.landing.textPrimary};
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-family: 'Noto Sans KR', sans-serif;
+
+  &:hover {
+    border-color: ${({ $color }) => $color ? $color + '60' : 'rgba(124,108,240,0.5)'};
+    background: ${({ $color }) => $color ? $color + '15' : 'rgba(124,108,240,0.1)'};
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px ${({ $color }) => $color ? $color + '20' : 'rgba(124,108,240,0.15)'};
+  }
+
+  @media (max-width: 600px) {
+    padding: 12px 18px;
+    font-size: 0.82rem;
+  }
+`;
+
+/** 문서 버튼 내 아이콘 원형 */
+export const DocButtonIcon = styled.span`
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: ${({ $color }) => $color ? $color + '20' : 'rgba(124,108,240,0.15)'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+`;
+
+/* ================================================================
+   다이어그램 이미지 — 실제 PNG/JPG 이미지를 표시하는 래퍼
+   ================================================================ */
+
+/** 다이어그램 이미지 — 반응형 + 라운드 + 보더 */
+export const DiagramImage = styled.img`
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(124, 108, 240, 0.15);
+  background: rgba(10, 10, 20, 0.5);
+  display: block;
+`;
+
+/** 다이어그램 이미지 그리드 — 여러 이미지를 나란히 배치 */
+export const DiagramImageGrid = styled.div`
+  display: grid;
+  grid-template-columns: ${({ $cols }) => $cols ? `repeat(${$cols}, 1fr)` : '1fr'};
+  gap: 16px;
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+/** 다이어그램 이미지 캡션 */
+export const DiagramCaption = styled.div`
+  text-align: center;
+  font-size: 0.78rem;
+  color: ${({ theme }) => theme.landing.textMuted};
+  margin-top: 8px;
+  font-weight: 500;
 `;

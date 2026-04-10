@@ -388,6 +388,16 @@ export const QUIZ_ENDPOINTS = {
 };
 
 /**
+ * 공지사항(Notice) 관련 엔드포인트.
+ * 앱 메인 화면에 노출되는 BANNER/POPUP/MODAL 공지를 조회한다.
+ * 비로그인 허용 (Public API).
+ */
+export const NOTICE_ENDPOINTS = {
+  /** 활성 공지 목록 조회 - GET (query: type? = BANNER/POPUP/MODAL) */
+  ACTIVE: `${API_VERSION}/notices`,
+};
+
+/**
  * 고객센터(Support) 관련 엔드포인트.
  * FAQ, 도움말, 상담 티켓을 처리한다.
  */

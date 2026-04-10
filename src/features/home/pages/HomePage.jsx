@@ -15,6 +15,8 @@ import { ROUTES } from '../../../shared/constants/routes';
 import MovieList from '../../../shared/components/MovieList/MovieList';
 /* 인기/최신 영화 API — features/movie에서 가져옴 */
 import { getPopularMovies, getLatestMovies } from '../../movie/api/movieApi';
+/* 공지사항 API — shared/api에서 가져옴 */
+import { getActiveNotices } from '../../../shared/api/noticeApi';
 /* styled-components — HomePage.styled.js */
 import * as S from './HomePage.styled';
 
@@ -61,10 +63,13 @@ export default function HomePage() {
   /** 최신 영화 로드 실패 메시지 */
   const [latestError, setLatestError] = useState(null);
 
+  /** 앱 공지사항 목록 (backend GET /api/v1/notices — BANNER/POPUP/MODAL) */
+  const [notices, setNotices] = useState([]);
+
   const navigate = useNavigate();
 
   /**
-   * 인기/최신 영화 목록을 병렬로 로드한다.
+   * 인기/최신 영화 + 공지사항 목록을 병렬로 로드한다.
    *
    * `Promise.allSettled` 를 사용하여 한쪽이 실패해도 다른 섹션은 정상 표시되도록 한다.
    * 각 섹션은 독립적인 loading/error 상태를 가지며, 재시도 버튼으로 개별 재호출할 수 있다.
@@ -75,9 +80,10 @@ export default function HomePage() {
     setPopularError(null);
     setLatestError(null);
 
-    const [popularResult, latestResult] = await Promise.allSettled([
+    const [popularResult, latestResult, noticeResult] = await Promise.allSettled([
       getPopularMovies(1, 8),
       getLatestMovies(1, 8),
+      getActiveNotices(),
     ]);
 
     /* 인기 영화 처리 */
@@ -103,6 +109,14 @@ export default function HomePage() {
       setLatestMovies([]);
     }
     setIsLatestLoading(false);
+
+    /* 공지사항 처리 — 실패해도 무시 (공지가 없어도 홈은 정상 작동) */
+    if (noticeResult.status === 'fulfilled') {
+      setNotices(noticeResult.value ?? []);
+    } else {
+      console.error('[HomePage] 공지사항 로드 실패:', noticeResult.reason);
+      setNotices([]);
+    }
   }, []);
 
   /*
@@ -170,6 +184,28 @@ export default function HomePage() {
         <S.HeroOrb1 aria-hidden="true" />
         <S.HeroOrb2 aria-hidden="true" />
       </S.Hero>
+
+      {/* ── 공지사항 배너 섹션 — BANNER/POPUP/MODAL 활성 공지 표시 ── */}
+      {notices.length > 0 && (
+        <S.NoticeBanner>
+          {notices.map((notice) => (
+            <S.NoticeCard
+              key={notice.noticeId}
+              href={notice.linkUrl || undefined}
+              target={notice.linkUrl ? '_blank' : undefined}
+              rel={notice.linkUrl ? 'noopener noreferrer' : undefined}
+            >
+              <S.NoticeTypeBadge>
+                {notice.displayType === 'MODAL' ? '중요' : '공지'}
+              </S.NoticeTypeBadge>
+              <S.NoticeTitle>{notice.title}</S.NoticeTitle>
+              <S.NoticeDate>
+                {notice.createdAt ? String(notice.createdAt).slice(0, 10) : ''}
+              </S.NoticeDate>
+            </S.NoticeCard>
+          ))}
+        </S.NoticeBanner>
+      )}
 
       {/* ── 추천 질문 카드 섹션 ── */}
       <S.Suggestions>
