@@ -155,7 +155,6 @@ export async function getSharedPlaylists({ page = 1, size = 15 } = {}) {
   const data = await api.get(COMMUNITY_ENDPOINTS.SHARED_PLAYLISTS, {
     params: { page: Math.max(0, page - 1), size },
   });
-  console.log('[getSharedPlaylists] raw data:', data);
   return {
     posts: data?.content ?? [],
     total: data?.totalElements ?? 0,
