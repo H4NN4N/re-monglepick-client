@@ -234,7 +234,8 @@ const agentApi = axios.create({
  */
 const recommendApi = axios.create({
   baseURL: SERVICE_URLS.RECOMMEND,
-  timeout: 15000,
+  // 타임아웃 제한 시간을 늘렸음 (너무 오래걸려서) 운영 시에는 수정
+  timeout: 150000,
   headers: { 'Content-Type': 'application/json' },
 });
 
