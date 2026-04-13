@@ -234,7 +234,7 @@ const agentApi = axios.create({
  */
 const recommendApi = axios.create({
   baseURL: SERVICE_URLS.RECOMMEND,
-  timeout: 15000,
+  timeout: 150000,
   headers: { 'Content-Type': 'application/json' },
 });
 

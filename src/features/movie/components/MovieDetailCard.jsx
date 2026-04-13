@@ -58,19 +58,38 @@ export default function MovieDetailCard({
   };
 
   /**
-   * YouTube 트레일러 ID 추출.
-   * trailer_url에서 YouTube 비디오 ID를 파싱한다.
+   * YouTube URL에서 embed URL을 생성한다.
+   * 지원하는 URL 형식:
+   *   - https://www.youtube.com/watch?v=VIDEO_ID
+   *   - https://youtu.be/VIDEO_ID
+   *   - https://www.youtube.com/embed/VIDEO_ID
    *
    * @param {string} url - YouTube URL
-   * @returns {string|null} 비디오 ID 또는 null
+   * @returns {string|null} embed URL 또는 null
    */
-  const getYouTubeId = (url) => {
+  const getYouTubeEmbedUrl = (url) => {
     if (!url) return null;
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
-    return match ? match[1] : null;
+    try {
+      const parsed = new URL(url);
+      let videoId = null;
+
+      if (parsed.hostname.includes('youtube.com') && parsed.searchParams.get('v')) {
+        videoId = parsed.searchParams.get('v');
+      } else if (parsed.hostname === 'youtu.be') {
+        videoId = parsed.pathname.slice(1);
+      } else if (parsed.hostname.includes('youtube.com') && parsed.pathname.startsWith('/embed/')) {
+        videoId = parsed.pathname.split('/embed/')[1];
+      }
+
+      if (!videoId) return null;
+
+      return `https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0&playsinline=1`;
+    } catch {
+      return null;
+    }
   };
 
-  const youtubeId = getYouTubeId(movie.trailer_url);
+  const embedUrl = getYouTubeEmbedUrl(movie.trailer_url);
 
   return (
     <S.Wrapper>
@@ -192,7 +211,7 @@ export default function MovieDetailCard({
             )}
 
             {/* 트레일러 버튼 */}
-            {youtubeId && (
+            {embedUrl && (
               <S.TrailerBtn onClick={() => setShowTrailer((prev) => !prev)}>
                 {showTrailer ? '트레일러 닫기' : '▶ 트레일러 보기'}
               </S.TrailerBtn>
@@ -202,14 +221,14 @@ export default function MovieDetailCard({
       </S.Top>
 
       {/* ── 트레일러 (YouTube 임베드) ── */}
-      {showTrailer && youtubeId && (
+      {showTrailer && embedUrl && (
         <S.Trailer>
           <S.TrailerIframe
-            src={`https://www.youtube.com/embed/${youtubeId}?autoplay=1`}
+            src={embedUrl}
             title="트레일러"
             frameBorder="0"
-            sandbox="allow-scripts allow-presentation allow-popups"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            referrerPolicy="strict-origin-when-cross-origin"
             allowFullScreen
           />
         </S.Trailer>
