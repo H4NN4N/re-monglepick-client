@@ -1,71 +1,95 @@
 /**
  * 게시글 작성/수정 폼 컴포넌트.
  *
- * 제목, 카테고리, 내용을 입력받아 게시글을 생성한다.
- * 수정 모드일 때는 initialData를 useState lazy initializer로 직접 주입한다.
- * (useEffect 내 동기 setState 제거 → ESLint react/no-use-state-in-effect 준수)
+ * 제목, 카테고리, 내용, 이미지 첨부를 입력받아 게시글을 생성한다.
  *
- * @param {Object} props
- * @param {function} props.onSubmit - 폼 제출 콜백 ({ title, content, category })
- * @param {Object} [props.initialData] - 수정 시 초기 데이터 (마운트 시 1회만 적용)
- * @param {boolean} [props.isSubmitting=false] - 제출 중 상태
- * @param {function} [props.onCancel] - 취소 버튼 콜백
+ * 이미지 업로드 흐름:
+ *   1. 사용자가 이미지 선택
+ *   2. 폼 제출 시 /api/v1/images/upload 로 먼저 업로드
+ *   3. 반환된 URL 목록을 게시글 데이터에 포함하여 전송
+ *
+ * 로컬: http://localhost:8080/images/userId/파일명.jpg
+ * 서버: http://210.109.15.187/images/userId/파일명.jpg (UPLOAD_URL_PREFIX 환경변수)
+ * 추후 S3 전환 시 URL 형식만 바뀌고 프론트 코드는 그대로 유지
  */
 
 import { useState } from 'react';
-/* 유효성 검사 유틸 — shared/utils에서 가져옴 */
 import { validatePostTitle, validateContent } from '../../../shared/utils/validators';
+import { uploadImages } from '../api/communityApi';
 import * as S from './PostForm.styled';
 
-/** 카테고리 선택 옵션 목록 */
 const CATEGORY_OPTIONS = [
-  { value: 'FREE', label: '자유' },      // ✅ '전체' → '자유'
+  { value: 'FREE', label: '자유' },
   { value: 'DISCUSSION', label: '토론' },
   { value: 'RECOMMENDATION', label: '추천' },
   { value: 'NEWS', label: '뉴스' },
 ];
 
+const MAX_IMAGE_COUNT = 5;
+
 export default function PostForm({ onSubmit, initialData, isSubmitting = false, onCancel }) {
-  /**
-   * lazy initializer를 사용해 마운트 시점에 initialData를 직접 읽는다.
-   * - initialData가 존재하면 해당 값을 초기값으로 사용
-   * - initialData가 없으면 빈 문자열 / 기본 카테고리 사용
-   * - useEffect + setState 패턴을 대체하여 불필요한 재렌더링을 제거
-   */
   const [title, setTitle] = useState(() => initialData?.title ?? '');
   const [content, setContent] = useState(() => initialData?.content ?? '');
   const [category, setCategory] = useState(() => initialData?.category ?? 'FREE');
-  // 필드별 에러 메시지
   const [errors, setErrors] = useState({});
 
-  /**
-   * 폼 유효성 검사.
-   *
-   * @returns {boolean} 유효 여부
-   */
+  // 이미지 관련 상태
+  const [imageFiles, setImageFiles] = useState([]);       // 선택한 File 객체 목록
+  const [imagePreviews, setImagePreviews] = useState([]); // 미리보기 URL 목록
+  const [isUploading, setIsUploading] = useState(false);  // 업로드 중 여부
+
   const validateForm = () => {
     const newErrors = {};
-
     const titleResult = validatePostTitle(title);
     if (!titleResult.isValid) newErrors.title = titleResult.message;
-
     const contentResult = validateContent(content);
     if (!contentResult.isValid) newErrors.content = contentResult.message;
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  /**
-   * 폼 제출 핸들러.
-   *
-   * @param {Event} e - 폼 제출 이벤트
-   */
-  const handleSubmit = (e) => {
+  // 이미지 선택 핸들러
+  const handleImageChange = (e) => {
+    const selected = Array.from(e.target.files);
+    const combined = [...imageFiles, ...selected];
+
+    if (combined.length > MAX_IMAGE_COUNT) {
+      alert(`이미지는 최대 ${MAX_IMAGE_COUNT}장까지 첨부 가능합니다.`);
+      return;
+    }
+
+    setImageFiles(combined);
+    setImagePreviews(combined.map((f) => URL.createObjectURL(f)));
+    e.target.value = ''; // 같은 파일 재선택 가능하도록 초기화
+  };
+
+  // 이미지 제거 핸들러
+  const handleImageRemove = (index) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    onSubmit({ title: title.trim(), content: content.trim(), category });
+    let imageUrls = [];
+
+    // 이미지가 있으면 먼저 업로드 후 URL 수집
+    if (imageFiles.length > 0) {
+      setIsUploading(true);
+      try {
+        imageUrls = await uploadImages(imageFiles);
+      } catch (err) {
+        alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+        setIsUploading(false);
+        return;
+      } finally {
+        setIsUploading(false);
+      }
+    }
+
+    onSubmit({ title: title.trim(), content: content.trim(), category, imageUrls });
   };
 
   return (
@@ -117,11 +141,49 @@ export default function PostForm({ onSubmit, initialData, isSubmitting = false, 
           rows={10}
           maxLength={5000}
         />
-        {/* 글자 수 표시 */}
         <S.CharCount>
           <span>{content.length} / 5,000</span>
         </S.CharCount>
         {errors.content && <S.ErrorMsg>{errors.content}</S.ErrorMsg>}
+      </S.Field>
+
+      {/* 이미지 첨부 */}
+      <S.Field>
+        <S.Label>이미지 첨부 ({imageFiles.length}/{MAX_IMAGE_COUNT})</S.Label>
+
+        {/* 미리보기 */}
+        {imagePreviews.length > 0 && (
+          <S.ImagePreviewList>
+            {imagePreviews.map((src, i) => (
+              <S.ImagePreviewItem key={i}>
+                <img src={src} alt={`첨부 이미지 ${i + 1}`} />
+                <S.ImageRemoveBtn
+                  type="button"
+                  onClick={() => handleImageRemove(i)}
+                  disabled={isSubmitting || isUploading}
+                >
+                  ✕
+                </S.ImageRemoveBtn>
+              </S.ImagePreviewItem>
+            ))}
+          </S.ImagePreviewList>
+        )}
+
+        {/* 파일 선택 버튼 */}
+        {imageFiles.length < MAX_IMAGE_COUNT && (
+          <S.ImageUploadLabel>
+            📷 이미지 추가
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              multiple
+              onChange={handleImageChange}
+              disabled={isSubmitting || isUploading}
+              style={{ display: 'none' }}
+            />
+          </S.ImageUploadLabel>
+        )}
+        {isUploading && <S.UploadingMsg>이미지 업로드 중...</S.UploadingMsg>}
       </S.Field>
 
       {/* 버튼 영역 */}
@@ -130,14 +192,14 @@ export default function PostForm({ onSubmit, initialData, isSubmitting = false, 
           <S.CancelBtn
             type="button"
             onClick={onCancel}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isUploading}
           >
             취소
           </S.CancelBtn>
         )}
         <S.SubmitBtn
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isUploading}
         >
           {isSubmitting ? '등록 중...' : (initialData ? '수정하기' : '등록하기')}
         </S.SubmitBtn>

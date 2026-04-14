@@ -46,6 +46,7 @@ export default function CommunityPage() {
   const [searchInput, setSearchInput] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [refreshTrigger, setRefreshTrigger] = useState(0); // ✅ 추가
 
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
 
@@ -83,7 +84,7 @@ export default function CommunityPage() {
     if (activeTab === 'posts') {
       loadPosts();
     }
-  }, [activeTab, category, currentPage, keyword]);
+  }, [activeTab, category, currentPage, keyword, refreshTrigger]); // ✅ refreshTrigger 추가
 
   const handleCategoryChange = (id) => {
     setCategory(id);
@@ -107,6 +108,7 @@ export default function CommunityPage() {
       setKeyword('');
       setSearchInput('');
       setCategory('all');
+      setRefreshTrigger((prev) => prev + 1); // ✅ 강제 새로고침
       if (newPost?.rewardPoints > 0) {
         showReward(newPost.rewardPoints, '게시글 작성');
       }
@@ -144,7 +146,6 @@ export default function CommunityPage() {
         <S.Content key={activeTab}>
           {activeTab === 'posts' && (
             <>
-              {/* 검색창 */}
               <S.SearchForm onSubmit={handleSearch}>
                 <S.SearchInput
                   type="text"
@@ -155,7 +156,6 @@ export default function CommunityPage() {
                 <S.SearchBtn type="submit">🔍</S.SearchBtn>
               </S.SearchForm>
 
-              {/* 카테고리 필터 */}
               <S.CategoryChipRow role="tablist" aria-label="게시글 카테고리 필터">
                 {CATEGORY_FILTERS.map((c) => (
                   <S.CategoryChip
@@ -199,7 +199,6 @@ export default function CommunityPage() {
 
               <PostList posts={posts} loading={isLoading} />
 
-              {/* 페이지네이션 */}
               {totalPages > 1 && (
                 <S.Pagination>
                   <S.PageBtn

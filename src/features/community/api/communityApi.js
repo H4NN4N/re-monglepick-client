@@ -54,8 +54,8 @@ export async function getPostDetail(postId) {
   return normalizePost(data);
 }
 
-export async function createPost({ title, content, category = 'general' }) {
-  return api.post(COMMUNITY_ENDPOINTS.CREATE_POST, { title, content, category });
+export async function createPost({ title, content, category = 'FREE', imageUrls = [] }) {
+  return api.post(COMMUNITY_ENDPOINTS.CREATE_POST, { title, content, category, imageUrls });
 }
 
 export async function updatePost(postId, { title, content, category }) {
@@ -65,6 +65,7 @@ export async function updatePost(postId, { title, content, category }) {
 export async function deletePost(postId) {
   return api.delete(COMMUNITY_ENDPOINTS.UPDATE_POST(postId));
 }
+
 
 export async function togglePostLike(postId) {
   return api.post(COMMUNITY_ENDPOINTS.POST_LIKE(postId));

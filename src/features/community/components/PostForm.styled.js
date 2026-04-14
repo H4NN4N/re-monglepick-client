@@ -214,3 +214,66 @@ export const SubmitBtn = styled(BtnBase)`
     cursor: not-allowed;
   }
 `;
+
+export const ImagePreviewList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+`;
+
+export const ImagePreviewItem = styled.div`
+  position: relative;
+  width: 100px;
+  height: 100px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid ${({ theme }) => theme.colors.borderDefault};
+  }
+`;
+
+export const ImageRemoveBtn = styled.button`
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 20px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover { background: rgba(0, 0, 0, 0.8); }
+`;
+
+export const ImageUploadLabel = styled.label`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px dashed ${({ theme }) => theme.colors.borderDefault};
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: ${({ theme }) => theme.colors.textSecondary};
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+export const UploadingMsg = styled.p`
+  font-size: 0.85rem;
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin-top: 4px;
+`;

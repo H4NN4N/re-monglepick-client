@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getPostDetail, deletePost, togglePostLike } from '../api/communityApi'; // ✅ togglePostLike 추가
+import { getPostDetail, deletePost, togglePostLike } from '../api/communityApi';
 import { formatRelativeTime } from '../../../shared/utils/formatters';
 import Loading from '../../../shared/components/Loading/Loading';
 import CommentSection from '../components/CommentSection';
@@ -8,14 +8,11 @@ import useAuthStore from '../../../shared/stores/useAuthStore';
 import * as S from './PostDetailPage.styled';
 
 const CATEGORY_LABEL = {
-  general: '자유',
-  free: '자유',
   FREE: '자유',
-  review: '리뷰',
-  question: '질문',
   DISCUSSION: '토론',
   RECOMMENDATION: '추천',
   NEWS: '뉴스',
+  PLAYLIST_SHARE: '플리공유',
 };
 
 export default function PostDetailPage() {
@@ -27,8 +24,6 @@ export default function PostDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-
-  // ✅ 좋아요 상태
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [isLiking, setIsLiking] = useState(false);
@@ -43,7 +38,7 @@ export default function PostDetailPage() {
         const data = await getPostDetail(postId);
         if (!cancelled) {
           setPost(data);
-          setLikeCount(data.likeCount ?? 0); // ✅ 초기 좋아요 수 세팅
+          setLikeCount(data.likeCount ?? 0);
         }
       } catch (err) {
         if (!cancelled) {
@@ -72,7 +67,6 @@ export default function PostDetailPage() {
     }
   };
 
-  // ✅ 좋아요 토글 핸들러
   const handleLike = async () => {
     if (!user) {
       alert('로그인이 필요합니다.');
@@ -81,17 +75,14 @@ export default function PostDetailPage() {
     if (isLiking) return;
 
     setIsLiking(true);
-    // 낙관적 업데이트 — API 응답 전에 UI 먼저 반영
     setLiked((prev) => !prev);
     setLikeCount((prev) => liked ? prev - 1 : prev + 1);
 
     try {
       const result = await togglePostLike(postId);
-      // 서버 응답으로 최종 동기화
       setLiked(result.liked);
       setLikeCount(result.likeCount);
     } catch {
-      // 실패 시 롤백
       setLiked((prev) => !prev);
       setLikeCount((prev) => liked ? prev + 1 : prev - 1);
       alert('좋아요 처리에 실패했습니다.');
@@ -99,7 +90,7 @@ export default function PostDetailPage() {
       setIsLiking(false);
     }
   };
-  
+
   const isOwner = user && post && user.id === post.authorId;
 
   if (isLoading) {
@@ -111,7 +102,6 @@ export default function PostDetailPage() {
       </S.PageWrapper>
     );
   }
-  
 
   if (error || !post) {
     return (
@@ -130,6 +120,7 @@ export default function PostDetailPage() {
         <S.BackButton onClick={() => navigate('/community')}>← 목록으로</S.BackButton>
 
         <S.Card>
+          {/* 헤더 — 카테고리, 시간, 삭제 버튼 */}
           <S.Header>
             {post.category && (
               <S.CategoryBadge>
@@ -144,32 +135,42 @@ export default function PostDetailPage() {
             )}
           </S.Header>
 
+          {/* 제목 */}
           <S.Title>{post.title}</S.Title>
 
-          
-
+          {/* 작성자 */}
           <S.AuthorBar>
             <span>작성자</span>
             <strong>{post.author?.nickname || '익명'}</strong>
+            <S.ViewCount>👁 {post.viewCount ?? 0}</S.ViewCount>
           </S.AuthorBar>
 
+          {/* 본문 */}
           <S.Body>{post.content}</S.Body>
 
-          {/* ✅ 좋아요 버튼 */}
+          {/* 첨부 이미지
+              로컬: http://localhost:8080/images/userId/파일명.jpg
+              서버: http://210.109.15.187/images/userId/파일명.jpg
+              추후 S3 전환 시 URL 형식만 바뀌고 이 코드는 그대로 유지 */}
+          {post.imageUrls && post.imageUrls.length > 0 && (
+            <S.ImageList>
+              {post.imageUrls.map((url, i) => (
+                <S.ImageItem key={i}>
+                  <img src={url} alt={`첨부 이미지 ${i + 1}`} />
+                </S.ImageItem>
+              ))}
+            </S.ImageList>
+          )}
+
+          {/* 좋아요 버튼 */}
           <S.LikeBar>
             <S.LikeButton onClick={handleLike} $liked={liked} disabled={isLiking}>
               {liked ? '❤️' : '🤍'} {likeCount}
             </S.LikeButton>
           </S.LikeBar>
         </S.Card>
-        
-        {/* 작성자 */}
-          <S.AuthorBar>
-           <span>작성자</span>
-              <strong>{post.author?.nickname || '익명'}</strong>
-           <S.ViewCount>👁 {post.viewCount ?? 0}</S.ViewCount>
-          </S.AuthorBar>
 
+        {/* 댓글 */}
         <CommentSection postId={postId} />
       </S.PageInner>
     </S.PageWrapper>

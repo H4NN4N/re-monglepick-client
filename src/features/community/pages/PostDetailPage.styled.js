@@ -187,3 +187,20 @@ export const ViewCount = styled.span`
   font-size: ${({ theme }) => theme.typography.textXs};
   color: ${({ theme }) => theme.colors.textMuted};
 `;
+
+export const ImageList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: ${({ theme }) => theme.spacing.lg};
+`;
+
+export const ImageItem = styled.div`
+  img {
+    max-width: 100%;
+    max-height: 400px;
+    border-radius: 8px;
+    object-fit: contain;
+    border: 1px solid ${({ theme }) => theme.colors.borderLight};
+  }
+`;
