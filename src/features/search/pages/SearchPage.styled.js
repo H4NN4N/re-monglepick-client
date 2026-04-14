@@ -249,6 +249,44 @@ export const AutocompleteMessage = styled.p`
   font-size: ${({ theme }) => theme.typography.textSm};
 `;
 
+export const AutocompleteDidYouMeanWrap = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-top: ${({ theme }) => theme.spacing.xs};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  border-top: 1px solid ${({ theme }) => theme.colors.borderLight};
+
+  ${mediaSmall} {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+`;
+
+export const AutocompleteDidYouMeanLabel = styled.span`
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: ${({ theme }) => theme.typography.textSm};
+`;
+
+export const AutocompleteDidYouMeanButton = styled.button`
+  padding: 8px 14px;
+  border: 1px solid ${({ theme }) => theme.colors.primary};
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.colors.primaryLight};
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  cursor: pointer;
+  transition: transform ${({ theme }) => theme.transitions.fast},
+              box-shadow ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => theme.glows.primary};
+  }
+`;
+
 /**
  * 검색 버튼 — gradient 배경.
  * 640px 이하에서 전체 너비.
@@ -942,6 +980,10 @@ export const Results = styled.div`
 
 /** 결과 건수 텍스트 — muted 색상, strong 태그 Primary 강조. */
 export const ResultCount = styled.p`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
   font-size: ${({ theme }) => theme.typography.textSm};
   color: ${({ theme }) => theme.colors.textMuted};
   margin: 0;
@@ -949,6 +991,61 @@ export const ResultCount = styled.p`
   strong {
     color: ${({ theme }) => theme.colors.primary};
     font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  }
+`;
+
+export const ResultMeta = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.colors.bgSecondary};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.typography.textXs};
+  font-weight: ${({ theme }) => theme.typography.fontMedium};
+`;
+
+export const SearchSuggestionBanner = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.md};
+  border: 1px solid ${({ theme }) => theme.colors.borderDefault};
+  border-radius: ${({ theme }) => theme.radius.xl};
+  background: ${({ theme }) => theme.colors.bgCard};
+  box-shadow: ${({ theme }) => theme.shadows.sm};
+`;
+
+export const SearchSuggestionTitle = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+`;
+
+export const SearchSuggestionActions = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+export const SearchSuggestionChip = styled.button`
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  border: 1px solid ${({ theme }) => theme.colors.borderDefault};
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.colors.bgSecondary};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontMedium};
+  cursor: pointer;
+  transition: border-color ${({ theme }) => theme.transitions.fast},
+              transform ${({ theme }) => theme.transitions.fast},
+              box-shadow ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: ${({ theme }) => theme.glows.primary};
+    transform: translateY(-1px);
   }
 `;
 

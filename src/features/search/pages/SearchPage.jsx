@@ -36,7 +36,7 @@ import * as S from './SearchPage.styled';
 
 const PAGE_SIZE = 20;
 const RECENT_PREVIEW_SIZE = 5;
-const RECENT_HISTORY_PAGE_SIZE = 30;
+const RECENT_HISTORY_PAGE_SIZE = 10;
 const RECENT_HISTORY_SCROLL_THRESHOLD = 80;
 const SEARCH_CACHE_STORAGE_KEY = 'monglepick_search_page_cache';
 const AUTOCOMPLETE_DEBOUNCE_MS = 300;
@@ -323,6 +323,10 @@ export default function SearchPage() {
   const [isAutocompleteLoading, setIsAutocompleteLoading] = useState(false);
   const [isAutocompleteOpen, setIsAutocompleteOpen] = useState(false);
   const [activeAutocompleteIndex, setActiveAutocompleteIndex] = useState(-1);
+  const [autocompleteDidYouMean, setAutocompleteDidYouMean] = useState(null);
+  const [searchDidYouMean, setSearchDidYouMean] = useState(null);
+  const [relatedQueries, setRelatedQueries] = useState([]);
+  const [searchSource, setSearchSource] = useState(null);
   const loadMoreRef = useRef(null);
   const autocompleteRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -362,6 +366,9 @@ export default function SearchPage() {
     setHasMore(Boolean(snapshot.hasMore));
     setHasSearched(Boolean(snapshot.hasSearched));
     setLastSearchContext(snapshot.lastSearchContext || null);
+    setSearchDidYouMean(snapshot.searchDidYouMean || null);
+    setRelatedQueries(snapshot.relatedQueries || []);
+    setSearchSource(snapshot.searchSource || null);
     setSelectedSearchGenres(snapshot.lastSearchContext?.discoveryGenres || []);
     setIsDetailGenresExpanded(
       hasSelectedDetailGenres(snapshot.lastSearchContext?.discoveryGenres || [])
@@ -406,6 +413,9 @@ export default function SearchPage() {
       setCurrentPage(1);
       setHasMore(false);
       setLastSearchContext(null);
+      setSearchDidYouMean(null);
+      setRelatedQueries([]);
+      setSearchSource(null);
       clearSearchCache();
       return;
     }
@@ -471,6 +481,9 @@ export default function SearchPage() {
       setTotalCount(nextBaseMovieDataset.totalCount);
       setCurrentPage(nextBaseMovieDataset.currentPage || 1);
       setHasMore(Boolean(nextBaseMovieDataset.hasMore));
+      setSearchDidYouMean(result?.didYouMean || null);
+      setRelatedQueries(result?.relatedQueries || []);
+      setSearchSource(result?.searchSource || null);
       setLastSearchContext({
         query: queryText,
         searchType: currentSearchType,
@@ -500,6 +513,9 @@ export default function SearchPage() {
         setCurrentPage(1);
         setHasMore(false);
         setLastSearchContext(null);
+        setSearchDidYouMean(null);
+        setRelatedQueries([]);
+        setSearchSource(null);
         clearSearchCache();
       }
     } finally {
@@ -610,7 +626,7 @@ export default function SearchPage() {
 
   /**
    * 최근 검색 기록을 페이지 단위로 불러온다.
-   * 모달 첫 진입 시에는 30개를 새로 읽고, 스크롤 하단 도달 시에는 이어붙인다.
+   * 모달 첫 진입 시에는 10개를 새로 읽고, 스크롤 하단 도달 시에는 이어붙인다.
    */
   const loadRecentSearches = useCallback(async ({
     offset = 0,
@@ -755,6 +771,9 @@ export default function SearchPage() {
         hasMore,
         hasSearched,
         lastSearchContext,
+        searchDidYouMean,
+        relatedQueries,
+        searchSource,
       },
     });
   }, [
@@ -764,6 +783,9 @@ export default function SearchPage() {
     lastSearchContext,
     movies,
     baseMovieDataset,
+    relatedQueries,
+    searchDidYouMean,
+    searchSource,
     totalCount,
   ]);
 
@@ -776,6 +798,7 @@ export default function SearchPage() {
 
     if (!queryText || !isAutocompleteSupportedSearchType) {
       setAutocompleteSuggestions([]);
+      setAutocompleteDidYouMean(null);
       setIsAutocompleteLoading(false);
       closeAutocomplete();
       return undefined;
@@ -785,7 +808,7 @@ export default function SearchPage() {
     const timerId = window.setTimeout(async () => {
       setIsAutocompleteLoading(true);
       try {
-        const suggestions = await getAutocompleteSuggestions({
+        const autocompleteResult = await getAutocompleteSuggestions({
           query: queryText,
           limit: AUTOCOMPLETE_LIMIT,
         });
@@ -793,10 +816,15 @@ export default function SearchPage() {
           return;
         }
 
-        setAutocompleteSuggestions(suggestions);
-        setActiveAutocompleteIndex(suggestions.length > 0 ? 0 : -1);
+        const nextSuggestions = autocompleteResult?.suggestions || [];
+        const nextDidYouMean = autocompleteResult?.didYouMean || null;
+
+        setAutocompleteSuggestions(nextSuggestions);
+        setAutocompleteDidYouMean(nextDidYouMean);
+        setActiveAutocompleteIndex(nextSuggestions.length > 0 ? 0 : -1);
         setIsAutocompleteOpen(
-          suggestions.length > 0 && document.activeElement === searchInputRef.current
+          (nextSuggestions.length > 0 || Boolean(nextDidYouMean))
+            && document.activeElement === searchInputRef.current
         );
       } catch {
         if (!isMounted) {
@@ -804,6 +832,7 @@ export default function SearchPage() {
         }
 
         setAutocompleteSuggestions([]);
+        setAutocompleteDidYouMean(null);
         setActiveAutocompleteIndex(-1);
         setIsAutocompleteOpen(false);
       } finally {
@@ -849,6 +878,7 @@ export default function SearchPage() {
 
     setQuery(suggestion);
     setAutocompleteSuggestions([]);
+    setAutocompleteDidYouMean(null);
     closeAutocomplete();
     executeSearch(suggestion, searchType, genre, sort, 1, false, selectedSearchGenres);
   }, [closeAutocomplete, executeSearch, genre, searchType, selectedSearchGenres, sort]);
@@ -874,6 +904,7 @@ export default function SearchPage() {
 
     if (!nextValue.trim()) {
       setAutocompleteSuggestions([]);
+      setAutocompleteDidYouMean(null);
       closeAutocomplete();
     }
   }, [closeAutocomplete]);
@@ -1003,7 +1034,7 @@ export default function SearchPage() {
   }, []);
 
   /**
-   * 모달 하단에 가까워지면 더 오래된 검색 기록 30개를 이어서 불러온다.
+   * 모달 하단에 가까워지면 더 오래된 검색 기록 10개를 이어서 불러온다.
    */
   const loadMoreRecentSearches = useCallback(() => {
     if (!isRecentModalOpen || isRecentLoading || isRecentLoadingMore || !recentPagination.has_more) {
@@ -1282,7 +1313,7 @@ export default function SearchPage() {
                 onChange={(e) => handleQueryChange(e.target.value)}
                 onKeyDown={handleQueryKeyDown}
                 onFocus={() => {
-                  if (autocompleteSuggestions.length > 0) {
+                  if (autocompleteSuggestions.length > 0 || autocompleteDidYouMean) {
                     setIsAutocompleteOpen(true);
                   }
                 }}
@@ -1312,6 +1343,20 @@ export default function SearchPage() {
                         </S.AutocompleteItem>
                       ))}
                     </S.AutocompleteList>
+                  )}
+
+                  {!isAutocompleteLoading && autocompleteDidYouMean && (
+                    <S.AutocompleteDidYouMeanWrap>
+                      <S.AutocompleteDidYouMeanLabel>
+                        혹시 {autocompleteDidYouMean}?
+                      </S.AutocompleteDidYouMeanLabel>
+                      <S.AutocompleteDidYouMeanButton
+                        type="button"
+                        onClick={() => handleSelectAutocomplete(autocompleteDidYouMean)}
+                      >
+                        {autocompleteDidYouMean}
+                      </S.AutocompleteDidYouMeanButton>
+                    </S.AutocompleteDidYouMeanWrap>
                   )}
                 </S.AutocompletePanel>
               )}
@@ -1448,7 +1493,7 @@ export default function SearchPage() {
               </S.RecentModalHeader>
 
               <S.RecentModalDescription>
-                중복 제거된 검색 기록을 최신순으로 30개씩 확인할 수 있습니다.
+                중복 제거된 검색 기록을 최신순으로 10개씩 확인할 수 있습니다.
               </S.RecentModalDescription>
 
               <S.RecentModalBody onScroll={handleRecentModalScroll}>
@@ -1539,9 +1584,41 @@ export default function SearchPage() {
         {/* 검색 결과 */}
         <S.Results>
           {hasSearched && !isLoading && (
-            <S.ResultCount>
-              검색 결과 <strong>{totalCount}</strong>건
-            </S.ResultCount>
+            <>
+              <S.ResultCount>
+                검색 결과 <strong>{totalCount}</strong>건
+                {searchSource && (
+                  <S.ResultMeta>
+                    {searchSource === 'elasticsearch' ? 'Elasticsearch' : 'MySQL'}
+                  </S.ResultMeta>
+                )}
+              </S.ResultCount>
+
+              {(searchDidYouMean || relatedQueries.length > 0) && (
+                <S.SearchSuggestionBanner>
+                  <S.SearchSuggestionTitle>혹시 이 영화를 찾으셨나요?</S.SearchSuggestionTitle>
+                  <S.SearchSuggestionActions>
+                    {searchDidYouMean && (
+                      <S.SearchSuggestionChip
+                        type="button"
+                        onClick={() => handleSelectAutocomplete(searchDidYouMean)}
+                      >
+                        {searchDidYouMean}
+                      </S.SearchSuggestionChip>
+                    )}
+                    {relatedQueries.map((suggestion) => (
+                      <S.SearchSuggestionChip
+                        key={`related-${suggestion}`}
+                        type="button"
+                        onClick={() => handleSelectAutocomplete(suggestion)}
+                      >
+                        {suggestion}
+                      </S.SearchSuggestionChip>
+                    ))}
+                  </S.SearchSuggestionActions>
+                </S.SearchSuggestionBanner>
+              )}
+            </>
           )}
 
           {/* 로딩 중 — Skeleton 카드 6개 그리드 */}

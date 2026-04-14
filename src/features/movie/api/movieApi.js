@@ -67,11 +67,14 @@ export async function getSearchGenres() {
  * @param {Object} params - 자동완성 조회 파라미터
  * @param {string} params.query - 사용자가 입력 중인 검색어
  * @param {number} [params.limit=8] - 최대 후보 수
- * @returns {Promise<Array<string>>} 자동완성 후보 목록
+ * @returns {Promise<{suggestions: Array<string>, didYouMean: string|null}>} 자동완성 결과
  */
 export async function getAutocompleteSuggestions({ query, limit = 8 }) {
   if (!query?.trim()) {
-    return [];
+    return {
+      suggestions: [],
+      didYouMean: null,
+    };
   }
 
   const data = await recommendApi.get(SEARCH_ENDPOINTS.AUTOCOMPLETE, {
@@ -81,7 +84,10 @@ export async function getAutocompleteSuggestions({ query, limit = 8 }) {
     },
   });
 
-  return data?.suggestions || [];
+  return {
+    suggestions: data?.suggestions || [],
+    didYouMean: data?.did_you_mean || null,
+  };
 }
 
 /**
@@ -128,6 +134,9 @@ export async function searchMovies({
     ...data,
     total: data?.pagination?.total || 0,
     movies: (data?.movies || []).map(normalizeSearchMovie),
+    didYouMean: data?.did_you_mean || null,
+    relatedQueries: data?.related_queries || [],
+    searchSource: data?.search_source || null,
   };
 }
 
@@ -138,10 +147,10 @@ export async function searchMovies({
  *
  * @param {Object} [params] - 조회 파라미터
  * @param {number} [params.offset=0] - 중복 제거된 목록 기준 시작 위치
- * @param {number} [params.limit=30] - 페이지당 조회 개수
+ * @param {number} [params.limit=10] - 페이지당 조회 개수
  * @returns {Promise<{searches: Array, pagination: Object}>}
  */
-export async function getRecentSearches({ offset = 0, limit = 30 } = {}) {
+export async function getRecentSearches({ offset = 0, limit = 10 } = {}) {
   const data = await recommendApi.get(SEARCH_ENDPOINTS.RECENT, {
     params: { offset, limit },
   });
