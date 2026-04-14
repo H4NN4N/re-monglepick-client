@@ -80,7 +80,9 @@ export default function PostForm({ onSubmit, initialData, isSubmitting = false, 
       setIsUploading(true);
       try {
         imageUrls = await uploadImages(imageFiles);
-      } catch (err) {
+      } catch {
+        // 업로드 오류 원인은 uploadImages 내부 로거가 기록하므로 여기서 err 객체는 무시.
+        // 사용자에게는 공통 안내만 노출하고 폼 제출을 중단한다.
         alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
         setIsUploading(false);
         return;
