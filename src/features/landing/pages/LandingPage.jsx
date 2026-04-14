@@ -52,19 +52,19 @@ const QUICK_LINKS = {
     {
       name: '김민규', role: 'Team Lead · Backend', color: '#ef476f',
       links: [
-        { label: 'GitHub', url: 'https://github.com/min-gyu' },
+        { label: 'GitHub', url: 'https://github.com/ministar99' },
       ],
     },
     {
       name: '정한나', role: 'Search & Recommendation', color: '#06d6a0',
       links: [
-        { label: 'GitHub', url: 'https://github.com/hanna-jeong' },
+        { label: 'GitHub', url: 'https://github.com/H4NN4N' },
       ],
     },
     {
       name: '이민수', role: 'Community & Social', color: '#ffd166',
       links: [
-        { label: 'GitHub', url: 'https://github.com/minsu-lee' },
+        { label: 'GitHub', url: 'https://github.com/superminsoo77-ctrl' },
       ],
     },
   ],
