@@ -70,3 +70,16 @@ export async function completeMovie(courseId, movieId, review) {
   const body = review ? { review } : {};
   return backendApi.post(ROADMAP_ENDPOINTS.COMPLETE_MOVIE(courseId, movieId), body);
 }
+
+/**
+ * 이미 작성한 영화 리뷰 조회.
+ *
+ * @param {string|number} courseId
+ * @param {string|number} movieId
+ * @returns {Promise<{review: string, createdAt: string}>}
+ */
+export async function getMovieReview(courseId, movieId) {
+  requireAuth();
+  const res = await backendApi.get(ROADMAP_ENDPOINTS.MOVIE_REVIEW(courseId, movieId));
+  return res?.data ?? res;
+}

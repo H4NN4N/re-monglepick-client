@@ -465,6 +465,8 @@ export const ROADMAP_ENDPOINTS = {
   START_COURSE: (id) => `${API_VERSION}/roadmap/courses/${id}/start`,
   /** 영화 시청 완료 마킹 - POST (path: courseId, movieId) */
   COMPLETE_MOVIE: (courseId, movieId) => `${API_VERSION}/roadmap/courses/${courseId}/movies/${movieId}/complete`,
+  /** 영화 리뷰 조회 - GET (path: courseId, movieId) */
+  MOVIE_REVIEW: (courseId, movieId) => `${API_VERSION}/roadmap/courses/${courseId}/movies/${movieId}/review`,
 };
 
 /**

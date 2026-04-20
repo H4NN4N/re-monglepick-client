@@ -116,7 +116,7 @@ export default function RoadmapPage() {
       const data = await getCourseDetail(courseId);
       setDetail(data);
       /* 완료된 영화 ID 세트 생성 — 백엔드 completedMovieIds 배열 (문자열 ID) */
-      const completed = new Set(data.completedMovieIds || []);
+      const completed = new Set((data.completedMovieIds || []).map(String));
       setCompletedMovieIds(completed);
     } catch {
       showAlert({ title: '오류', message: '코스를 불러올 수 없습니다.', type: 'error' });
@@ -156,15 +156,15 @@ export default function RoadmapPage() {
   };
 
   /**
-   * 체크박스 클릭.
+   * 인증 버튼 클릭.
    * - 미완료 → 리뷰 작성 페이지로 이동
-   * - 이미 완료 → 아무 동작 없음 (완료 취소는 지원하지 않음)
+   * - 이미 완료 → 작성한 리뷰 조회 페이지로 이동 (읽기 전용)
    */
-  const handleCheckboxClick = (movieId, movieTitle) => {
-    if (!detail || completedMovieIds.has(movieId)) return;
+  const handleCheckboxClick = (movieId, movieTitle, isCompleted) => {
+    if (!detail) return;
     navigate(
       buildPath(ROUTES.STAMP_REVIEW, { courseId: detail.id, movieId }),
-      { state: { movieTitle, courseTitle: detail.title } },
+      { state: { movieTitle, courseTitle: detail.title, readOnly: isCompleted } },
     );
   };
 
@@ -211,7 +211,7 @@ export default function RoadmapPage() {
                 {movies.map((movie, idx) => {
                   const mid = movie.movieId || movie.id;
                   const poster = movie.posterPath ? `${TMDB_IMG}${movie.posterPath}` : null;
-                  const isCompleted = completedMovieIds.has(mid);
+                  const isCompleted = completedMovieIds.has(String(mid));
 
                   return (
                     <S.MovieItem key={mid || idx}>
@@ -229,9 +229,9 @@ export default function RoadmapPage() {
                       </S.MovieInfo>
                       <S.VerifyBtn
                         $done={isCompleted}
-                        onClick={() => !isCompleted && detail.started && handleCheckboxClick(mid, movie.title)}
-                        disabled={isCompleted || !detail.started}
-                        title={isCompleted ? '시청 인증 완료' : !detail.started ? '코스를 먼저 시작해 주세요' : '시청 인증하기'}
+                        onClick={() => detail.started && handleCheckboxClick(mid, movie.title, isCompleted)}
+                        disabled={!detail.started}
+                        title={isCompleted ? '내 리뷰 보기' : !detail.started ? '코스를 먼저 시작해 주세요' : '시청 인증하기'}
                       >
                         {isCompleted ? '✓ 인증완료' : '시청 인증'}
                       </S.VerifyBtn>
