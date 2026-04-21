@@ -453,6 +453,25 @@ export const WORLDCUP_ENDPOINTS = {
 };
 
 /**
+ * Recommend 온보딩 월드컵 엔드포인트.
+ * recommend(FastAPI) 런타임 월드컵 플로우를 처리한다.
+ */
+export const RECOMMEND_WORLDCUP_ENDPOINTS = {
+  /** 커스텀 빌더 장르 목록 - GET */
+  GENRES: `${API_VERSION}/onboarding/worldcup/genres`,
+  /** 카테고리 목록 - GET */
+  CATEGORIES: `${API_VERSION}/onboarding/worldcup/categories`,
+  /** 시작 가능 라운드 계산 - POST */
+  OPTIONS: `${API_VERSION}/onboarding/worldcup/options`,
+  /** 대진표 시작 - POST */
+  START: `${API_VERSION}/onboarding/worldcup/start`,
+  /** 라운드 결과 제출 - POST */
+  SUBMIT: `${API_VERSION}/onboarding/worldcup`,
+  /** 완료 결과 조회 - GET */
+  RESULT: `${API_VERSION}/onboarding/worldcup/result`,
+};
+
+/**
  * 로드맵(Roadmap) 관련 엔드포인트.
  * 영화 학습 코스/로드맵을 처리한다.
  */

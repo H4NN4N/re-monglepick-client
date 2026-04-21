@@ -1,91 +1,155 @@
 /**
- * 월드컵 API 모듈.
+ * Recommend 기반 영화 월드컵 API 모듈.
  *
- * Backend의 WorldcupController와 통신하여
- * 영화 이상형 월드컵 게임을 진행한다.
- *
- * @module features/worldcup/api/worldcupApi
- *
- * @변경이력
- * v2 — Backend DTO 필드명 정합성 수정
- *   - startWorldcup: round → roundSize, genre → genreFilter
- *   - submitPick: gameId → sessionId, winnerId → winnerMovieId
+ * 런타임 원본은 recommend(FastAPI)이며,
+ * 카테고리 조회 → 옵션 계산 → 시작 → 라운드 제출 → 결과 조회 흐름을 처리한다.
  */
 
-import { backendApi, requireAuth } from '../../../shared/api/axiosInstance';
-import { WORLDCUP_ENDPOINTS } from '../../../shared/constants/api';
+import { recommendApi, requireAuth } from '../../../shared/api/axiosInstance';
+import { RECOMMEND_WORLDCUP_ENDPOINTS } from '../../../shared/constants/api';
 
-/**
- * 월드컵 게임 시작.
- *
- * Backend {@code POST /api/v1/worldcup/start}를 호출한다.
- * candidateMovieIds를 전달하지 않으므로 서버가 DB에서 장르 기반 랜덤 선택을 수행한다.
- *
- * @param {Object} params
- * @param {number} [params.round=16] - 토너먼트 라운드 크기 (8, 16, 32)
- * @param {string} [params.genre]   - 장르 필터 (생략 시 전체 장르)
- * @returns {Promise<{sessionId: number, gameId: number, roundSize: number, currentRound: number, matches: Array}>}
- */
-export async function startWorldcup({ round = 16, genre } = {}) {
-  requireAuth();
-  // Backend 필드명: roundSize (round 아님), genreFilter (genre 아님)
-  const body = { roundSize: round };
-  if (genre) body.genreFilter = genre;
-  return backendApi.post(WORLDCUP_ENDPOINTS.START, body);
+function normalizeMovie(movie) {
+  if (!movie) return null;
+  return {
+    movieId: movie.movie_id,
+    title: movie.title,
+    titleEn: movie.title_en ?? null,
+    genres: Array.isArray(movie.genres) ? movie.genres : [],
+    releaseYear: movie.release_year ?? null,
+    rating: movie.rating ?? null,
+    voteCount: movie.vote_count ?? null,
+    posterUrl: movie.poster_url ?? null,
+    trailerUrl: movie.trailer_url ?? null,
+    overview: movie.overview ?? null,
+  };
 }
 
-/**
- * 선택 제출 (한 매치 결과).
- *
- * Backend {@code POST /api/v1/worldcup/pick}를 호출한다.
- *
- * @param {Object} params
- * @param {number} params.gameId   - 게임 ID (Backend의 sessionId와 동일)
- * @param {number} params.matchId  - 매치 ID
- * @param {string} params.winnerId - 선택한 영화 ID
- * @returns {Promise<{
- *   sessionId: number,
- *   gameCompleted: boolean,
- *   isFinished: boolean,
- *   winnerMovieId: string|null,
- *   finalWinner: string|null,
- *   nextMatches: Array,
- *   nextMatch: Object|null
- * }>}
- */
-export async function submitPick({ gameId, matchId, winnerId }) {
+function normalizeMatch(match) {
+  return {
+    matchId: match.match_id,
+    leftMovie: normalizeMovie(match.movie_a),
+    rightMovie: normalizeMovie(match.movie_b),
+  };
+}
+
+function normalizeCategory(category) {
+  return {
+    categoryId: category.categoryId,
+    categoryCode: category.categoryCode,
+    categoryName: category.categoryName,
+    description: category.description ?? '',
+    displayOrder: category.displayOrder ?? 0,
+    candidatePoolSize: category.candidatePoolSize ?? 0,
+    availableRoundSizes: Array.isArray(category.availableRoundSizes)
+      ? category.availableRoundSizes
+      : [],
+    previewMovieId: category.previewMovieId ?? null,
+    previewPosterUrl: category.previewPosterUrl ?? null,
+    isReady: Boolean(category.isReady),
+  };
+}
+
+function normalizeGenreOption(item) {
+  return {
+    genreCode: item.genreCode,
+    genreName: item.genreName,
+    contentsCount: item.contentsCount ?? 0,
+  };
+}
+
+function normalizeBracket(data) {
+  return {
+    roundSize: data.round_size,
+    totalRounds: data.total_rounds,
+    matches: Array.isArray(data.matches) ? data.matches.map(normalizeMatch) : [],
+  };
+}
+
+function normalizeOptions(data) {
+  return {
+    sourceType: data.sourceType,
+    categoryId: data.categoryId ?? null,
+    selectedGenres: Array.isArray(data.selectedGenres) ? data.selectedGenres : [],
+    candidatePoolSize: data.candidatePoolSize ?? 0,
+    availableRoundSizes: Array.isArray(data.availableRoundSizes)
+      ? data.availableRoundSizes
+      : [],
+  };
+}
+
+function normalizeSelectionResult(data) {
+  return {
+    message: data.message,
+    nextRound: data.next_round ?? null,
+    nextMatches: Array.isArray(data.next_matches)
+      ? data.next_matches.map(normalizeMatch)
+      : [],
+  };
+}
+
+function normalizeGenrePreference(item) {
+  return {
+    genre: item.genre,
+    score: item.score,
+  };
+}
+
+function normalizeResult(data) {
+  return {
+    winner: normalizeMovie(data.winner),
+    runnerUp: normalizeMovie(data.runner_up),
+    genrePreferences: Array.isArray(data.genre_preferences)
+      ? data.genre_preferences.map(normalizeGenrePreference)
+      : [],
+    topGenres: Array.isArray(data.top_genres) ? data.top_genres : [],
+  };
+}
+
+export async function getWorldcupCategories() {
   requireAuth();
-  // Backend 필드명: sessionId (gameId 아님), winnerMovieId (winnerId 아님)
-  return backendApi.post(WORLDCUP_ENDPOINTS.PICK, {
-    sessionId: gameId,       // Frontend gameId → Backend sessionId
-    matchId,
-    winnerMovieId: winnerId, // Frontend winnerId → Backend winnerMovieId
+  const data = await recommendApi.get(RECOMMEND_WORLDCUP_ENDPOINTS.CATEGORIES);
+  return Array.isArray(data) ? data.map(normalizeCategory) : [];
+}
+
+export async function getWorldcupGenres() {
+  requireAuth();
+  const data = await recommendApi.get(RECOMMEND_WORLDCUP_ENDPOINTS.GENRES);
+  return Array.isArray(data) ? data.map(normalizeGenreOption) : [];
+}
+
+export async function getWorldcupStartOptions({ sourceType, categoryId, selectedGenres } = {}) {
+  requireAuth();
+  const data = await recommendApi.post(RECOMMEND_WORLDCUP_ENDPOINTS.OPTIONS, {
+    sourceType,
+    categoryId: categoryId ?? null,
+    selectedGenres: Array.isArray(selectedGenres) ? selectedGenres : [],
   });
+  return normalizeOptions(data);
 }
 
-/**
- * 게임 결과 조회.
- *
- * Backend {@code GET /api/v1/worldcup/result/{sessionId}}를 호출한다.
- * gameId는 sessionId와 동일한 값이다.
- *
- * @param {number} gameId - 게임 ID (sessionId와 동일)
- * @returns {Promise<{gameId: number, sessionId: number, winnerMovieId: string, winner: Object, completedAt: string}>}
- */
-export async function getWorldcupResult(gameId) {
+export async function startWorldcup({ sourceType, categoryId, selectedGenres, roundSize }) {
   requireAuth();
-  return backendApi.get(WORLDCUP_ENDPOINTS.RESULT(gameId));
+  const data = await recommendApi.post(RECOMMEND_WORLDCUP_ENDPOINTS.START, {
+    sourceType,
+    categoryId: categoryId ?? null,
+    selectedGenres: Array.isArray(selectedGenres) ? selectedGenres : [],
+    roundSize,
+  });
+  return normalizeBracket(data);
 }
 
-/**
- * 최근 월드컵 결과 이력.
- *
- * @param {Object} params
- * @param {number} [params.page=0]
- * @param {number} [params.size=10]
- * @returns {Promise<{content: Array, totalPages: number}>}
- */
-export async function getWorldcupHistory({ page = 0, size = 10 } = {}) {
+export async function submitWorldcupRound({ roundSize, selections, isFinal = false }) {
   requireAuth();
-  return backendApi.get(WORLDCUP_ENDPOINTS.HISTORY, { params: { page, size } });
+  const data = await recommendApi.post(RECOMMEND_WORLDCUP_ENDPOINTS.SUBMIT, {
+    round_size: roundSize,
+    selections,
+    is_final: isFinal,
+  });
+  return normalizeSelectionResult(data);
+}
+
+export async function getWorldcupResult() {
+  requireAuth();
+  const data = await recommendApi.get(RECOMMEND_WORLDCUP_ENDPOINTS.RESULT);
+  return normalizeResult(data);
 }

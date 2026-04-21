@@ -1,376 +1,886 @@
-/**
- * WorldcupPage styled-components 정의.
- *
- * 영화 이상형 월드컵: 설정 → 대결 → 결과 3단계 UI.
- */
-
 import styled, { keyframes } from 'styled-components';
+import { glassCard, gradientText } from '../../../shared/styles/mixins';
+import { media } from '../../../shared/styles/media';
 
-const fadeInUp = keyframes`
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 `;
 
-const scaleIn = keyframes`
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+const pulseGlow = keyframes`
+  0%, 100% {
+    box-shadow: ${({ theme }) => theme.shadows.md};
+  }
+  50% {
+    box-shadow: ${({ theme }) => theme.shadows.lg}, ${({ theme }) => theme.glows.primary};
+  }
 `;
 
-const vsAppear = keyframes`
-  0% { transform: scale(0); opacity: 0; }
-  50% { transform: scale(1.3); }
-  100% { transform: scale(1); opacity: 1; }
-`;
-
-/** 페이지 컨테이너 */
 export const Container = styled.div`
-  max-width: 900px;
+  width: 100%;
+  max-width: ${({ theme }) => theme.layout.contentMaxWidth};
   margin: 0 auto;
-  padding: ${({ theme }) => theme.spacing.lg}px ${({ theme }) => theme.spacing.md}px;
-  animation: ${fadeInUp} 0.4s ease;
-`;
-
-/** 페이지 제목 */
-export const PageTitle = styled.h1`
-  font-size: ${({ theme }) => theme.typography.text2xl};
-  font-weight: ${({ theme }) => theme.typography.fontBold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  margin: 0 0 ${({ theme }) => theme.spacing.md}px;
-  text-align: center;
-`;
-
-/** 서브 제목 */
-export const Subtitle = styled.p`
-  text-align: center;
-  font-size: ${({ theme }) => theme.typography.textSm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin: 0 0 ${({ theme }) => theme.spacing.lg}px;
-`;
-
-/* ── 설정 화면 ── */
-
-/** 설정 카드 */
-export const SetupCard = styled.div`
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 32px;
-  border-radius: ${({ theme }) => theme.radius.xl};
-  background: ${({ theme }) => theme.colors.bgSecondary};
-  border: 1px solid ${({ theme }) => theme.colors.borderDefault};
+  padding: ${({ theme }) => `${theme.spacing.xl} ${theme.spacing.lg} ${theme.spacing.xxxl}`};
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  animation: ${scaleIn} 0.3s ease;
+  gap: ${({ theme }) => theme.spacing.xl};
+  animation: ${fadeIn} 0.35s ease;
+
+  ${media.tablet} {
+    padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.md} ${theme.spacing.xxxl}`};
+  }
 `;
 
-/** 설정 라벨 */
-export const SetupLabel = styled.label`
+export const Header = styled.header`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+export const PageTitle = styled.h1`
+  margin: 0;
+  font-size: ${({ theme }) => theme.typography.text3xl};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+  ${gradientText}
+`;
+
+export const Subtitle = styled.p`
+  margin: 0;
+  font-size: ${({ theme }) => theme.typography.textBase};
+  color: ${({ theme }) => theme.colors.textSecondary};
+`;
+
+export const FeaturedSection = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
+`;
+
+export const CategoryGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 220px));
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.lg};
+
+  ${media.desktop} {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 210px));
+  }
+
+  ${media.tablet} {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 190px));
+  }
+`;
+
+export const CategoryItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+export const CategoryPoster = styled.img`
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background:
+    radial-gradient(circle at top, ${({ theme }) => theme.colors.primaryLight}, transparent 58%),
+    ${({ theme }) => theme.colors.bgElevated};
+  transition:
+    transform ${({ theme }) => theme.transitions.base},
+    filter ${({ theme }) => theme.transitions.base};
+`;
+
+export const CategoryPosterFallback = styled.div`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at top, ${({ theme }) => theme.colors.primaryLight}, transparent 58%),
+    ${({ theme }) => theme.colors.bgElevated};
+  font-size: clamp(52px, 7vw, 72px);
+  line-height: 1;
+  transition:
+    transform ${({ theme }) => theme.transitions.base},
+    filter ${({ theme }) => theme.transitions.base};
+`;
+
+export const CategoryOverlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.1) 0%,
+      ${({ $disabled, theme }) => ($disabled ? 'rgba(10, 10, 18, 0.68)' : theme.colors.primary)} 100%
+    );
+  opacity: ${({ $disabled }) => ($disabled ? 0.84 : 0.78)};
+  transition: opacity ${({ theme }) => theme.transitions.base};
+`;
+
+export const CategoryCard = styled.button`
+  position: relative;
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border: 1px solid ${({ theme }) => theme.colors.borderDefault};
+  border-radius: ${({ theme }) => theme.radius.xl};
+  overflow: hidden;
+  background: ${({ theme }) => theme.colors.bgSecondary};
+  cursor: ${({ $disabled }) => ($disabled ? 'not-allowed' : 'pointer')};
+  transition:
+    transform ${({ theme }) => theme.transitions.base},
+    box-shadow ${({ theme }) => theme.transitions.base},
+    border-color ${({ theme }) => theme.transitions.base};
+
+  ${CategoryPoster} {
+    filter: ${({ $disabled }) => ($disabled ? 'grayscale(1)' : 'none')};
+  }
+
+  ${CategoryPosterFallback} {
+    filter: ${({ $disabled }) => ($disabled ? 'grayscale(1)' : 'none')};
+  }
+
+  &:hover {
+    ${({ $disabled, theme }) => (!$disabled ? `
+      transform: translateY(-4px);
+      border-color: ${theme.colors.primary};
+      box-shadow: ${theme.shadows.xl}, ${theme.glows.primary};
+    ` : '')}
+  }
+
+  &:hover ${CategoryPoster} {
+    ${({ $disabled }) => (!$disabled ? 'transform: scale(1.06); filter: blur(2px);' : '')}
+  }
+
+  &:hover ${CategoryPosterFallback} {
+    ${({ $disabled }) => (!$disabled ? 'transform: scale(1.06); filter: blur(1px);' : '')}
+  }
+
+  &:hover ${CategoryOverlay} {
+    ${({ $disabled }) => (!$disabled ? 'opacity: 0.9;' : '')}
+  }
+`;
+
+export const CategoryTitle = styled.span`
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: ${({ theme }) => theme.spacing.lg};
+  color: #fff;
+  font-size: ${({ theme }) => theme.typography.textXl};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+  line-height: ${({ theme }) => theme.typography.leadingTight};
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.48);
+  text-align: center;
+`;
+
+export const CategoryDescription = styled.p`
+  margin: 0;
+  min-height: 20px;
+  font-size: ${({ theme }) => theme.typography.textSm};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+export const SelectionPanel = styled.section`
+  ${glassCard}
+  padding: ${({ theme }) => theme.spacing.lg};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+export const SelectionTitle = styled.h2`
+  margin: 0;
+  font-size: ${({ theme }) => theme.typography.textXl};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+  color: ${({ theme }) => theme.colors.textPrimary};
+`;
+
+export const SelectionMeta = styled.p`
+  margin: 0;
+  font-size: ${({ theme }) => theme.typography.textSm};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  line-height: ${({ theme }) => theme.typography.leadingNormal};
+`;
+
+export const RoundChoiceRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+export const RoundChoiceButton = styled.button`
+  min-width: 88px;
+  padding: 12px 16px;
+  border-radius: ${({ theme }) => theme.radius.full};
+  border: 1px solid ${({ $active, theme }) => ($active ? theme.colors.primary : theme.colors.borderDefault)};
+  background: ${({ $active, theme }) => ($active ? theme.colors.primaryLight : theme.colors.bgCard)};
+  color: ${({ $active, theme }) => ($active ? theme.colors.textPrimary : theme.colors.textSecondary)};
   font-size: ${({ theme }) => theme.typography.textSm};
   font-weight: ${({ theme }) => theme.typography.fontSemibold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  display: block;
-  margin-bottom: 8px;
-`;
-
-/** 라운드 선택 그리드 */
-export const RoundGrid = styled.div`
-  display: flex;
-  gap: 12px;
-`;
-
-/** 라운드 버튼 */
-export const RoundBtn = styled.button`
-  flex: 1;
-  padding: 14px;
-  border-radius: ${({ theme }) => theme.radius.lg};
-  border: 2px solid ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.borderDefault};
-  background: ${({ $active, theme }) =>
-    $active ? `${theme.colors.primary}15` : 'transparent'};
-  color: ${({ $active, theme }) =>
-    $active ? theme.colors.primary : theme.colors.textSecondary};
-  font-size: ${({ theme }) => theme.typography.textLg};
-  font-weight: ${({ theme }) => theme.typography.fontBold};
-  cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+`;
+
+export const PrimaryActionButton = styled.button`
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.gradients.primary};
+  color: #fff;
+  font-size: ${({ theme }) => theme.typography.textBase};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+  box-shadow: ${({ theme }) => theme.shadows.lg};
+  transition: transform ${({ theme }) => theme.transitions.fast}, opacity ${({ theme }) => theme.transitions.fast};
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    opacity: 0.94;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+`;
+
+export const SecondaryActionButton = styled.button`
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.colors.bgCard};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.typography.textBase};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  border: 1px solid ${({ theme }) => theme.colors.borderDefault};
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
   }
 `;
 
-/** 장르 셀렉트 */
-export const GenreSelect = styled.select`
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: ${({ theme }) => theme.radius.md};
-  border: 1px solid ${({ theme }) => theme.colors.borderDefault};
-  background: ${({ theme }) => theme.colors.bg};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  font-size: ${({ theme }) => theme.typography.textBase};
-  font-family: inherit;
-  cursor: pointer;
+export const MoreLinkButton = styled.button`
+  width: fit-content;
+  align-self: center;
+  margin-top: ${({ theme }) => theme.spacing.xs};
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  text-decoration: underline;
+  text-underline-offset: 3px;
 
-  &:focus {
-    outline: none;
-    border-color: ${({ theme }) => theme.colors.primary};
+  &:hover {
+    color: ${({ theme }) => theme.colors.textPrimary};
   }
 `;
 
-/** 시작 버튼 */
-export const StartBtn = styled.button`
+export const ExtraSection = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+export const ExtraSectionTitle = styled.h3`
+  margin: 0;
+  font-size: ${({ theme }) => theme.typography.textLg};
+  color: ${({ theme }) => theme.colors.textPrimary};
+`;
+
+export const DividerRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+export const DividerLine = styled.div`
+  flex: 1;
+  height: 1px;
+  background: ${({ theme }) => theme.colors.borderDefault};
+`;
+
+export const DividerText = styled.span`
+  flex-shrink: 0;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: ${({ theme }) => theme.typography.textSm};
+`;
+
+export const CustomEntrySection = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
+`;
+
+export const CustomBuilderToggle = styled.button`
   width: 100%;
-  padding: 14px;
-  border-radius: ${({ theme }) => theme.radius.lg};
-  border: none;
-  background: ${({ theme }) => theme.colors.primary};
-  color: #fff;
+  min-height: 64px;
+  padding: ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radius.xl};
+  border: 1px dashed ${({ $active, theme }) => ($active ? theme.colors.primary : theme.colors.borderDefault)};
+  background:
+    radial-gradient(circle at top, ${({ theme }) => theme.colors.primaryLight}, transparent 65%),
+    ${({ theme }) => theme.colors.bgSecondary};
+  color: ${({ theme }) => theme.colors.textPrimary};
   font-size: ${({ theme }) => theme.typography.textLg};
   font-weight: ${({ theme }) => theme.typography.fontBold};
-  cursor: pointer;
-  transition: opacity ${({ theme }) => theme.transitions.fast};
-
-  &:hover { opacity: 0.85; }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-`;
-
-/* ── 대결 화면 ── */
-
-/** 라운드 정보 바 */
-export const RoundInfo = styled.div`
-  text-align: center;
-  font-size: ${({ theme }) => theme.typography.textSm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-  margin-bottom: ${({ theme }) => theme.spacing.md}px;
-`;
-
-/** 라운드 배지 */
-export const RoundBadge = styled.span`
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: ${({ theme }) => theme.radius.full};
-  background: ${({ theme }) => theme.colors.primary}20;
-  color: ${({ theme }) => theme.colors.primary};
-  font-weight: ${({ theme }) => theme.typography.fontSemibold};
-  margin-right: 8px;
-`;
-
-/** 대결 영역 */
-export const BattleArea = styled.div`
-  display: flex;
-  align-items: stretch;
-  gap: 16px;
-  animation: ${fadeInUp} 0.4s ease;
-
-  @media (max-width: 640px) {
-    flex-direction: column;
-    align-items: center;
-  }
-`;
-
-/** 영화 선택 카드 */
-export const MovieCard = styled.div`
-  flex: 1;
-  max-width: 380px;
-  border-radius: ${({ theme }) => theme.radius.xl};
-  background: ${({ theme }) => theme.colors.bgSecondary};
-  border: 2px solid ${({ theme }) => theme.colors.borderDefault};
-  overflow: hidden;
-  cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.base};
 
   &:hover {
     border-color: ${({ theme }) => theme.colors.primary};
-    transform: translateY(-4px);
     box-shadow: ${({ theme }) => theme.shadows.lg};
   }
-
-  &:active {
-    transform: translateY(-2px);
-  }
 `;
 
-/** 영화 포스터 */
-export const MoviePoster = styled.img`
-  width: 100%;
-  aspect-ratio: 2/3;
-  object-fit: cover;
-  display: block;
-`;
-
-/** 포스터 플레이스홀더 */
-export const PosterPlaceholder = styled.div`
-  width: 100%;
-  aspect-ratio: 2/3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 48px;
-  color: ${({ theme }) => theme.colors.textMuted};
-  background: ${({ theme }) => theme.colors.bgElevated};
-`;
-
-/** 영화 정보 영역 */
-export const MovieInfo = styled.div`
-  padding: 16px;
-  text-align: center;
-`;
-
-/** 영화 제목 */
-export const MovieTitle = styled.h3`
-  margin: 0 0 4px;
-  font-size: ${({ theme }) => theme.typography.textBase};
-  font-weight: ${({ theme }) => theme.typography.fontSemibold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-`;
-
-/** 영화 메타 */
-export const MovieMeta = styled.div`
-  font-size: ${({ theme }) => theme.typography.textSm};
-  color: ${({ theme }) => theme.colors.textSecondary};
-`;
-
-/** VS 배지 */
-export const VsBadge = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: ${({ theme }) => theme.colors.error};
-  color: #fff;
-  font-size: ${({ theme }) => theme.typography.textXl};
-  font-weight: ${({ theme }) => theme.typography.fontBold};
-  align-self: center;
-  animation: ${vsAppear} 0.5s ease;
-  box-shadow: 0 0 20px ${({ theme }) => theme.colors.error}40;
-
-  @media (max-width: 640px) {
-    width: 44px;
-    height: 44px;
-    font-size: ${({ theme }) => theme.typography.textLg};
-  }
-`;
-
-/* ── 결과 화면 ── */
-
-/** 결과 컨테이너 */
-export const ResultContainer = styled.div`
-  text-align: center;
-  animation: ${scaleIn} 0.5s ease;
-`;
-
-/** 우승 타이틀 */
-export const WinnerTitle = styled.h2`
-  font-size: ${({ theme }) => theme.typography.text2xl};
-  font-weight: ${({ theme }) => theme.typography.fontBold};
-  color: ${({ theme }) => theme.colors.primary};
-  margin: 0 0 ${({ theme }) => theme.spacing.lg}px;
-`;
-
-/** 우승 카드 */
-export const WinnerCard = styled.div`
-  max-width: 300px;
-  margin: 0 auto ${({ theme }) => theme.spacing.xl}px;
-  border-radius: ${({ theme }) => theme.radius.xl};
-  background: ${({ theme }) => theme.colors.bgSecondary};
-  border: 3px solid ${({ theme }) => theme.colors.primary};
-  overflow: hidden;
-  box-shadow: 0 0 30px ${({ theme }) => theme.colors.primary}30;
-`;
-
-/** 순위 목록 */
-export const RankingList = styled.div`
-  max-width: 500px;
-  margin: 0 auto;
+export const CustomBuilderPanel = styled.section`
+  ${glassCard}
+  padding: ${({ theme }) => theme.spacing.lg};
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: ${({ theme }) => theme.spacing.md};
 `;
 
-/** 순위 아이템 */
-export const RankingItem = styled.div`
+export const GenreChipGrid = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+export const GenreChip = styled.button`
+  padding: 10px 14px;
+  border-radius: ${({ theme }) => theme.radius.full};
+  border: 1px solid ${({ $active, theme }) => ($active ? theme.colors.primary : theme.colors.borderDefault)};
+  background: ${({ $active, theme }) => ($active ? theme.colors.primaryLight : theme.colors.bgCard)};
+  color: ${({ $active, theme }) => ($active ? theme.colors.textPrimary : theme.colors.textSecondary)};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontMedium};
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+`;
+
+export const BuilderSummary = styled.div`
+  padding: ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  background: ${({ theme }) => theme.colors.bgSecondary};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  line-height: ${({ theme }) => theme.typography.leadingNormal};
+`;
+
+export const BattleSection = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
+`;
+
+export const RoundStatus = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 16px;
-  border-radius: ${({ theme }) => theme.radius.md};
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
+  flex-wrap: wrap;
+`;
+
+export const RoundBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 88px;
+  height: 38px;
+  padding: 0 16px;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.gradients.primary};
+  color: #fff;
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+`;
+
+export const RoundCounter = styled.span`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+`;
+
+export const ProgressTrack = styled.div`
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: ${({ theme }) => theme.colors.bgSecondary};
+  overflow: hidden;
+`;
+
+export const ProgressFill = styled.div`
+  height: 100%;
+  border-radius: inherit;
+  background: ${({ theme }) => theme.gradients.primary};
+  transition: width ${({ theme }) => theme.transitions.base};
+`;
+
+export const BattleGrid = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 280px) auto minmax(0, 280px);
+  gap: ${({ theme }) => theme.spacing.lg};
+  align-items: center;
+  justify-content: center;
+
+  ${media.tablet} {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+`;
+
+export const MovieCard = styled.button`
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 280px);
+  border-radius: ${({ theme }) => theme.radius.xl};
+  overflow: hidden;
   background: ${({ theme }) => theme.colors.bgSecondary};
   border: 1px solid ${({ theme }) => theme.colors.borderDefault};
+  transition: transform ${({ theme }) => theme.transitions.base}, box-shadow ${({ theme }) => theme.transitions.base};
+
+  &:hover:not(:disabled) {
+    transform: translateY(-4px);
+    box-shadow: ${({ theme }) => theme.shadows.xl}, ${({ theme }) => theme.glows.primary};
+  }
+
+  &:hover:not(:disabled) [data-role='movie-poster'],
+  &:focus-visible [data-role='movie-poster'] {
+    transform: scale(1.04);
+    filter: blur(3px) brightness(0.42) saturate(0.82);
+  }
+
+  &:hover:not(:disabled) [data-role='movie-overview-overlay'],
+  &:focus-visible [data-role='movie-overview-overlay'] {
+    opacity: 1;
+  }
+
+  &:disabled {
+    cursor: wait;
+    opacity: 0.8;
+  }
 `;
 
-/** 순위 번호 */
-export const RankNumber = styled.span`
+export const MoviePosterFrame = styled.div`
+  position: relative;
+  overflow: hidden;
+`;
+
+export const MoviePoster = styled.img.attrs({
+  'data-role': 'movie-poster',
+})`
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+  background:
+    radial-gradient(circle at top, ${({ theme }) => theme.colors.primaryLight}, transparent 58%),
+    ${({ theme }) => theme.colors.bgElevated};
+  transition:
+    transform ${({ theme }) => theme.transitions.base},
+    filter ${({ theme }) => theme.transitions.base};
+`;
+
+export const MovieOverviewOverlay = styled.div.attrs({
+  'data-role': 'movie-overview-overlay',
+})`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.lg};
+  background:
+    linear-gradient(
+      180deg,
+      rgba(6, 8, 16, 0.18) 0%,
+      rgba(6, 8, 16, 0.74) 36%,
+      rgba(6, 8, 16, 0.92) 100%
+    );
+  color: #fff;
+  opacity: 0;
+  transition: opacity ${({ theme }) => theme.transitions.base};
+  pointer-events: none;
+`;
+
+export const MovieOverviewLabel = styled.span`
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: rgba(255, 255, 255, 0.14);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: ${({ theme }) => theme.typography.textXs};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+  letter-spacing: 0.02em;
+`;
+
+export const MovieOverviewText = styled.p`
+  margin: 0;
+  color: rgba(255, 255, 255, 0.96);
+  font-size: ${({ theme }) => theme.typography.textSm};
+  line-height: 1.6;
+  text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 7;
+  -webkit-box-orient: vertical;
+`;
+
+export const MovieInfo = styled.div`
+  padding: ${({ theme }) => theme.spacing.md};
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+`;
+
+export const MovieName = styled.h3`
+  margin: 0;
   font-size: ${({ theme }) => theme.typography.textLg};
   font-weight: ${({ theme }) => theme.typography.fontBold};
-  color: ${({ $rank, theme }) => {
-    if ($rank === 1) return '#fbbf24';
-    if ($rank === 2) return '#9ca3af';
-    if ($rank === 3) return '#b45309';
-    return theme.colors.textMuted;
-  }};
-  min-width: 28px;
-`;
-
-/** 순위 영화 제목 */
-export const RankTitle = styled.span`
-  flex: 1;
-  font-size: ${({ theme }) => theme.typography.textSm};
   color: ${({ theme }) => theme.colors.textPrimary};
 `;
 
-/** 다시하기 / 공유 버튼 영역 */
-export const ResultActions = styled.div`
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin-top: ${({ theme }) => theme.spacing.xl}px;
-`;
-
-/** 결과 액션 버튼 */
-export const ResultBtn = styled.button`
-  padding: 12px 24px;
-  border-radius: ${({ theme }) => theme.radius.md};
-  border: ${({ $variant }) => ($variant === 'outline' ? '1px solid' : 'none')};
-  border-color: ${({ theme }) => theme.colors.borderDefault};
-  background: ${({ $variant, theme }) =>
-    $variant === 'outline' ? 'transparent' : theme.colors.primary};
-  color: ${({ $variant, theme }) =>
-    $variant === 'outline' ? theme.colors.textSecondary : '#fff'};
-  font-size: ${({ theme }) => theme.typography.textSm};
-  font-weight: ${({ theme }) => theme.typography.fontSemibold};
-  cursor: pointer;
-  transition: all ${({ theme }) => theme.transitions.fast};
-
-  &:hover { opacity: 0.85; }
-`;
-
-/** 이력 섹션 제목 */
-export const HistoryTitle = styled.h2`
-  font-size: ${({ theme }) => theme.typography.textLg};
-  font-weight: ${({ theme }) => theme.typography.fontSemibold};
-  color: ${({ theme }) => theme.colors.textPrimary};
-  margin: ${({ theme }) => theme.spacing.xxl}px 0 ${({ theme }) => theme.spacing.md}px;
-`;
-
-/** 빈 상태 */
-export const EmptyState = styled.div`
-  text-align: center;
-  padding: 48px 20px;
-  color: ${({ theme }) => theme.colors.textMuted};
-`;
-
-/** 빈 상태 아이콘 */
-export const EmptyIcon = styled.div`
-  font-size: 48px;
-  margin-bottom: 12px;
-  opacity: 0.5;
-`;
-
-/** 빈 상태 텍스트 */
-export const EmptyText = styled.p`
-  font-size: ${({ theme }) => theme.typography.textSm};
+export const MovieMeta = styled.p`
   margin: 0;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  line-height: ${({ theme }) => theme.typography.leadingNormal};
+`;
+
+export const VsBadge = styled.div`
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: ${({ theme }) => theme.colors.error};
+  color: #fff;
+  font-size: ${({ theme }) => theme.typography.textLg};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+  animation: ${pulseGlow} 1.8s ease-in-out infinite;
+
+  ${media.tablet} {
+    justify-self: center;
+  }
+`;
+
+export const ResultSection = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xl};
+`;
+
+export const ResultHero = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+export const ResultLabel = styled.span`
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+`;
+
+export const WinnerCard = styled.div`
+  ${glassCard}
+  padding: ${({ theme }) => theme.spacing.md};
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: ${({ theme }) => theme.spacing.lg};
+  align-items: center;
+
+  ${media.tablet} {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const RunnerUpSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+export const RunnerUpCard = styled.div`
+  ${glassCard}
+  padding: ${({ theme }) => theme.spacing.md};
+  display: grid;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: ${({ theme }) => theme.spacing.lg};
+  align-items: center;
+
+  ${media.tablet} {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const ResultPoster = styled.img`
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: ${({ theme }) => theme.radius.lg};
+  object-fit: cover;
+  background:
+    radial-gradient(circle at top, ${({ theme }) => theme.colors.primaryLight}, transparent 58%),
+    ${({ theme }) => theme.colors.bgElevated};
+`;
+
+export const ResultInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+export const ResultMovieTitle = styled.h3`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.typography.text2xl};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+`;
+
+export const PreferenceSection = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+export const SectionTitle = styled.h3`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.typography.textLg};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+`;
+
+export const TagRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+export const PreferenceTag = styled.span`
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.colors.primaryLight};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+`;
+
+export const PreferenceList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+export const PreferenceItem = styled.div`
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) 52px;
+  gap: ${({ theme }) => theme.spacing.md};
+  align-items: center;
+
+  ${media.mobile} {
+    grid-template-columns: 72px minmax(0, 1fr) 44px;
+    gap: ${({ theme }) => theme.spacing.sm};
+  }
+`;
+
+export const PreferenceGenre = styled.span`
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+`;
+
+export const PreferenceBarTrack = styled.div`
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: ${({ theme }) => theme.colors.bgSecondary};
+  overflow: hidden;
+`;
+
+export const PreferenceBarFill = styled.div`
+  height: 100%;
+  border-radius: inherit;
+  background: ${({ theme }) => theme.gradients.primary};
+`;
+
+export const PreferenceScore = styled.span`
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  text-align: right;
+`;
+
+export const ResultActionRow = styled.div`
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: ${({ theme }) => theme.spacing.md};
+
+  ${media.tablet} {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const StatusText = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+`;
+
+export const ErrorText = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.error};
+  font-size: ${({ theme }) => theme.typography.textSm};
+`;
+
+export const EmptyState = styled.div`
+  ${glassCard}
+  padding: ${({ theme }) => theme.spacing.lg};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  text-align: center;
+`;
+
+export const CategoryModalOverlay = styled.div`
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: ${({ theme }) => theme.spacing.lg};
+  background: rgba(8, 10, 20, 0.72);
+  backdrop-filter: blur(10px);
+
+  ${media.tablet} {
+    padding: ${({ theme }) => theme.spacing.md};
+    align-items: stretch;
+  }
+`;
+
+export const CategoryModalCard = styled.div`
+  ${glassCard}
+  width: min(1120px, 100%);
+  max-height: min(88vh, 920px);
+  padding: ${({ theme }) => theme.spacing.xl};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
+  overflow: hidden;
+
+  ${media.tablet} {
+    max-height: none;
+    padding: ${({ theme }) => theme.spacing.lg};
+  }
+`;
+
+export const CategoryModalHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
+
+  ${media.tablet} {
+    flex-direction: column;
+  }
+`;
+
+export const CategoryModalTitle = styled.h2`
+  margin: 0 0 6px;
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.typography.text2xl};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+`;
+
+export const CategoryModalDesc = styled.p`
+  margin: 0;
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  line-height: ${({ theme }) => theme.typography.leadingNormal};
+`;
+
+export const CategoryModalCloseButton = styled.button`
+  flex-shrink: 0;
+  min-height: 42px;
+  padding: 0 ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radius.full};
+  border: 1px solid ${({ theme }) => theme.colors.borderDefault};
+  background: ${({ theme }) => theme.colors.bgCard};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+export const CategorySearchInput = styled.input`
+  width: 100%;
+  min-height: 52px;
+  padding: 0 ${({ theme }) => theme.spacing.md};
+  border-radius: ${({ theme }) => theme.radius.full};
+  border: 1px solid ${({ theme }) => theme.colors.borderDefault};
+  background: ${({ theme }) => theme.colors.bgSecondary};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.typography.textBase};
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.textMuted};
+  }
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: 0 0 0 3px ${({ theme }) => theme.colors.primaryLight};
+  }
+`;
+
+export const CategoryModalGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 220px));
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.lg};
+  overflow-y: auto;
+  padding-right: 4px;
+
+  ${media.desktop} {
+    grid-template-columns: repeat(auto-fit, minmax(170px, 210px));
+  }
+
+  ${media.tablet} {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 190px));
+  }
 `;
