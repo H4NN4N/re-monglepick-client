@@ -22,6 +22,72 @@
 import styled, { keyframes } from 'styled-components';
 import { media } from '../../../shared/styles/media';
 
+/* ── 섹션 레이아웃 ── */
+
+export const SectionWrapper = styled.section`
+  /* 기본 구조만 담당 — 패딩은 부모(SupportPage)가 관리 */
+`;
+
+export const SectionTitle = styled.h2`
+  font-size: ${({ theme }) => theme.typography.textXl};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  margin: 0 0 ${({ theme }) => theme.spacing.md} 0;
+`;
+
+export const CategoryTabs = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.xs};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+  flex-wrap: wrap;
+
+  ${media.tablet} {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+  }
+`;
+
+export const CategoryTab = styled.button`
+  padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
+  background: ${({ $isActive, theme }) =>
+    $isActive ? theme.gradients.primary : theme.colors.bgCard};
+  border: 1px solid ${({ $isActive, theme }) =>
+    $isActive ? 'transparent' : theme.colors.borderDefault};
+  border-radius: ${({ theme }) => theme.radius.full};
+  color: ${({ $isActive, theme }) =>
+    $isActive ? 'white' : theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+  box-shadow: ${({ $isActive, theme }) => $isActive ? theme.glows.primary : 'none'};
+  flex-shrink: 0;
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+`;
+
+export const Empty = styled.div`
+  text-align: center;
+  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.md};
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+export const EmptyIcon = styled.div`
+  font-size: ${({ theme }) => theme.typography.text4xl};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  opacity: 0.5;
+`;
+
+export const EmptyText = styled.p`
+  font-size: ${({ theme }) => theme.typography.textBase};
+  margin: 0;
+`;
+
 /**
  * FAQ 답변 패널 등장 애니메이션.
  * SupportPage.css의 @keyframes supportFadeIn 을 그대로 포팅한다.

@@ -40,30 +40,25 @@ export default function FaqTab({
   categoryLabelMap,
 }) {
   return (
-    <section
+    <S.SectionWrapper
       id="support-panel-faq"
       role="tabpanel"
       aria-labelledby="faq-tab"
-      className="support-page__section"
     >
-      <h2 className="support-page__section-title">자주 묻는 질문</h2>
+      <S.SectionTitle>자주 묻는 질문</S.SectionTitle>
 
-      {/* 카테고리 필터 탭 — SupportPage.css의 공통 클래스 사용 */}
-      <div className="support-page__category-tabs" role="group" aria-label="FAQ 카테고리 필터">
+      <S.CategoryTabs role="group" aria-label="FAQ 카테고리 필터">
         {categoryFilters.map((cat, idx) => (
-          <button
+          <S.CategoryTab
             key={cat.label}
-            className={[
-              'support-page__category-tab',
-              categoryIdx === idx ? 'support-page__category-tab--active' : '',
-            ].join(' ')}
+            $isActive={categoryIdx === idx}
             onClick={() => onCategoryChange(idx)}
             aria-pressed={categoryIdx === idx}
           >
             {cat.label}
-          </button>
+          </S.CategoryTab>
         ))}
-      </div>
+      </S.CategoryTabs>
 
       {/* 검색 바 */}
       <S.SearchBar>
@@ -81,14 +76,14 @@ export default function FaqTab({
       {isLoading ? (
         <Loading message="FAQ를 불러오는 중..." />
       ) : faqs.length === 0 ? (
-        <div className="support-page__empty">
-          <div className="support-page__empty-icon" aria-hidden="true">?</div>
-          <p className="support-page__empty-text">
+        <S.Empty>
+          <S.EmptyIcon aria-hidden="true">?</S.EmptyIcon>
+          <S.EmptyText>
             {searchKeyword
               ? `"${searchKeyword}"에 대한 검색 결과가 없습니다.`
               : '등록된 FAQ가 없습니다.'}
-          </p>
-        </div>
+          </S.EmptyText>
+        </S.Empty>
       ) : (
         <S.List role="list">
           {faqs.map((faq) => {
@@ -150,6 +145,6 @@ export default function FaqTab({
           })}
         </S.List>
       )}
-    </section>
+    </S.SectionWrapper>
   );
 }

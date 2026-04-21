@@ -59,13 +59,12 @@ export default function TicketTab({
   /* ── 문의하기 섹션 ── */
   if (activeSection === 'ticket') {
     return (
-      <section
+      <S.SectionWrapper
         id="support-panel-ticket"
         role="tabpanel"
         aria-labelledby="ticket-tab"
-        className="support-page__section"
       >
-        <h2 className="support-page__section-title">문의하기</h2>
+        <S.SectionTitle>문의하기</S.SectionTitle>
 
         {!isAuthenticated ? (
           /* 비인증 사용자 — 로그인 유도 */
@@ -198,35 +197,32 @@ export default function TicketTab({
             </S.SubmitBtn>
           </S.Form>
         )}
-      </section>
+      </S.SectionWrapper>
     );
   }
 
   /* ── 내 문의 내역 섹션 ── */
   if (activeSection === 'history' && isAuthenticated) {
     return (
-      <section
+      <S.SectionWrapper
         id="support-panel-history"
         role="tabpanel"
         aria-labelledby="history-tab"
-        className="support-page__section"
       >
-        <h2 className="support-page__section-title">
+        <S.SectionTitle>
           내 문의 내역
           {myTickets.totalElements > 0 && (
-            <span style={{ fontSize: 'var(--text-sm)', color: 'var(--text-muted)', marginLeft: 'var(--space-sm)' }}>
-              ({myTickets.totalElements}건)
-            </span>
+            <S.SectionTitleCount>({myTickets.totalElements}건)</S.SectionTitleCount>
           )}
-        </h2>
+        </S.SectionTitle>
 
         {isLoadingTickets ? (
           <Loading message="문의 내역을 불러오는 중..." />
         ) : myTickets.content.length === 0 ? (
-          <div className="support-page__empty">
-            <div className="support-page__empty-icon" aria-hidden="true">?</div>
-            <p className="support-page__empty-text">문의 내역이 없습니다.</p>
-          </div>
+          <S.Empty>
+            <S.EmptyIcon aria-hidden="true">?</S.EmptyIcon>
+            <S.EmptyText>문의 내역이 없습니다.</S.EmptyText>
+          </S.Empty>
         ) : (
           <>
             {/* 티켓 목록 */}
@@ -277,7 +273,7 @@ export default function TicketTab({
             )}
           </>
         )}
-      </section>
+      </S.SectionWrapper>
     );
   }
 

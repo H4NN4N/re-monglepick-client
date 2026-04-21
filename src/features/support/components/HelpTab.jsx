@@ -30,30 +30,25 @@ export default function HelpTab({
   categoryLabelMap,
 }) {
   return (
-    <section
+    <S.SectionWrapper
       id="support-panel-help"
       role="tabpanel"
       aria-labelledby="help-tab"
-      className="support-page__section"
     >
-      <h2 className="support-page__section-title">도움말</h2>
+      <S.SectionTitle>도움말</S.SectionTitle>
 
-      {/* 카테고리 필터 탭 */}
-      <div className="support-page__category-tabs" role="group" aria-label="도움말 카테고리 필터">
+      <S.CategoryTabs role="group" aria-label="도움말 카테고리 필터">
         {categoryFilters.map((cat, idx) => (
-          <button
+          <S.CategoryTab
             key={cat.label}
-            className={[
-              'support-page__category-tab',
-              categoryIdx === idx ? 'support-page__category-tab--active' : '',
-            ].join(' ')}
+            $isActive={categoryIdx === idx}
             onClick={() => onCategoryChange(idx)}
             aria-pressed={categoryIdx === idx}
           >
             {cat.label}
-          </button>
+          </S.CategoryTab>
         ))}
-      </div>
+      </S.CategoryTabs>
 
       {/* 도움말 상세 패널 (열려있을 때) */}
       {openArticle && (
@@ -79,10 +74,10 @@ export default function HelpTab({
       {isLoading ? (
         <Loading message="도움말을 불러오는 중..." />
       ) : articles.length === 0 ? (
-        <div className="support-page__empty">
-          <div className="support-page__empty-icon" aria-hidden="true">?</div>
-          <p className="support-page__empty-text">등록된 도움말이 없습니다.</p>
-        </div>
+        <S.Empty>
+          <S.EmptyIcon aria-hidden="true">?</S.EmptyIcon>
+          <S.EmptyText>등록된 도움말이 없습니다.</S.EmptyText>
+        </S.Empty>
       ) : (
         <S.Grid>
           {articles.map((article) => (
@@ -116,6 +111,6 @@ export default function HelpTab({
           ))}
         </S.Grid>
       )}
-    </section>
+    </S.SectionWrapper>
   );
 }

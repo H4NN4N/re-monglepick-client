@@ -21,6 +21,43 @@ import styled from 'styled-components';
 import { Link } from 'react-router-dom';
 import { media } from '../../../shared/styles/media';
 
+/* ── 섹션 레이아웃 ── */
+
+export const SectionWrapper = styled.section``;
+
+export const SectionTitle = styled.h2`
+  font-size: ${({ theme }) => theme.typography.textXl};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  margin: 0 0 ${({ theme }) => theme.spacing.md} 0;
+  display: flex;
+  align-items: baseline;
+  gap: ${({ theme }) => theme.spacing.xs};
+`;
+
+export const SectionTitleCount = styled.span`
+  font-size: ${({ theme }) => theme.typography.textSm};
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-weight: ${({ theme }) => theme.typography.fontNormal};
+`;
+
+export const Empty = styled.div`
+  text-align: center;
+  padding: ${({ theme }) => theme.spacing.xxl} ${({ theme }) => theme.spacing.md};
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+export const EmptyIcon = styled.div`
+  font-size: ${({ theme }) => theme.typography.text4xl};
+  margin-bottom: ${({ theme }) => theme.spacing.sm};
+  opacity: 0.5;
+`;
+
+export const EmptyText = styled.p`
+  font-size: ${({ theme }) => theme.typography.textBase};
+  margin: 0;
+`;
+
 /* ── 상태 배지 색상 매핑 헬퍼 ── */
 
 /**
