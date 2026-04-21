@@ -140,6 +140,34 @@ export const CharCount = styled.div`
     $warn ? theme.typography.fontSemibold : theme.typography.fontNormal};
 `;
 
+/** 반려 사유 배너 */
+export const RejectionBanner = styled.div`
+  padding: 14px 16px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  background: ${({ theme }) => `${theme.colors.error}10`};
+  border: 1px solid ${({ theme }) => `${theme.colors.error}35`};
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+`;
+
+/** 반려 배너 제목 */
+export const RejectionTitle = styled.p`
+  margin: 0;
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  color: ${({ theme }) => theme.colors.error};
+`;
+
+/** 반려 사유 텍스트 */
+export const RejectionReason = styled.p`
+  margin: 0;
+  font-size: ${({ theme }) => theme.typography.textSm};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  line-height: 1.5;
+  white-space: pre-wrap;
+`;
+
 /** 하단 액션 버튼 영역 */
 export const Actions = styled.div`
   display: flex;

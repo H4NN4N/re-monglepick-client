@@ -41,6 +41,8 @@ build
 # Claude Code
 .claude/
 CLAUDE.md
+PROGRESS.md
+docs/
 
 # Test coverage
 coverage/

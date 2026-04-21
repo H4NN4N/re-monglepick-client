@@ -239,6 +239,11 @@ export default function PlaylistPage() {
         ...prev,
         items: (prev.items || []).filter((m) => m.movieId !== movieId),
       }));
+      setPlaylists((prev) => prev.map((pl) =>
+        pl.playlistId === detail.playlistId
+          ? { ...pl, movieCount: Math.max(0, (pl.movieCount || 0) - 1) }
+          : pl,
+      ));
     } catch {
       showAlert({ title: '오류', message: '영화 제거에 실패했습니다.', type: 'error' });
     }
@@ -281,6 +286,11 @@ export default function PlaylistPage() {
         ...prev,
         items: [...(prev.items || []), { movieId: String(movie.id), title: movie.title, posterPath: movie.posterUrl }],
       }));
+      setPlaylists((prev) => prev.map((pl) =>
+        pl.playlistId === detail.playlistId
+          ? { ...pl, movieCount: (pl.movieCount || 0) + 1 }
+          : pl,
+      ));
     } catch (err) {
       showAlert({ title: '오류', message: err.message || '영화 추가에 실패했습니다.', type: 'error' });
     }

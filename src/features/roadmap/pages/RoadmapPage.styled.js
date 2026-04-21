@@ -294,30 +294,44 @@ export const MovieItem = styled.div`
   }
 `;
 
-/** 시청 인증 버튼 */
+/** 시청 인증 버튼 — $done(완료), $rejected(반려), 기본(미인증) */
 export const VerifyBtn = styled.button`
   padding: 6px 12px;
   border-radius: ${({ theme }) => theme.radius.full};
-  border: 1.5px solid ${({ $done, theme }) =>
-    $done ? theme.colors.success : theme.colors.primary};
-  background: ${({ $done, theme }) =>
-    $done ? `${theme.colors.success}18` : 'transparent'};
-  color: ${({ $done, theme }) =>
-    $done ? theme.colors.success : theme.colors.primary};
+  border: 1.5px solid ${({ $done, $rejected, theme }) => {
+    if ($done) return theme.colors.success;
+    if ($rejected) return theme.colors.error;
+    return theme.colors.primary;
+  }};
+  background: ${({ $done, $rejected, theme }) => {
+    if ($done) return `${theme.colors.success}18`;
+    if ($rejected) return `${theme.colors.error}15`;
+    return 'transparent';
+  }};
+  color: ${({ $done, $rejected, theme }) => {
+    if ($done) return theme.colors.success;
+    if ($rejected) return theme.colors.error;
+    return theme.colors.primary;
+  }};
   font-size: ${({ theme }) => theme.typography.textXs};
   font-weight: ${({ theme }) => theme.typography.fontSemibold};
   white-space: nowrap;
   flex-shrink: 0;
-  cursor: ${({ $done }) => ($done ? 'default' : 'pointer')};
+  cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
 
   &:not(:disabled):hover {
-    background: ${({ theme }) => theme.colors.primary};
+    background: ${({ $done, $rejected, theme }) => {
+      if ($done) return theme.colors.success;
+      if ($rejected) return theme.colors.error;
+      return theme.colors.primary;
+    }};
     color: #fff;
   }
 
   &:disabled {
     opacity: 1;
+    cursor: not-allowed;
   }
 `;
 
