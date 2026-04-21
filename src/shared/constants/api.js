@@ -87,6 +87,8 @@ export const MOVIE_ENDPOINTS = {
  * recommend(FastAPI)의 Redis 하이브리드 캐시 구현을 직접 호출한다.
  */
 export const RECOMMEND_MOVIE_ENDPOINTS = {
+  /** 영화 상세 조회 - GET (공개) */
+  DETAIL: (id) => `${API_V2_VERSION}/search/movies/${id}`,
   /** 영화 좋아요 토글 - POST (id 파라미터 필요, JWT 필요) */
   LIKE: (id) => `${API_V2_VERSION}/movies/${id}/like`,
   /** 내 영화 좋아요 상태 조회 - GET (id 파라미터 필요, JWT 필요) */

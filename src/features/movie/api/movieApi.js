@@ -22,16 +22,24 @@ import {
  * @returns {Promise<Object>} 영화 상세 정보 객체
  */
 export async function getMovie(movieId) {
-  const movie = await backendApi.get(MOVIE_ENDPOINTS.DETAIL(movieId));
+  const movie = await recommendApi.get(RECOMMEND_MOVIE_ENDPOINTS.DETAIL(movieId));
+  const posterPath = movie.poster_path || extractTmdbPosterPath(movie.poster_url);
+  const backdropPath = movie.backdrop_path || extractTmdbPosterPath(movie.backdrop_url);
+
   return {
     ...movie,
     id: movie.movie_id,
-    posterUrl: movie.poster_url,
-    backdropUrl: movie.backdrop_url,
+    movie_id: movie.movie_id,
+    poster_path: posterPath,
+    posterUrl: movie.poster_url ?? null,
+    backdrop_path: backdropPath,
+    backdropUrl: movie.backdrop_url ?? null,
     original_title: movie.original_title,
     releaseYear: movie.release_year,
     release_date: movie.release_date || (movie.release_year ? `${movie.release_year}-01-01` : null),
-    trailerUrl: movie.trailer_url,
+    trailer_url: movie.trailer_url ?? null,
+    trailerUrl: movie.trailer_url ?? null,
+    genres: Array.isArray(movie.genres) ? movie.genres : [],
     cast: (movie.cast || []).map((actor) => (
       typeof actor === 'string' ? { name: actor } : actor
     )),
