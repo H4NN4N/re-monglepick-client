@@ -71,6 +71,14 @@ function resolvePosterSrc(movie) {
   return rawPoster;
 }
 
+/**
+ * 영화 상세 라우팅에 사용할 ID를 안전하게 해석한다.
+ * 응답 소스별로 `movie_id`, `movieId`, `id`가 섞여 들어올 수 있다.
+ */
+function resolveMovieId(movie) {
+  return movie?.movie_id || movie?.movieId || movie?.id || null;
+}
+
 export default function MovieList({ movies = [], title, loading = false, onMovieClick }) {
   // 로딩 중 — Skeleton 카드 6개 표시
   if (loading) {
@@ -106,13 +114,18 @@ export default function MovieList({ movies = [], title, loading = false, onMovie
       <S.Grid>
         {movies.map((movie, index) => {
           const posterSrc = resolvePosterSrc(movie);
+          const movieId = resolveMovieId(movie);
 
           return (
             <S.Card
-              key={movie.id || movie.movieId}
-              to={buildPath(ROUTES.MOVIE_DETAIL, { id: movie.id || movie.movieId })}
+              key={movieId || `movie-card-${index}`}
+              to={movieId ? buildPath(ROUTES.MOVIE_DETAIL, { id: movieId }) : '#'}
               $index={index}
-              onClick={() => {
+              onClick={(event) => {
+                if (!movieId) {
+                  event.preventDefault();
+                  return;
+                }
                 if (onMovieClick) {
                   void onMovieClick(movie);
                 }

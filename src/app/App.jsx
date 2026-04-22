@@ -14,6 +14,7 @@
  *   - /home                     : 홈 페이지 (인기/최신 영화 목록)
  *   - /search                   : 검색 결과 페이지
  *   - /movie/:id                : 영화 상세 페이지
+ *   - /movies/:id               : 영화 상세 페이지 레거시 alias
  *   - /match                     : 둘이 영화 고르기 (두 영화 교집합 추천, 비로그인 가능)
  *   - /community                : 커뮤니티 (게시판 + 리뷰)
  *   - /mypage                   : 마이페이지 (프로필/시청이력/위시리스트)
@@ -167,6 +168,16 @@ function App() {
         {/* 영화 상세 페이지 — URL 파라미터에서 영화 ID 추출 */}
         <Route
           path="/movie/:id"
+          element={
+            <MainLayout>
+              <MovieDetailPage />
+            </MainLayout>
+          }
+        />
+
+        {/* 영화 상세 페이지 레거시 alias — 기존 /movies/:id 링크/북마크 호환 */}
+        <Route
+          path="/movies/:id"
           element={
             <MainLayout>
               <MovieDetailPage />
