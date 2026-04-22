@@ -452,6 +452,477 @@ export const PreferencesTags = styled.div`
   gap: ${({ theme }) => theme.spacing.sm};
 `;
 
+export const PreferencesSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.lg};
+`;
+
+export const FavoriteMoviesHeader = styled.div`
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
+
+  ${mediaMobile} {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+export const FavoriteMoviesSubtitle = styled.p`
+  font-size: ${({ theme }) => theme.typography.textSm};
+  color: ${({ theme }) => theme.colors.textMuted};
+  margin: ${({ theme }) => `${theme.spacing.xs} 0 0`};
+`;
+
+export const FavoriteMoviesActionButton = styled.button`
+  align-self: center;
+  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.lg}`};
+  border: 1px solid ${({ theme }) => theme.colors.primary};
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: transparent;
+  color: ${({ theme }) => theme.colors.primary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => theme.shadows.glow};
+    background: ${({ theme }) => theme.colors.primaryLight};
+  }
+
+  ${mediaMobile} {
+    align-self: stretch;
+  }
+`;
+
+export const FavoriteMoviesHeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+
+  ${mediaMobile} {
+    width: 100%;
+
+    & > button {
+      flex: 1;
+    }
+  }
+`;
+
+export const FavoriteMoviesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: ${({ theme }) => theme.spacing.md};
+`;
+
+export const FavoriteMovieEmptySlot = styled.div`
+  aspect-ratio: 2 / 3;
+  border-radius: ${({ theme }) => theme.radius.lg};
+  border: 1px dashed ${({ theme }) => theme.colors.borderDefault};
+  background: ${({ theme }) => theme.colors.bgElevated};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: ${({ theme }) => theme.typography.textLg};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+`;
+
+export const FavoriteMoviePosterButton = styled.button`
+  position: relative;
+  aspect-ratio: 2 / 3;
+  border: 1px solid ${({ theme, $dragOver }) =>
+    $dragOver ? theme.colors.primary : theme.colors.borderDefault};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  padding: 0;
+  overflow: hidden;
+  background: ${({ theme }) => theme.colors.bgElevated};
+  cursor: pointer;
+  transition: transform ${({ theme }) => theme.transitions.fast},
+    box-shadow ${({ theme }) => theme.transitions.fast},
+    border-color ${({ theme }) => theme.transitions.fast},
+    opacity ${({ theme }) => theme.transitions.fast};
+  opacity: ${({ $dragging }) => ($dragging ? 0.5 : 1)};
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${({ theme }) => theme.shadows.glow};
+    border-color: ${({ theme }) => theme.colors.primary};
+  }
+`;
+
+export const FavoriteMoviePosterImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+`;
+
+export const FavoriteMoviePosterFallback = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: ${({ theme }) => theme.typography.text4xl};
+  color: ${({ theme }) => theme.colors.textMuted};
+  background: linear-gradient(
+    135deg,
+    ${({ theme }) => theme.colors.bgElevated},
+    ${({ theme }) => theme.colors.bgCard}
+  );
+`;
+
+export const FavoriteMoviePosterOverlay = styled.div`
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: ${({ theme }) => theme.spacing.md};
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(15, 23, 42, 0.76) 45%,
+    rgba(15, 23, 42, 0.92) 100%
+  );
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: white;
+  text-align: left;
+
+  strong {
+    font-size: ${({ theme }) => theme.typography.textSm};
+    font-weight: ${({ theme }) => theme.typography.fontSemibold};
+    line-height: 1.4;
+  }
+
+  span {
+    font-size: ${({ theme }) => theme.typography.textXs};
+    opacity: 0.8;
+  }
+`;
+
+export const FavoriteMoviesFooter = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
+
+  ${mediaMobile} {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+export const FavoriteMoviesCount = styled.span`
+  font-size: ${({ theme }) => theme.typography.textSm};
+  color: ${({ theme }) => theme.colors.textMuted};
+`;
+
+export const FavoriteMoviesOrderSaveButton = styled.button`
+  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.lg}`};
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.md};
+  background: ${({ theme }) => theme.gradients.primary};
+  color: white;
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: ${({ theme }) => theme.glows.primary};
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+`;
+
+export const FavoriteMovieModalContainer = styled.div`
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 201;
+  width: min(980px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  background: ${({ theme }) => theme.glass.bg};
+  backdrop-filter: blur(16px) saturate(1.6);
+  -webkit-backdrop-filter: blur(16px) saturate(1.6);
+  border: 1px solid ${({ theme }) => theme.glass.border};
+  border-radius: ${({ theme }) => theme.radius.xl};
+  padding: ${({ theme }) => theme.spacing.xl};
+  animation: ${modalSlideUp} 0.25s ease;
+
+  ${media.mobile} {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 24px);
+    padding: ${({ theme }) => theme.spacing.lg};
+  }
+`;
+
+export const FavoriteMovieSearchRow = styled.div`
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: ${({ theme }) => theme.spacing.md};
+  align-items: center;
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+
+  ${mediaMobile} {
+    grid-template-columns: 1fr;
+  }
+`;
+
+export const FavoriteMovieSearchInput = styled.input`
+  min-width: 0;
+  width: 100%;
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.bgElevated};
+  border: 1px solid ${({ theme }) => theme.colors.borderDefault};
+  border-radius: ${({ theme }) => theme.radius.md};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.typography.textBase};
+  transition: border-color ${({ theme }) => theme.transitions.fast};
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: ${({ theme }) => theme.colors.textMuted};
+  }
+
+  &:focus {
+    outline: none;
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: ${({ theme }) => theme.glows.primary};
+  }
+`;
+
+export const FavoriteMovieSearchSummary = styled.p`
+  margin: 0 0 ${({ theme }) => theme.spacing.md};
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: ${({ theme }) => theme.typography.textSm};
+`;
+
+export const FavoriteMovieResultGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: ${({ theme }) => theme.spacing.md};
+  min-height: 220px;
+`;
+
+export const FavoriteMovieGuideCard = styled.div`
+  grid-column: 1 / -1;
+  min-height: 180px;
+  border: 1px dashed ${({ theme }) => theme.colors.borderDefault};
+  border-radius: ${({ theme }) => theme.radius.lg};
+  background: ${({ theme }) => theme.colors.bgElevated};
+  color: ${({ theme }) => theme.colors.textMuted};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  text-align: center;
+  padding: ${({ theme }) => theme.spacing.lg};
+
+  strong {
+    color: ${({ theme }) => theme.colors.textPrimary};
+  }
+`;
+
+export const FavoriteMovieResultCard = styled.div`
+  display: flex;
+  flex-direction: column;
+  border-radius: ${({ theme }) => theme.radius.lg};
+  overflow: hidden;
+  background: ${({ theme }) => theme.glass.bg};
+  border: 1px solid ${({ theme }) => theme.glass.border};
+  transition: transform ${({ theme }) => theme.transitions.fast},
+    box-shadow ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: ${({ theme }) => theme.shadows.md};
+  }
+`;
+
+export const FavoriteMovieResultPoster = styled.div`
+  position: relative;
+  aspect-ratio: 2 / 3;
+  background: ${({ theme }) => theme.colors.bgElevated};
+  overflow: hidden;
+`;
+
+export const FavoriteMovieResultPosterImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+`;
+
+export const FavoriteMovieResultPosterFallback = styled.div`
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: ${({ theme }) => theme.typography.text4xl};
+  color: ${({ theme }) => theme.colors.textMuted};
+  background: linear-gradient(
+    135deg,
+    ${({ theme }) => theme.colors.bgElevated},
+    ${({ theme }) => theme.colors.bgCard}
+  );
+`;
+
+export const FavoriteMovieResultAction = styled.button`
+  position: absolute;
+  left: 50%;
+  bottom: ${({ theme }) => theme.spacing.md};
+  transform: translateX(-50%);
+  padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.md}`};
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme, $selected }) =>
+    $selected ? 'rgba(15, 23, 42, 0.82)' : theme.gradients.primary};
+  color: white;
+  font-size: ${({ theme }) => theme.typography.textXs};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity ${({ theme }) => theme.transitions.fast},
+    transform ${({ theme }) => theme.transitions.fast};
+
+  ${FavoriteMovieResultCard}:hover & {
+    opacity: 1;
+  }
+
+  ${mediaMobile} {
+    opacity: 1;
+  }
+`;
+
+export const FavoriteMovieResultInfo = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+`;
+
+export const FavoriteMovieResultTitle = styled.strong`
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
+export const FavoriteMovieResultMeta = styled.span`
+  font-size: ${({ theme }) => theme.typography.textXs};
+  color: ${({ theme }) => theme.colors.textMuted};
+  min-height: 16px;
+`;
+
+export const FavoriteMovieSelectedSection = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.xl};
+  padding-top: ${({ theme }) => theme.spacing.lg};
+  border-top: 1px solid ${({ theme }) => theme.colors.primaryLight};
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+`;
+
+export const FavoriteMovieSelectedHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontMedium};
+`;
+
+export const FavoriteMovieSelectedTitleGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
+`;
+
+export const FavoriteMovieSelectedList = styled.div`
+  display: flex;
+  gap: ${({ theme }) => theme.spacing.sm};
+  overflow-x: auto;
+  padding-bottom: ${({ theme }) => theme.spacing.xs};
+`;
+
+export const FavoriteMovieSelectedEmpty = styled.div`
+  min-height: 74px;
+  display: flex;
+  align-items: center;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: ${({ theme }) => theme.typography.textSm};
+`;
+
+export const FavoriteMovieSelectedItem = styled.button`
+  min-width: 88px;
+  max-width: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.xs};
+  padding: ${({ theme }) => theme.spacing.xs};
+  border-radius: ${({ theme }) => theme.radius.md};
+  border: 1px solid ${({ theme }) => theme.colors.borderDefault};
+  background: ${({ theme }) => theme.colors.bgElevated};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    border-color: ${({ theme }) => theme.colors.primary};
+    box-shadow: ${({ theme }) => theme.shadows.sm};
+  }
+`;
+
+export const FavoriteMovieSelectedPoster = styled.div`
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  overflow: hidden;
+  background: ${({ theme }) => theme.colors.bgCard};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: ${({ theme }) => theme.typography.textXl};
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+`;
+
+export const FavoriteMovieSelectedTitle = styled.span`
+  font-size: ${({ theme }) => theme.typography.textXs};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  text-align: left;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
 /* ─────────────────────────────────────────────────────────────
  * 시청 이력 탭 → 내가 작성한 리뷰 목록
  * 영화 상세 페이지의 ReviewList 블록을 그대로 감싸는 래퍼 + 페이지네이션 UI
@@ -774,12 +1245,16 @@ export const ModalCancelBtn = styled.button`
 `;
 
 export const ModalSaveBtn = styled.button`
-  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
+  padding: ${({ theme, $compact }) =>
+    $compact
+      ? `${theme.spacing.xs} ${theme.spacing.md}`
+      : `${theme.spacing.sm} ${theme.spacing.lg}`};
   background: ${({ theme }) => theme.gradients.primary};
   border: none;
   border-radius: ${({ theme }) => theme.radius.md};
   color: white;
-  font-size: ${({ theme }) => theme.typography.textSm};
+  font-size: ${({ theme, $compact }) =>
+    $compact ? theme.typography.textXs : theme.typography.textSm};
   font-weight: ${({ theme }) => theme.typography.fontSemibold};
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};

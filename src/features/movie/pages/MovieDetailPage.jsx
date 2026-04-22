@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useLocation, useParams, useNavigate } from 'react-router-dom';
 /* Phase 2: 사용자 행동 이벤트 추적 */
 import { trackEvent } from '../../../shared/utils/eventTracker';
 /* 커스텀 모달 훅 — window.alert 대체 */
@@ -53,6 +53,7 @@ export default function MovieDetailPage() {
 
   // URL 파라미터에서 영화 ID 추출
   const { id } = useParams();
+  const location = useLocation();
   /**
    * 뒤로가기 네비게이션.
    *
@@ -65,6 +66,13 @@ export default function MovieDetailPage() {
    */
   const navigate = useNavigate();
   const handleGoBack = () => {
+    if (location.state?.backTo) {
+      navigate(location.state.backTo, {
+        state: location.state?.backTab ? { activeTab: location.state.backTab } : undefined,
+      });
+      return;
+    }
+
     // 이전 히스토리가 있으면 뒤로, 없으면 홈으로 폴백
     if (window.history.length > 1) {
       navigate(-1);

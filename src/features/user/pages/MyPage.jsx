@@ -1,15 +1,21 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import useAuthStore from '../../../shared/stores/useAuthStore';
 import {
+  getFavoriteMovies,
   getProfile,
   getWishlist,
   getMyReviews,
   getMyPosts,
+  reorderFavoriteMovies,
+  saveFavoriteMovies,
   updateProfile,
 } from '../api/userApi';
 /* 착용 아이템 API — 2026-04-14 신설 (C 방향). 프로필 상단에 아바타·배지 표시용. */
 import { getEquippedItems } from '../../point/api/userItemApi';
+import { useModal } from '../../../shared/components/Modal';
+import { searchMovies } from '../../movie/api/movieApi';
 import { ROUTES, buildPath } from '../../../shared/constants/routes';
 import { getGradeLabel } from '../../../shared/constants/grade';
 import MovieList from '../../../shared/components/MovieList/MovieList';
@@ -20,6 +26,8 @@ import * as S from './MyPage.styled';
 
 const REVIEW_PAGE_SIZE = 20;
 const PAGE_GROUP_SIZE = 10;
+const MAX_FAVORITE_MOVIES = 9;
+const FAVORITE_GRID_SIZE = 9;
 
 const CATEGORY_LABEL = {
   FREE: '자유',
@@ -36,6 +44,75 @@ const TABS = [
   { id: 'wishlist', label: '위시리스트' },
   { id: 'preferences', label: '선호 설정' },
 ];
+
+function parseMovieGenres(genres) {
+  if (Array.isArray(genres)) return genres;
+  if (typeof genres === 'string') {
+    try {
+      const parsed = JSON.parse(genres);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+function resolveMovieId(movie) {
+  return movie?.movieId || movie?.movie_id || movie?.id || null;
+}
+
+function resolveMoviePosterSrc(movie) {
+  const rawPoster = (
+    movie?.posterUrl
+    || movie?.poster_url
+    || movie?.poster_path
+    || movie?.posterPath
+    || null
+  );
+
+  if (!rawPoster || typeof rawPoster !== 'string') {
+    return null;
+  }
+
+  if (rawPoster.startsWith('http://') || rawPoster.startsWith('https://')) {
+    return rawPoster;
+  }
+
+  if (rawPoster.startsWith('/')) {
+    return `https://image.tmdb.org/t/p/w500${rawPoster}`;
+  }
+
+  return rawPoster;
+}
+
+function normalizeFavoriteMovieCandidate(movie) {
+  const movieId = resolveMovieId(movie);
+  if (!movie || !movieId) {
+    return null;
+  }
+
+  return {
+    ...movie,
+    id: movieId,
+    movieId,
+    posterUrl: movie?.posterUrl || movie?.poster_url || resolveMoviePosterSrc(movie),
+    releaseYear: movie?.releaseYear || movie?.release_year || null,
+    genres: parseMovieGenres(movie?.genres),
+  };
+}
+
+function areMovieIdListsEqual(left, right) {
+  if (left.length !== right.length) return false;
+  return left.every((movieId, index) => movieId === right[index]);
+}
+
+function moveArrayItem(items, fromIndex, toIndex) {
+  const nextItems = [...items];
+  const [movedItem] = nextItems.splice(fromIndex, 1);
+  nextItems.splice(toIndex, 0, movedItem);
+  return nextItems;
+}
 
 /* ── 프로필 수정 모달 ── */
 function EditProfileModal({ profile, onClose, onSaved }) {
@@ -251,11 +328,303 @@ function EditProfileModal({ profile, onClose, onSaved }) {
   );
 }
 
+/* ── 최애 영화 선택 모달 ── */
+function FavoriteMovieModal({ initialMovies = [], onClose, onSave }) {
+  const { showAlert } = useModal();
+
+  const initialSelectionRef = useRef(
+    initialMovies.map(normalizeFavoriteMovieCandidate).filter(Boolean),
+  );
+  const initialSelection = initialSelectionRef.current;
+  const initialMovieIds = useMemo(
+    () => initialSelection.map((movie) => movie.movieId),
+    [initialSelection],
+  );
+
+  const [query, setQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [selectedMovies, setSelectedMovies] = useState(initialSelection);
+  const [isSearching, setIsSearching] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [searchError, setSearchError] = useState(null);
+
+  const selectedMovieIds = useMemo(
+    () => selectedMovies.map((movie) => movie.movieId),
+    [selectedMovies],
+  );
+  const isDirty = useMemo(
+    () => !areMovieIdListsEqual(initialMovieIds, selectedMovieIds),
+    [initialMovieIds, selectedMovieIds],
+  );
+
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
+
+  useEffect(() => {
+    const trimmedQuery = query.trim();
+    if (!trimmedQuery) {
+      setSearchResults([]);
+      setSearchError(null);
+      setIsSearching(false);
+      return undefined;
+    }
+
+    let isCancelled = false;
+    const timerId = window.setTimeout(async () => {
+      setIsSearching(true);
+      setSearchError(null);
+
+      try {
+        const result = await searchMovies({
+          query: trimmedQuery,
+          searchType: 'all',
+          page: 1,
+          size: 12,
+        });
+
+        if (!isCancelled) {
+          setSearchResults(
+            (result?.movies || [])
+              .map(normalizeFavoriteMovieCandidate)
+              .filter(Boolean),
+          );
+        }
+      } catch (error) {
+        if (!isCancelled) {
+          setSearchError(error.message || '영화 검색에 실패했습니다.');
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsSearching(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      isCancelled = true;
+      window.clearTimeout(timerId);
+    };
+  }, [query]);
+
+  const removeMovie = useCallback((movieId) => {
+    setSelectedMovies((prevMovies) => prevMovies.filter((movie) => movie.movieId !== movieId));
+  }, []);
+
+  const toggleMovie = useCallback(async (movie) => {
+    const normalizedMovie = normalizeFavoriteMovieCandidate(movie);
+    if (!normalizedMovie) {
+      return;
+    }
+
+    const isAlreadySelected = selectedMovieIds.includes(normalizedMovie.movieId);
+    if (isAlreadySelected) {
+      removeMovie(normalizedMovie.movieId);
+      return;
+    }
+
+    if (selectedMovies.length >= MAX_FAVORITE_MOVIES) {
+      await showAlert({
+        title: '최대 등록 수 초과',
+        message: `최애 영화는 최대 ${MAX_FAVORITE_MOVIES}편까지 등록할 수 있습니다.`,
+        type: 'warning',
+      });
+      return;
+    }
+
+    setSelectedMovies((prevMovies) => [...prevMovies, normalizedMovie]);
+  }, [removeMovie, selectedMovieIds, selectedMovies.length, showAlert]);
+
+  const handleSave = useCallback(async () => {
+    setIsSaving(true);
+    setSearchError(null);
+
+    try {
+      await onSave(selectedMovieIds);
+      onClose();
+    } catch (error) {
+      setSearchError(error.message || '최애 영화 저장에 실패했습니다.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [onClose, onSave, selectedMovieIds]);
+
+  const renderSaveButton = (size = 'default') => (
+    <S.ModalSaveBtn
+      type="button"
+      onClick={handleSave}
+      disabled={!isDirty || isSaving}
+      $compact={size === 'compact'}
+    >
+      {isSaving ? '저장 중...' : '저장하기'}
+    </S.ModalSaveBtn>
+  );
+
+  const modalContent = (
+    <>
+      <S.ModalOverlay onClick={onClose} />
+      <S.FavoriteMovieModalContainer
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="favorite-movie-modal-title"
+      >
+        <S.ModalHeader>
+          <S.ModalTitle id="favorite-movie-modal-title">최애 영화 찾기</S.ModalTitle>
+          <S.ModalCloseBtn onClick={onClose} aria-label="닫기">✕</S.ModalCloseBtn>
+        </S.ModalHeader>
+
+        <S.FavoriteMovieSearchRow>
+          <S.FavoriteMovieSearchInput
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="영화 제목, 감독, 배우로 검색하세요"
+            aria-label="영화 검색"
+          />
+          {renderSaveButton()}
+        </S.FavoriteMovieSearchRow>
+
+        {searchError && <S.ModalErrorBar role="alert">{searchError}</S.ModalErrorBar>}
+
+        <S.FavoriteMovieSearchSummary>
+          {isSearching
+            ? '검색 중입니다...'
+            : query.trim()
+              ? `검색 결과 ${searchResults.length}편`
+              : '검색어를 입력하면 제목, 감독, 배우 기준으로 영화를 찾습니다.'}
+        </S.FavoriteMovieSearchSummary>
+
+        <S.FavoriteMovieResultGrid>
+          {!query.trim() && (
+            <S.FavoriteMovieGuideCard>
+              <strong>영화를 검색해 주세요.</strong>
+              <span>검색 결과에서 `추가하기`를 누르면 아래 전당 리스트에 담깁니다.</span>
+            </S.FavoriteMovieGuideCard>
+          )}
+
+          {query.trim() && !isSearching && searchResults.length === 0 && !searchError && (
+            <S.FavoriteMovieGuideCard>
+              <strong>검색 결과가 없습니다.</strong>
+              <span>다른 제목이나 감독, 배우 이름으로 다시 검색해 주세요.</span>
+            </S.FavoriteMovieGuideCard>
+          )}
+
+          {searchResults.map((movie) => {
+            const posterSrc = resolveMoviePosterSrc(movie);
+            const isSelected = selectedMovieIds.includes(movie.movieId);
+
+            return (
+              <S.FavoriteMovieResultCard key={movie.movieId}>
+                <S.FavoriteMovieResultPoster>
+                  {posterSrc ? (
+                    <S.FavoriteMovieResultPosterImg
+                      src={posterSrc}
+                      alt={`${movie.title} 포스터`}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <S.FavoriteMovieResultPosterFallback>🎬</S.FavoriteMovieResultPosterFallback>
+                  )}
+                  <S.FavoriteMovieResultAction
+                    type="button"
+                    $selected={isSelected}
+                    onClick={() => {
+                      void toggleMovie(movie);
+                    }}
+                  >
+                    {isSelected ? '제외하기' : '추가하기'}
+                  </S.FavoriteMovieResultAction>
+                </S.FavoriteMovieResultPoster>
+
+                <S.FavoriteMovieResultInfo>
+                  <S.FavoriteMovieResultTitle>{movie.title}</S.FavoriteMovieResultTitle>
+                  <S.FavoriteMovieResultMeta>
+                    {[
+                      movie.releaseYear,
+                      ...(movie.genres || []).slice(0, 2),
+                    ].filter(Boolean).join(' · ')}
+                  </S.FavoriteMovieResultMeta>
+                </S.FavoriteMovieResultInfo>
+              </S.FavoriteMovieResultCard>
+            );
+          })}
+        </S.FavoriteMovieResultGrid>
+
+        <S.FavoriteMovieSelectedSection>
+          <S.FavoriteMovieSelectedHeader>
+            <S.FavoriteMovieSelectedTitleGroup>
+              <span>전당 후보</span>
+              <span>{selectedMovies.length} / {MAX_FAVORITE_MOVIES}</span>
+            </S.FavoriteMovieSelectedTitleGroup>
+            {renderSaveButton('compact')}
+          </S.FavoriteMovieSelectedHeader>
+
+          <S.FavoriteMovieSelectedList>
+            {selectedMovies.length === 0 && (
+              <S.FavoriteMovieSelectedEmpty>
+                아직 추가된 영화가 없습니다.
+              </S.FavoriteMovieSelectedEmpty>
+            )}
+
+            {selectedMovies.map((movie) => {
+              const posterSrc = resolveMoviePosterSrc(movie);
+              return (
+                <S.FavoriteMovieSelectedItem
+                  key={movie.movieId}
+                  type="button"
+                  onClick={() => removeMovie(movie.movieId)}
+                >
+                  <S.FavoriteMovieSelectedPoster>
+                    {posterSrc ? (
+                      <img src={posterSrc} alt={`${movie.title} 포스터`} loading="lazy" />
+                    ) : (
+                      <span>🎬</span>
+                    )}
+                  </S.FavoriteMovieSelectedPoster>
+                  <S.FavoriteMovieSelectedTitle>{movie.title}</S.FavoriteMovieSelectedTitle>
+                </S.FavoriteMovieSelectedItem>
+              );
+            })}
+          </S.FavoriteMovieSelectedList>
+        </S.FavoriteMovieSelectedSection>
+      </S.FavoriteMovieModalContainer>
+    </>
+  );
+
+  return createPortal(modalContent, document.body);
+}
+
 /* ── 마이페이지 ── */
 export default function MyPagePage() {
-  const [activeTab, setActiveTab] = useState('profile');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { showAlert } = useModal();
+
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'profile');
   const [profile, setProfile] = useState(null);
   const [wishlist, setWishlist] = useState([]);
+  const [favoriteMovies, setFavoriteMovies] = useState([]);
+  const [savedFavoriteMovieIds, setSavedFavoriteMovieIds] = useState([]);
+  const [favoriteMovieMaxCount, setFavoriteMovieMaxCount] = useState(MAX_FAVORITE_MOVIES);
+  const [isFavoriteMovieModalOpen, setIsFavoriteMovieModalOpen] = useState(false);
+  const [isFavoriteOrderSaving, setIsFavoriteOrderSaving] = useState(false);
+  const [draggedFavoriteMovieId, setDraggedFavoriteMovieId] = useState(null);
+  const [dragOverFavoriteMovieId, setDragOverFavoriteMovieId] = useState(null);
   /** 시청 이력 탭은 이제 사용자가 작성한 리뷰 목록을 의미한다. */
   const [myReviews, setMyReviews] = useState([]);
   const [reviewPage, setReviewPage] = useState(1);
@@ -286,7 +655,23 @@ export default function MyPagePage() {
   const user = useAuthStore((s) => s.user);
   const updateUser = useAuthStore((s) => s.updateUser);
   const authLoading = useAuthStore((s) => s.isLoading);
-  const navigate = useNavigate();
+
+  const favoriteMovieIds = useMemo(
+    () => favoriteMovies.map((item) => item.movieId),
+    [favoriteMovies],
+  );
+  const isFavoriteOrderDirty = useMemo(
+    () => !areMovieIdListsEqual(savedFavoriteMovieIds, favoriteMovieIds),
+    [favoriteMovieIds, savedFavoriteMovieIds],
+  );
+  const favoriteMovieSlots = useMemo(() => {
+    const filledSlots = favoriteMovies.slice(0, FAVORITE_GRID_SIZE);
+    const emptySlots = Array.from(
+      { length: Math.max(0, FAVORITE_GRID_SIZE - filledSlots.length) },
+      (_, index) => ({ slotId: `favorite-empty-slot-${index}` }),
+    );
+    return [...filledSlots, ...emptySlots];
+  }, [favoriteMovies]);
 
   /**
    * 내 리뷰 목록을 페이지 단위로 불러온다.
@@ -330,6 +715,21 @@ export default function MyPagePage() {
     });
   }, []);
 
+  const applyFavoriteMovieResponse = useCallback((response) => {
+    const nextFavoriteMovies = (response?.favoriteMovies || []).map((item) => ({
+      ...item,
+      movie: normalizeFavoriteMovieCandidate(item.movie),
+    }));
+    setFavoriteMovies(nextFavoriteMovies);
+    setSavedFavoriteMovieIds(nextFavoriteMovies.map((item) => item.movieId));
+    setFavoriteMovieMaxCount(response?.maxCount || MAX_FAVORITE_MOVIES);
+  }, []);
+
+  const loadFavoriteMovies = useCallback(async () => {
+    const favoriteMovieData = await getFavoriteMovies();
+    applyFavoriteMovieResponse(favoriteMovieData);
+  }, [applyFavoriteMovieResponse]);
+
   /* 마운트 시 착용 아이템 로드 — 탭 전환과 무관하게 항상 헤더에 반영 */
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -367,6 +767,10 @@ export default function MyPagePage() {
             setWishlist(wishlistData?.wishlist || []);
             break;
           }
+          case 'preferences': {
+            await loadFavoriteMovies();
+            break;
+          }
           default:
             break;
         }
@@ -378,7 +782,7 @@ export default function MyPagePage() {
     }
 
     loadTabData();
-  }, [activeTab, isAuthenticated, loadMyReviews, reviewPage, myPostsPage]);
+  }, [activeTab, isAuthenticated, loadFavoriteMovies, loadMyReviews, reviewPage, myPostsPage]);
 
   /**
    * 리뷰 수정/삭제 후에도 마이페이지 페이지네이션 숫자를 맞추기 위해
@@ -435,6 +839,63 @@ export default function MyPagePage() {
     }
     setIsEditModalOpen(false);
   }
+
+  const handleFavoriteMoviesSaved = useCallback(async (movieIds) => {
+    const response = await saveFavoriteMovies(movieIds);
+    applyFavoriteMovieResponse(response);
+  }, [applyFavoriteMovieResponse]);
+
+  const handleFavoriteOrderSave = useCallback(async () => {
+    setIsFavoriteOrderSaving(true);
+    try {
+      const response = await reorderFavoriteMovies(favoriteMovieIds);
+      applyFavoriteMovieResponse(response);
+    } catch (err) {
+      await showAlert({
+        title: '순서 저장 실패',
+        message: err.message || '최애 영화 순서 저장에 실패했습니다.',
+        type: 'error',
+      });
+    } finally {
+      setIsFavoriteOrderSaving(false);
+    }
+  }, [applyFavoriteMovieResponse, favoriteMovieIds, showAlert]);
+
+  const handleFavoriteMovieClick = useCallback((movieId) => {
+    navigate(buildPath(ROUTES.MOVIE_DETAIL, { id: movieId }), {
+      state: {
+        backTo: ROUTES.MYPAGE,
+        backTab: 'preferences',
+      },
+    });
+  }, [navigate]);
+
+  const handleFavoriteDragStart = useCallback((movieId) => {
+    setDraggedFavoriteMovieId(movieId);
+    setDragOverFavoriteMovieId(movieId);
+  }, []);
+
+  const handleFavoriteDrop = useCallback((targetMovieId) => {
+    if (!draggedFavoriteMovieId || draggedFavoriteMovieId === targetMovieId) {
+      setDraggedFavoriteMovieId(null);
+      setDragOverFavoriteMovieId(null);
+      return;
+    }
+
+    setFavoriteMovies((prevMovies) => {
+      const fromIndex = prevMovies.findIndex((movie) => movie.movieId === draggedFavoriteMovieId);
+      const toIndex = prevMovies.findIndex((movie) => movie.movieId === targetMovieId);
+
+      if (fromIndex < 0 || toIndex < 0) {
+        return prevMovies;
+      }
+
+      return moveArrayItem(prevMovies, fromIndex, toIndex);
+    });
+
+    setDraggedFavoriteMovieId(null);
+    setDragOverFavoriteMovieId(null);
+  }, [draggedFavoriteMovieId]);
 
   if (authLoading) {
     return <Loading message="인증 확인 중..." fullPage />;
@@ -676,7 +1137,7 @@ export default function MyPagePage() {
 
           {/* 선호 설정 탭 */}
           {activeTab === 'preferences' && (
-            <div>
+            <S.PreferencesSection>
               <S.PreferencesCard>
                 <S.PreferencesTitle>선호 장르</S.PreferencesTitle>
                 <S.PreferencesHint>
@@ -694,7 +1155,97 @@ export default function MyPagePage() {
                   )}
                 </S.PreferencesTags>
               </S.PreferencesCard>
-            </div>
+
+              <S.PreferencesCard>
+                <S.FavoriteMoviesHeader>
+                  <div>
+                    <S.PreferencesTitle>영화의 전당</S.PreferencesTitle>
+                    <S.FavoriteMoviesSubtitle>
+                      당신만의 최고의 영화를 전시하세요
+                    </S.FavoriteMoviesSubtitle>
+                  </div>
+                  <S.FavoriteMoviesHeaderActions>
+                    <S.FavoriteMoviesActionButton
+                      type="button"
+                      onClick={() => setIsFavoriteMovieModalOpen(true)}
+                    >
+                      영화 찾기
+                    </S.FavoriteMoviesActionButton>
+                    <S.FavoriteMoviesOrderSaveButton
+                      type="button"
+                      onClick={() => {
+                        void handleFavoriteOrderSave();
+                      }}
+                      disabled={!isFavoriteOrderDirty || isFavoriteOrderSaving}
+                    >
+                      {isFavoriteOrderSaving ? '저장 중...' : '순서 저장하기'}
+                    </S.FavoriteMoviesOrderSaveButton>
+                  </S.FavoriteMoviesHeaderActions>
+                </S.FavoriteMoviesHeader>
+
+                <S.FavoriteMoviesGrid>
+                  {favoriteMovieSlots.map((item, index) => {
+                    if (!item.movieId) {
+                      return (
+                        <S.FavoriteMovieEmptySlot key={item.slotId}>
+                          <span>{index + 1}</span>
+                        </S.FavoriteMovieEmptySlot>
+                      );
+                    }
+
+                    const posterSrc = resolveMoviePosterSrc(item.movie);
+                    const isDragging = draggedFavoriteMovieId === item.movieId;
+                    const isDragOver = dragOverFavoriteMovieId === item.movieId
+                      && draggedFavoriteMovieId
+                      && draggedFavoriteMovieId !== item.movieId;
+
+                    return (
+                      <S.FavoriteMoviePosterButton
+                        key={item.movieId}
+                        type="button"
+                        draggable={favoriteMovies.length > 1}
+                        $dragging={isDragging}
+                        $dragOver={Boolean(isDragOver)}
+                        onClick={() => handleFavoriteMovieClick(item.movieId)}
+                        onDragStart={() => handleFavoriteDragStart(item.movieId)}
+                        onDragEnd={() => {
+                          setDraggedFavoriteMovieId(null);
+                          setDragOverFavoriteMovieId(null);
+                        }}
+                        onDragOver={(event) => {
+                          event.preventDefault();
+                          setDragOverFavoriteMovieId(item.movieId);
+                        }}
+                        onDrop={(event) => {
+                          event.preventDefault();
+                          handleFavoriteDrop(item.movieId);
+                        }}
+                      >
+                        {posterSrc ? (
+                          <S.FavoriteMoviePosterImg
+                            src={posterSrc}
+                            alt={`${item.movie?.title || item.movieId} 포스터`}
+                            loading="lazy"
+                          />
+                        ) : (
+                          <S.FavoriteMoviePosterFallback>🎬</S.FavoriteMoviePosterFallback>
+                        )}
+                        <S.FavoriteMoviePosterOverlay>
+                          <strong>{item.movie?.title}</strong>
+                          <span>상세 보기</span>
+                        </S.FavoriteMoviePosterOverlay>
+                      </S.FavoriteMoviePosterButton>
+                    );
+                  })}
+                </S.FavoriteMoviesGrid>
+
+                <S.FavoriteMoviesFooter>
+                  <S.FavoriteMoviesCount>
+                    {favoriteMovies.length} / {favoriteMovieMaxCount} 편 등록됨
+                  </S.FavoriteMoviesCount>
+                </S.FavoriteMoviesFooter>
+              </S.PreferencesCard>
+            </S.PreferencesSection>
           )}
         </S.Content>
       </S.Inner>
@@ -705,6 +1256,17 @@ export default function MyPagePage() {
           profile={profile}
           onClose={() => setIsEditModalOpen(false)}
           onSaved={handleProfileSaved}
+        />
+      )}
+
+      {isFavoriteMovieModalOpen && (
+        <FavoriteMovieModal
+          initialMovies={favoriteMovies.map((item) => ({
+            ...item.movie,
+            movieId: item.movieId,
+          }))}
+          onClose={() => setIsFavoriteMovieModalOpen(false)}
+          onSave={handleFavoriteMoviesSaved}
         />
       )}
     </S.Wrapper>

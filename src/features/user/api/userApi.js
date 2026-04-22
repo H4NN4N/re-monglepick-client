@@ -54,6 +54,20 @@ function normalizeReview(review) {
   };
 }
 
+function normalizeFavoriteMovie(item) {
+  if (!item) {
+    return null;
+  }
+
+  return {
+    favMovieId: item.fav_movie_id || item.favMovieId,
+    movieId: item.movie_id || item.movieId,
+    priority: item.priority ?? 0,
+    createdAt: item.created_at || item.createdAt || null,
+    movie: normalizeWishlistMovie(item.movie),
+  };
+}
+
 // ── 프로필 ──
 
 /**
@@ -169,6 +183,64 @@ export async function removeFromWishlist(movieId) {
 export async function getWishlistStatus(movieId) {
   requireAuth();
   return recommendApi.get(RECOMMEND_USER_ENDPOINTS.WISHLIST_STATUS(movieId));
+}
+
+// ── 최애 영화 ──
+
+/**
+ * 사용자의 최애 영화 목록을 priority 순으로 조회한다.
+ *
+ * @returns {Promise<{favoriteMovies: Array, total: number, maxCount: number}>}
+ */
+export async function getFavoriteMovies() {
+  requireAuth();
+  const result = await recommendApi.get(RECOMMEND_USER_ENDPOINTS.FAVORITE_MOVIES);
+
+  return {
+    favoriteMovies: (result?.favorite_movies || result?.favoriteMovies || [])
+      .map(normalizeFavoriteMovie)
+      .filter(Boolean),
+    total: result?.total || 0,
+    maxCount: result?.max_count || result?.maxCount || 9,
+  };
+}
+
+/**
+ * 모달에서 선택한 최애 영화 목록을 저장한다.
+ *
+ * @param {Array<string>} movieIds - 저장할 영화 ID 목록
+ * @returns {Promise<{favoriteMovies: Array, total: number, maxCount: number}>}
+ */
+export async function saveFavoriteMovies(movieIds) {
+  requireAuth();
+  const result = await recommendApi.put(RECOMMEND_USER_ENDPOINTS.FAVORITE_MOVIES, {
+    movie_ids: movieIds,
+  });
+
+  return {
+    favoriteMovies: (result?.favorite_movies || []).map(normalizeFavoriteMovie).filter(Boolean),
+    total: result?.total || 0,
+    maxCount: result?.max_count || 9,
+  };
+}
+
+/**
+ * 현재 저장된 최애 영화의 순서를 다시 저장한다.
+ *
+ * @param {Array<string>} movieIds - 새 순서의 영화 ID 목록
+ * @returns {Promise<{favoriteMovies: Array, total: number, maxCount: number}>}
+ */
+export async function reorderFavoriteMovies(movieIds) {
+  requireAuth();
+  const result = await recommendApi.put(RECOMMEND_USER_ENDPOINTS.FAVORITE_MOVIE_ORDER, {
+    movie_ids: movieIds,
+  });
+
+  return {
+    favoriteMovies: (result?.favorite_movies || []).map(normalizeFavoriteMovie).filter(Boolean),
+    total: result?.total || 0,
+    maxCount: result?.max_count || 9,
+  };
 }
 
 // ── 시청 이력 ──
