@@ -45,7 +45,7 @@ export default function ReviewList({
 
   /**
    * 각 리뷰의 좋아요 상태 맵 (렌더링용).
-   * 서버 초기값 없이 클라이언트 낙관적 업데이트로만 관리한다.
+   * 서버에서 내려준 초기 liked 값을 기본값으로 두고, 사용자가 토글한 항목만 덮어쓴다.
    * 구조: { [reviewId]: boolean }
    */
   const [likedMap, setLikedMap] = useState({});
@@ -61,20 +61,26 @@ export default function ReviewList({
    * 리뷰 좋아요 토글 핸들러 (인스타그램 스타일 낙관적 UI).
    *
    * 1. 미인증이거나 movieId가 없으면 즉시 반환.
-   * 2. likedRef로 현재 상태를 동기적으로 읽어 likedMap을 deps에서 제거.
+   * 2. 현재 렌더링 중인 liked/count 값을 기준으로 낙관적 상태를 계산한다.
    * 3. 서버 응답 전에 UI를 낙관적으로 업데이트해 반응성을 높인다.
    * 4. 서버 응답으로 실제 상태를 동기화한다.
    * 5. 요청 실패 시 낙관적 업데이트를 롤백한다.
    *
    * @param {number|string} reviewId - 토글할 리뷰 ID
    * @param {number} currentCount - 서버 기준 현재 좋아요 수 (롤백 기준점)
+   * @param {boolean} currentLiked - 현재 렌더링 기준 좋아요 상태
    */
-  const handleLikeToggle = useCallback(async (targetMovieId, reviewId, currentCount) => {
+  const handleLikeToggle = useCallback(async (
+    targetMovieId,
+    reviewId,
+    currentCount,
+    currentLiked,
+  ) => {
     // 미인증이거나 movieId 없으면 토글 불가
     if (!isAuthenticated || !targetMovieId) return;
 
     // 최신 state를 기준으로 낙관적 토글을 적용한다.
-    const wasLiked = likedMap[reviewId] ?? false;
+    const wasLiked = currentLiked;
     const newLiked = !wasLiked;
 
     setLikedMap((prev) => ({ ...prev, [reviewId]: newLiked }));
@@ -95,7 +101,7 @@ export default function ReviewList({
       setLikedMap((prev) => ({ ...prev, [reviewId]: wasLiked }));
       setLikeCountMap((prev) => ({ ...prev, [reviewId]: currentCount }));
     }
-  }, [isAuthenticated, likedMap]);
+  }, [isAuthenticated]);
 
   /**
    * 스포일러 리뷰는 기본적으로 흐리게 보이고, 사용자가 클릭하면 내용이 드러난다.
@@ -198,8 +204,12 @@ export default function ReviewList({
 
   return (
     <S.Wrapper>
-      {reviews.map((review) => (
-        <S.Item key={review.id}>
+      {reviews.map((review) => {
+        const currentLiked = likedMap[review.id] ?? review.liked ?? false;
+        const currentLikeCount = likeCountMap[review.id] ?? review.likeCount ?? 0;
+
+        return (
+          <S.Item key={review.id}>
           {/* 리뷰 헤더 — 작성자 + 작성일 */}
           <S.ItemHeader>
             <S.AuthorInfo>
@@ -313,7 +323,7 @@ export default function ReviewList({
           )}
 
           {/* 좋아요 버튼 — 인스타그램 스타일 하트 토글
-              $liked: likedMap에 값이 있으면 그 값, 없으면 false (초기 상태).
+              $liked: likedMap에 값이 있으면 그 값, 없으면 서버 liked 초기값을 사용한다.
               disabled: 미인증이거나 movieId가 없으면 비활성화. */}
           <S.Footer>
             {review.isMine && editingReviewId !== review.id && (
@@ -339,21 +349,27 @@ export default function ReviewList({
               </S.ActionGroup>
             )}
             <S.LikeBtn
-              $liked={likedMap[review.id] ?? false}
+              $liked={currentLiked}
               onClick={(e) => {
                 // 리뷰 아이템 클릭 이벤트가 상위로 전파되지 않도록 차단
                 e.stopPropagation();
-                void handleLikeToggle(movieId || review.movieId, review.id, review.likeCount || 0);
+                void handleLikeToggle(
+                  movieId || review.movieId,
+                  review.id,
+                  currentLikeCount,
+                  currentLiked,
+                );
               }}
               disabled={!isAuthenticated || !(movieId || review.movieId)}
-              aria-label={(likedMap[review.id] ?? false) ? '좋아요 취소' : '좋아요'}
+              aria-label={currentLiked ? '좋아요 취소' : '좋아요'}
             >
-              {(likedMap[review.id] ?? false) ? '♥' : '♡'}{' '}
-              {likeCountMap[review.id] ?? review.likeCount ?? 0}
+              {currentLiked ? '♥' : '♡'}{' '}
+              {currentLikeCount}
             </S.LikeBtn>
           </S.Footer>
-        </S.Item>
-      ))}
+          </S.Item>
+        );
+      })}
     </S.Wrapper>
   );
 }

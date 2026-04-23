@@ -53,6 +53,7 @@ function normalizeReview(review) {
     reviewCategoryCode: review.review_category_code || review.reviewCategoryCode || null,
     createdAt: review.created_at || review.createdAt,
     likeCount: review.like_count ?? review.likeCount ?? 0,
+    liked: Boolean(review.liked ?? false),
   };
 }
 
