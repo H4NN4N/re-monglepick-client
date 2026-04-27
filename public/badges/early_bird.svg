@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  얼리어답터(Early Bird) 배지 — 베타 / 초기 회원 한정.
+  - 청록 그라데이션 + 떠오르는 해 + "1ST" 모노그램
+  - 일출 메타포 (early bird gets the worm)
+  - 특정 이벤트성 (영구 또는 90일)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="cyanSky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#bae6fd" />
+      <stop offset="50%" stop-color="#22d3ee" />
+      <stop offset="100%" stop-color="#0891b2" />
+    </linearGradient>
+    <radialGradient id="sunGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fef3c7" />
+      <stop offset="60%" stop-color="#fbbf24" />
+      <stop offset="100%" stop-color="#d97706" />
+    </radialGradient>
+  </defs>
+
+  <!-- 외곽 원 -->
+  <circle cx="100" cy="100" r="84" fill="url(#cyanSky)" stroke="#0c4a6e" stroke-width="4" />
+
+  <!-- 해 (반원 — 떠오르는 해) -->
+  <path d="M 50 130 A 50 50 0 0 1 150 130 Z" fill="url(#sunGrad)" stroke="#92400e" stroke-width="2" />
+
+  <!-- 햇살 (해 주위 8방향 짧은 선) -->
+  <g stroke="#fbbf24" stroke-width="3" stroke-linecap="round">
+    <line x1="100" y1="60"  x2="100" y2="50" />
+    <line x1="65"  y1="75"  x2="58"  y2="68" />
+    <line x1="135" y1="75"  x2="142" y2="68" />
+    <line x1="40"  y1="100" x2="30"  y2="100" />
+    <line x1="160" y1="100" x2="170" y2="100" />
+  </g>
+
+  <!-- "1ST" 모노그램 -->
+  <text x="100" y="120" text-anchor="middle" font-family="'Arial Black', sans-serif" font-size="28" font-weight="900" fill="#7f1d1d" stroke="#fef3c7" stroke-width="1.5">1ST</text>
+
+  <!-- 지평선 (해 아래 띠) -->
+  <line x1="35" y1="130" x2="165" y2="130" stroke="#075985" stroke-width="3" />
+  <line x1="40" y1="138" x2="160" y2="138" stroke="#0e7490" stroke-width="2" opacity="0.6" />
+</svg>

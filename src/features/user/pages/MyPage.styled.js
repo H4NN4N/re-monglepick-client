@@ -188,6 +188,34 @@ export const GradeBadge = styled.span`
 `;
 
 /**
+ * 착용 배지 chip — 2026-04-27 신규.
+ *
+ * MyPage 헤더에서 등급 배지 옆에 표시되는 사용자 보유 배지(프리미엄/이벤트 등).
+ * imageUrl 이 있으면 16x16 SVG 를 좌측에, 없으면 ⭐ 이모지 fallback.
+ * GradeBadge 와 동일한 라운딩/사이즈를 유지해 시각적 통일감 확보.
+ */
+export const EquippedBadgeChip = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: ${({ theme }) => theme.typography.textXs};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  padding: 2px 10px;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.colors.warningBg};
+  color: ${({ theme }) => theme.colors.warning};
+  border: 1px solid ${({ theme }) => theme.colors.warning};
+  letter-spacing: 0.3px;
+
+  img {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    display: block;
+  }
+`;
+
+/**
  * 이메일 텍스트 — muted 색상, sm 크기.
  */
 export const Email = styled.p`

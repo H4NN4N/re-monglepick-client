@@ -18,7 +18,9 @@ import {
   updateProfile,
 } from '../api/userApi';
 /* 착용 아이템 API — 2026-04-14 신설 (C 방향). 프로필 상단에 아바타·배지 표시용. */
-import { getEquippedItems } from '../../point/api/userItemApi';
+import { getEquippedItems, getMyItems, equipItem, unequipItem } from '../../point/api/userItemApi';
+/* 프로필 꾸미기 섹션 — 2026-04-27 신설. customize 탭 본체. */
+import ProfileCustomizeSection from '../components/ProfileCustomizeSection';
 import { useModal } from '../../../shared/components/Modal';
 import { searchMovies } from '../../movie/api/movieApi';
 import { ROUTES, buildPath } from '../../../shared/constants/routes';
@@ -44,6 +46,8 @@ const CATEGORY_LABEL = {
 
 const TABS = [
   { id: 'profile', label: '프로필' },
+  /* 2026-04-27: 꾸미기 탭 신설 — 보유 아바타·배지 미리보기 + 즉시 장착 */
+  { id: 'customize', label: '꾸미기' },
   { id: 'watch-history', label: '시청 이력' },
   { id: 'my-posts', label: '내가 쓴 글' },
   { id: 'wishlist', label: '위시리스트' },
@@ -775,6 +779,20 @@ export default function MyPagePage() {
   const [equippedAvatar, setEquippedAvatar] = useState(null);
   const [equippedBadge, setEquippedBadge] = useState(null);
 
+  /**
+   * 꾸미기 탭 — 보유 아바타/배지 인벤토리 (2026-04-27 신설).
+   *
+   * <p>Backend GET /api/v1/users/me/items?category=avatar|badge 응답을 카테고리별로 보관한다.
+   * 만료(expired=true) 또는 사용 완료(USED) 상태도 포함하지만, ProfileCustomizeSection 이 시각적으로
+   * 비활성 표시한다. 처음 customize 탭에 진입할 때 1회 로드하며, 이후 장착/해제 시 부분 갱신.</p>
+   */
+  const [ownedAvatars, setOwnedAvatars] = useState([]);
+  const [ownedBadges, setOwnedBadges] = useState([]);
+  /** 꾸미기 인벤토리 로드 상태 — 첫 진입 시 true, 로드 완료 시 false */
+  const [customizeLoading, setCustomizeLoading] = useState(false);
+  /** 꾸미기 탭 진입 후 1회만 로드하기 위한 플래그 */
+  const customizeLoadedRef = useRef(false);
+
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
   const user = useAuthStore((s) => s.user);
   const updateUser = useAuthStore((s) => s.updateUser);
@@ -873,6 +891,71 @@ export default function MyPagePage() {
     }
   }, []);
 
+  /**
+   * 꾸미기 탭 인벤토리 로드 — 2026-04-27 신설.
+   *
+   * <p>아바타/배지 카테고리를 병렬로 조회한다. 페이지 size=100 으로 사실상 전체 보유 아이템을
+   * 한 번에 가져와 클라이언트 측 그리드에 표시한다 (보유 아이템은 일반적으로 수십 개 이내).</p>
+   */
+  const loadCustomizeInventory = useCallback(async () => {
+    setCustomizeLoading(true);
+    try {
+      const [avatarsResp, badgesResp] = await Promise.all([
+        getMyItems({ category: 'avatar', page: 0, size: 100 }),
+        getMyItems({ category: 'badge', page: 0, size: 100 }),
+      ]);
+      setOwnedAvatars(Array.isArray(avatarsResp?.content) ? avatarsResp.content : []);
+      setOwnedBadges(Array.isArray(badgesResp?.content) ? badgesResp.content : []);
+      customizeLoadedRef.current = true;
+    } catch (err) {
+      console.warn('[꾸미기] 인벤토리 로드 실패:', err?.message);
+      setOwnedAvatars([]);
+      setOwnedBadges([]);
+    } finally {
+      setCustomizeLoading(false);
+    }
+  }, []);
+
+  /**
+   * 꾸미기 — 슬롯 클릭 시 즉시 장착 (낙관적 갱신 후 서버 응답으로 보정).
+   *
+   * <p>Backend equipItem 은 같은 카테고리의 기존 장착 아이템을 자동 해제한다.
+   * 따라서 여기서는 응답에 따라 equippedAvatar 또는 equippedBadge 만 갱신하면 충분.</p>
+   */
+  const handleEquipFromCustomize = useCallback(async (userItem) => {
+    if (!userItem?.userItemId) return;
+    /* 낙관적 갱신 — 동일 카테고리 내 active 표시 즉시 반영 */
+    if (userItem.category === 'avatar') {
+      setEquippedAvatar(userItem);
+    } else if (userItem.category === 'badge') {
+      setEquippedBadge(userItem);
+    }
+    try {
+      const updated = await equipItem(userItem.userItemId);
+      /* 서버 응답에 표준화된 imageUrl/itemName 이 있으면 보정 */
+      if (updated?.category === 'avatar') setEquippedAvatar(updated);
+      if (updated?.category === 'badge')  setEquippedBadge(updated);
+    } catch (err) {
+      console.warn('[꾸미기] 장착 실패:', err?.message);
+      /* 실패 시 서버 진실 원본을 다시 가져와 동기화 */
+      loadEquippedItems();
+      showAlert({ title: '장착 실패', message: '잠시 후 다시 시도해 주세요.', type: 'error' });
+    }
+  }, [loadEquippedItems, showAlert]);
+
+  const handleUnequipFromCustomize = useCallback(async (userItem) => {
+    if (!userItem?.userItemId) return;
+    if (userItem.category === 'avatar') setEquippedAvatar(null);
+    if (userItem.category === 'badge')  setEquippedBadge(null);
+    try {
+      await unequipItem(userItem.userItemId);
+    } catch (err) {
+      console.warn('[꾸미기] 해제 실패:', err?.message);
+      loadEquippedItems();
+      showAlert({ title: '해제 실패', message: '잠시 후 다시 시도해 주세요.', type: 'error' });
+    }
+  }, [loadEquippedItems, showAlert]);
+
   const loadMyReviews = useCallback(async (page = 1) => {
     const reviewData = await getMyReviews({ page, size: REVIEW_PAGE_SIZE });
     setMyReviews(reviewData?.reviews || []);
@@ -938,6 +1021,14 @@ export default function MyPagePage() {
           case 'profile': {
             const profileData = await getProfile();
             setProfile(normalizeProfileData(profileData));
+            break;
+          }
+          case 'customize': {
+            /* 탭 진입 시 1회만 로드 — 같은 세션 내 반복 진입 시 캐시된 데이터 사용.
+             * 장착/해제 후에도 보유 목록 자체는 변하지 않으므로 재조회 불필요. */
+            if (!customizeLoadedRef.current) {
+              await loadCustomizeInventory();
+            }
             break;
           }
           case 'watch-history': {
@@ -1224,14 +1315,22 @@ export default function MyPagePage() {
               {/* 등급 배지 — 백엔드 코드(NORMAL/BRONZE/.../DIAMOND)를 팝콘 테마 한국어로 변환 */}
               <S.GradeBadge>{getGradeLabel(profile?.grade || user?.grade)}</S.GradeBadge>
               {/*
-                착용 배지 — 2026-04-14 C 방향 신설.
+                착용 배지 — 2026-04-14 C 방향 신설 / 2026-04-27 시각화.
                 프리미엄 배지 1개월 등 포인트로 교환한 배지가 있으면 등급 배지 옆에 표시.
-                GradeBadge 스타일을 재활용하여 통일감 유지.
+                imageUrl 이 있으면 SVG/이미지 + 이름, 없으면 텍스트만 fallback.
               */}
               {equippedBadge && (
-                <S.GradeBadge title={equippedBadge.itemName} style={{ background: '#ffd700', color: '#333' }}>
-                  ⭐ {equippedBadge.itemName}
-                </S.GradeBadge>
+                <S.EquippedBadgeChip title={equippedBadge.itemName}>
+                  {equippedBadge.imageUrl ? (
+                    <img
+                      src={equippedBadge.imageUrl}
+                      alt={equippedBadge.itemName || '착용 배지'}
+                    />
+                  ) : (
+                    <span aria-hidden="true">⭐</span>
+                  )}
+                  <span>{equippedBadge.itemName}</span>
+                </S.EquippedBadgeChip>
               )}
             </S.NameRow>
             <S.Email>{user?.email || ''}</S.Email>
@@ -1287,6 +1386,22 @@ export default function MyPagePage() {
                 </S.ProfileCard>
               )}
             </div>
+          )}
+
+          {/* 꾸미기 탭 — 보유 아바타·배지 그리드 + 미리보기 (2026-04-27 신설) */}
+          {activeTab === 'customize' && (
+            <ProfileCustomizeSection
+              avatars={ownedAvatars}
+              badges={ownedBadges}
+              equippedAvatar={equippedAvatar}
+              equippedBadge={equippedBadge}
+              user={user}
+              fallbackAvatar={profile?.profileImageUrl || null}
+              onEquip={handleEquipFromCustomize}
+              onUnequip={handleUnequipFromCustomize}
+              onGoShop={() => navigate(ROUTES.ACCOUNT_POINT || ROUTES.POINT)}
+              loading={customizeLoading}
+            />
           )}
 
           {/* 시청 이력 탭 — watch_history 대신 내가 작성한 리뷰 목록을 노출한다. */}

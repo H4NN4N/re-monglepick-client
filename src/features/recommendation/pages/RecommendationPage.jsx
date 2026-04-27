@@ -44,6 +44,8 @@ export default function RecommendationPage() {
   /* 페이지네이션 */
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  /* 총 개수 — 헤더 카운트 chip 표시용 (Spring Page.totalElements) */
+  const [totalElements, setTotalElements] = useState(0);
   /* 로딩 */
   const [isLoading, setIsLoading] = useState(true);
 
@@ -60,9 +62,11 @@ export default function RecommendationPage() {
       });
       setRecommendations(data?.content || []);
       setTotalPages(data?.totalPages || 0);
+      setTotalElements(data?.totalElements ?? data?.content?.length ?? 0);
     } catch (err) {
       console.error('[Recommendation] 로드 실패:', err.message);
       setRecommendations([]);
+      setTotalElements(0);
     } finally {
       setIsLoading(false);
     }
@@ -186,15 +190,35 @@ export default function RecommendationPage() {
     }
   };
 
+  /* 현재 필터 라벨 — 부제 카피 동적 생성용 */
+  const activeLabel = FILTER_TABS.find((t) => t.key === activeFilter)?.label ?? '전체';
+  /* 카운트 chip 노출 여부 — 0건일 때는 chip 숨김(시각적 노이즈 감소) */
+  const showCount = !isLoading && totalElements > 0;
+
   return (
     <S.Container>
-      <S.PageTitle>추천 내역</S.PageTitle>
+      {/* 페이지 헤더 — 제목 + 카운트 chip + 부제 */}
+      <S.PageHeader>
+        <S.TitleRow>
+          <S.PageTitle>추천 내역</S.PageTitle>
+          {showCount && (
+            <S.CountBadge aria-label={`${activeLabel} ${totalElements}건`}>
+              {totalElements.toLocaleString()}건
+            </S.CountBadge>
+          )}
+        </S.TitleRow>
+        <S.PageSubtitle>
+          AI가 추천한 영화를 한눈에 모아보고, 찜·봤어요·평가를 남겨보세요.
+        </S.PageSubtitle>
+      </S.PageHeader>
 
       {/* 필터 탭 */}
-      <S.FilterTabs>
+      <S.FilterTabs role="tablist" aria-label="추천 내역 필터">
         {FILTER_TABS.map((tab) => (
           <S.FilterTab
             key={tab.key}
+            role="tab"
+            aria-selected={activeFilter === tab.key}
             $active={activeFilter === tab.key}
             onClick={() => handleFilterChange(tab.key)}
           >
@@ -261,17 +285,22 @@ export default function RecommendationPage() {
         </>
       )}
 
-      {/* 빈 상태 */}
+      {/* 빈 상태 — 필터별 카피 분기 */}
       {!isLoading && recommendations.length === 0 && (
         <S.EmptyState>
           <S.EmptyIcon>&#x1F3AC;</S.EmptyIcon>
           <S.EmptyTitle>
             {activeFilter === 'ALL' && '아직 추천 내역이 없어요'}
-            {activeFilter === 'WISHLIST' && '찜한 영화가 없어요'}
-            {activeFilter === 'WATCHED' && '본 영화가 없어요'}
+            {activeFilter === 'WISHLIST' && '찜한 추천 영화가 없어요'}
+            {activeFilter === 'WATCHED' && '본 추천 영화가 없어요'}
           </S.EmptyTitle>
           <S.EmptyDesc>
-            AI에게 영화를 추천받아 보세요!
+            {activeFilter === 'ALL' &&
+              'AI에게 취향을 알려주면, 딱 맞는 영화를 골라드릴게요.'}
+            {activeFilter === 'WISHLIST' &&
+              '추천 받은 영화에 ❤️ 를 눌러 마음에 드는 작품을 모아보세요.'}
+            {activeFilter === 'WATCHED' &&
+              '추천 받은 영화를 시청한 뒤 ✅ 봤어요로 기록해 보세요.'}
           </S.EmptyDesc>
           <S.CtaBtn onClick={() => navigate(ROUTES.CHAT)}>
             AI 추천 받으러 가기

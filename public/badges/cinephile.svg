@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  시네필 배지 — 영화 마니아용.
+  - 영사기 strip + 가운데 "C" 모노그램
+  - 보라/은색 톤 (premium.svg 의 골드와 차별화)
+  - 30/90/180일 가변 적용 가능 (durationDays 행 단위)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="silverGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f3f4f6" />
+      <stop offset="50%" stop-color="#9ca3af" />
+      <stop offset="100%" stop-color="#374151" />
+    </linearGradient>
+    <linearGradient id="ribbonPurple" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#a78bfa" />
+      <stop offset="100%" stop-color="#5b21b6" />
+    </linearGradient>
+  </defs>
+
+  <!-- 외곽 메달 -->
+  <circle cx="100" cy="105" r="76" fill="url(#silverGrad)" stroke="#1f2937" stroke-width="4" />
+  <circle cx="100" cy="105" r="66" fill="none" stroke="#f9fafb" stroke-width="2" opacity="0.6" />
+
+  <!-- 필름 strip (가로 띠 + 양쪽 구멍) -->
+  <rect x="22" y="92" width="156" height="26" fill="#1f2937" />
+  <g fill="#9ca3af">
+    <rect x="28" y="96" width="8" height="6" />
+    <rect x="44" y="96" width="8" height="6" />
+    <rect x="60" y="96" width="8" height="6" />
+    <rect x="148" y="96" width="8" height="6" />
+    <rect x="164" y="96" width="8" height="6" />
+    <rect x="28" y="110" width="8" height="4" />
+    <rect x="44" y="110" width="8" height="4" />
+    <rect x="60" y="110" width="8" height="4" />
+    <rect x="148" y="110" width="8" height="4" />
+    <rect x="164" y="110" width="8" height="4" />
+  </g>
+
+  <!-- 가운데 C 모노그램 -->
+  <circle cx="100" cy="105" r="28" fill="#1f2937" />
+  <text x="100" y="120" text-anchor="middle" font-family="Georgia, serif" font-size="42" font-weight="bold" fill="#a78bfa">C</text>
+
+  <!-- 리본 -->
+  <path d="M 70 175 L 55 198 L 78 192 L 90 178 Z" fill="url(#ribbonPurple)" stroke="#3b0764" stroke-width="1" />
+  <path d="M 130 175 L 145 198 L 122 192 L 110 178 Z" fill="url(#ribbonPurple)" stroke="#3b0764" stroke-width="1" />
+</svg>

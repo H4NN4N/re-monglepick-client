@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  팝콘 박스 아바타.
+  - 빨강/흰 줄무늬 카니발 박스 + 위로 솟아오른 팝콘 알갱이
+  - 영화관 클래식 아이콘. mongle.svg 와 같은 팝콘 테마이지만 박스 형태로 차별화
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="boxRed" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f87171" />
+      <stop offset="100%" stop-color="#dc2626" />
+    </linearGradient>
+    <radialGradient id="kernelGrad" cx="50%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#fef3c7" />
+    </radialGradient>
+  </defs>
+
+  <!-- 팝콘 알갱이들 (박스 위쪽으로 솟아오름) -->
+  <circle cx="65"  cy="62" r="20" fill="url(#kernelGrad)" stroke="#fde68a" stroke-width="2" />
+  <circle cx="100" cy="42" r="24" fill="url(#kernelGrad)" stroke="#fde68a" stroke-width="2" />
+  <circle cx="135" cy="60" r="20" fill="url(#kernelGrad)" stroke="#fde68a" stroke-width="2" />
+  <circle cx="86"  cy="78" r="14" fill="url(#kernelGrad)" stroke="#fde68a" stroke-width="2" />
+  <circle cx="120" cy="78" r="14" fill="url(#kernelGrad)" stroke="#fde68a" stroke-width="2" />
+
+  <!-- 박스 본체 (사다리꼴) -->
+  <path d="M 38 92 L 162 92 L 152 188 L 48 188 Z" fill="url(#boxRed)" stroke="#7f1d1d" stroke-width="3" />
+
+  <!-- 빨강/흰 세로 줄무늬 (3줄) -->
+  <path d="M 75 92 L 67 188 L 82 188 L 90 92 Z" fill="#ffffff" opacity="0.85" />
+  <path d="M 105 92 L 100 188 L 115 188 L 120 92 Z" fill="#ffffff" opacity="0.85" />
+  <path d="M 135 92 L 130 188 L 145 188 L 150 92 Z" fill="#ffffff" opacity="0.85" />
+
+  <!-- POPCORN 라벨 (가로 띠) -->
+  <rect x="48" y="125" width="104" height="22" fill="#7f1d1d" />
+  <text x="100" y="142" text-anchor="middle" font-family="'Arial Black', sans-serif" font-size="14" font-weight="900" fill="#fef3c7" letter-spacing="2">POPCORN</text>
+</svg>

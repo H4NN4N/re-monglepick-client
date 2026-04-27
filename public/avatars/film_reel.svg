@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  필름 릴 (영사기 휠) 아바타.
+  - 구리/골드 톤의 클래식 영사기 콘셉트
+  - 6개의 구멍 + 중앙 스풀
+  - 작은 사이즈에서도 "원형 + 구멍" 패턴 식별 가능
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="reelGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#a78bfa" />
+      <stop offset="60%" stop-color="#6d28d9" />
+      <stop offset="100%" stop-color="#3730a3" />
+    </radialGradient>
+    <radialGradient id="holeGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="100%" stop-color="#0f0c29" />
+    </radialGradient>
+  </defs>
+
+  <!-- 외곽 림 -->
+  <circle cx="100" cy="100" r="82" fill="url(#reelGrad)" stroke="#1e1b4b" stroke-width="3" />
+  <circle cx="100" cy="100" r="70" fill="none" stroke="#c4b5fd" stroke-width="2" opacity="0.4" />
+
+  <!-- 6 구멍 (원형 배치) -->
+  <circle cx="100" cy="42" r="14" fill="url(#holeGrad)" />
+  <circle cx="150" cy="71"  r="14" fill="url(#holeGrad)" />
+  <circle cx="150" cy="129" r="14" fill="url(#holeGrad)" />
+  <circle cx="100" cy="158" r="14" fill="url(#holeGrad)" />
+  <circle cx="50"  cy="129" r="14" fill="url(#holeGrad)" />
+  <circle cx="50"  cy="71"  r="14" fill="url(#holeGrad)" />
+
+  <!-- 중앙 스풀 -->
+  <circle cx="100" cy="100" r="22" fill="#1e1b4b" stroke="#a78bfa" stroke-width="2" />
+  <circle cx="100" cy="100" r="6"  fill="#a78bfa" />
+
+  <!-- 살짝 비치는 하이라이트 -->
+  <ellipse cx="78" cy="65" rx="14" ry="6" fill="#ffffff" opacity="0.25" />
+</svg>
