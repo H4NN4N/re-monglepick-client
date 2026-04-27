@@ -4,6 +4,13 @@
  * AI가 추천한 영화의 정보를 표시하며,
  * 찜/봤어요 토글과 만족도 피드백 기능을 제공한다.
  *
+ * 2026-04-27 UI/UX 정돈:
+ *   - 정보 영역에 헤더 라인 신설 — 제목 좌, 추천 일시는 우측 상단 chip 으로 분리
+ *   - 액션 버튼 라벨 정리("❤️ 찜" → "찜 해제 / 찜하기" 등 의미 명확화)
+ *   - 평가 버튼 활성 상태 시각화: 별 아이콘 + 점수 + primary 풀필
+ *   - 피드백 폼: 별점 옆 점수 hint + 푸터에 글자수 카운터 노출
+ *   - 추천 일시 표기: 7일 이내 상대시간("2일 전"), 그 이후는 절대 날짜
+ *
  * @param {Object} recommendation - 추천 데이터
  * @param {function} onToggleWishlist - 찜 토글 콜백
  * @param {function} onToggleWatched - 봤어요 토글 콜백
@@ -16,6 +23,29 @@ import * as S from './RecommendationCard.styled';
 
 /** TMDB 포스터 기본 URL */
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w200';
+
+/** 피드백 코멘트 글자수 상한 (Backend 와 동일) */
+const COMMENT_MAX_LENGTH = 200;
+
+/**
+ * 추천 일시 포맷.
+ *
+ * 7일 이내: "방금 전" / "n분 전" / "n시간 전" / "n일 전"
+ * 그 이후: "YYYY. M. D." (ko-KR locale)
+ */
+function formatRecommendedAt(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  if (Number.isNaN(d.getTime())) return '';
+
+  const diffSec = Math.max(0, Math.floor((Date.now() - d.getTime()) / 1000));
+  if (diffSec < 60) return '방금 전';
+  if (diffSec < 3600) return `${Math.floor(diffSec / 60)}분 전`;
+  if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}시간 전`;
+  if (diffSec < 86400 * 7) return `${Math.floor(diffSec / 86400)}일 전`;
+
+  return d.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' });
+}
 
 export default function RecommendationCard({
   recommendation,
@@ -47,6 +77,16 @@ export default function RecommendationCard({
       ? (() => { try { return JSON.parse(movie.genres); } catch { return []; } })()
       : [];
 
+  /** 메타 라인 — 연도 · 장르(최대 3개) · 평점 */
+  const metaParts = [];
+  if (movie.releaseYear) metaParts.push(`${movie.releaseYear}년`);
+  if (genres.length > 0) metaParts.push(genres.slice(0, 3).join(', '));
+  if (movie.rating) metaParts.push(`★ ${Number(movie.rating).toFixed(1)}`);
+  const metaLine = metaParts.join(' · ');
+
+  /** 평가 완료 여부 — 활성 색상 분기에 사용 */
+  const hasFeedback = Boolean(recommendation.feedbackRating);
+
   /** 피드백 제출 핸들러 */
   const handleFeedback = async () => {
     if (rating === 0) return;
@@ -59,12 +99,10 @@ export default function RecommendationCard({
     }
   };
 
-  /** 추천 일시 포맷 */
-  const formatDate = (dateStr) => {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('ko-KR', { year: 'numeric', month: 'short', day: 'numeric' });
-  };
+  /** 추천 일시 렌더 문자열 */
+  const recommendedAtLabel = formatRecommendedAt(
+    recommendation.recommendedAt || recommendation.createdAt,
+  );
 
   return (
     <S.Card>
@@ -79,51 +117,55 @@ export default function RecommendationCard({
 
       {/* 정보 영역 */}
       <S.Info>
-        <S.Title onClick={() => onClickMovie?.(movie.movieId || movie.id)}>
-          {movie.title || '제목 없음'}
-        </S.Title>
+        {/* 헤더: 제목 ↔ 추천 일시 chip */}
+        <S.Header>
+          <S.Title onClick={() => onClickMovie?.(movie.movieId || movie.id)}>
+            {movie.title || '제목 없음'}
+          </S.Title>
+          {recommendedAtLabel && (
+            <S.DateChip
+              dateTime={recommendation.recommendedAt || recommendation.createdAt}
+              title={recommendation.recommendedAt || recommendation.createdAt}
+            >
+              {recommendedAtLabel}
+            </S.DateChip>
+          )}
+        </S.Header>
 
-        <S.Meta>
-          {movie.releaseYear && `${movie.releaseYear}년`}
-          {movie.releaseYear && genres.length > 0 && ' · '}
-          {genres.slice(0, 3).join(', ')}
-          {movie.rating && ` · ★ ${Number(movie.rating).toFixed(1)}`}
-        </S.Meta>
+        {metaLine && <S.Meta>{metaLine}</S.Meta>}
 
-        {/* 추천 이유 — 2026-04-15 정정: Backend RecommendationHistoryResponse 는 `reason` 필드.
-            기존 `explanation` 키는 SSE movie_card payload 에서만 사용되는 필드라 마이픽 조회 경로와
-            맞지 않아 이유 블록이 항상 숨겨졌었음. 둘 다 지원해 어느 쪽 호출에서도 노출. */}
+        {/* 추천 이유 — Backend 는 `reason`, SSE movie_card 는 `explanation` 키. 둘 다 지원. */}
         {(recommendation.reason || recommendation.explanation) && (
           <S.Explanation>{recommendation.reason || recommendation.explanation}</S.Explanation>
         )}
-
-        {/* 추천 일시 */}
-        <S.RecommendedAt>
-          {formatDate(recommendation.recommendedAt || recommendation.createdAt)}
-        </S.RecommendedAt>
 
         {/* 액션 버튼 */}
         <S.Actions>
           <S.ActionBtn
             $variant="wishlist"
             $active={recommendation.wishlisted}
+            aria-pressed={!!recommendation.wishlisted}
             onClick={() => onToggleWishlist(recommendation.recommendationLogId)}
           >
-            {recommendation.wishlisted ? '❤️ 찜' : '🤍 찜'}
+            {recommendation.wishlisted ? '❤️ 찜 해제' : '🤍 찜하기'}
           </S.ActionBtn>
 
           <S.ActionBtn
             $variant="watched"
             $active={recommendation.watched}
+            aria-pressed={!!recommendation.watched}
             onClick={() => onToggleWatched(recommendation.recommendationLogId)}
           >
             {recommendation.watched ? '✅ 봤어요' : '👀 봤어요'}
           </S.ActionBtn>
 
           <S.ActionBtn
+            $variant="feedback"
+            $active={hasFeedback}
+            aria-expanded={showFeedback}
             onClick={() => setShowFeedback(!showFeedback)}
           >
-            {recommendation.feedbackRating ? `⭐ ${recommendation.feedbackRating}점` : '💬 평가'}
+            {hasFeedback ? `★ ${recommendation.feedbackRating}점` : '💬 평가 남기기'}
           </S.ActionBtn>
         </S.Actions>
 
@@ -137,23 +179,30 @@ export default function RecommendationCard({
                   $filled={star <= rating}
                   onClick={() => setRating(star)}
                   type="button"
+                  aria-label={`${star}점`}
                 >
                   {star <= rating ? '★' : '☆'}
                 </S.StarBtn>
               ))}
+              <S.StarHint>{rating > 0 ? `${rating} / 5` : '별점을 선택해 주세요'}</S.StarHint>
             </S.FeedbackStars>
             <S.FeedbackInput
               placeholder="추천이 어떠셨나요? (선택)"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              maxLength={200}
+              maxLength={COMMENT_MAX_LENGTH}
             />
-            <S.FeedbackSubmitBtn
-              onClick={handleFeedback}
-              disabled={rating === 0 || isSubmitting}
-            >
-              {isSubmitting ? '제출 중...' : '평가 제출'}
-            </S.FeedbackSubmitBtn>
+            <S.FeedbackFooter>
+              <S.CharCount>
+                {comment.length} / {COMMENT_MAX_LENGTH}
+              </S.CharCount>
+              <S.FeedbackSubmitBtn
+                onClick={handleFeedback}
+                disabled={rating === 0 || isSubmitting}
+              >
+                {isSubmitting ? '제출 중...' : '평가 제출'}
+              </S.FeedbackSubmitBtn>
+            </S.FeedbackFooter>
           </S.FeedbackForm>
         )}
       </S.Info>

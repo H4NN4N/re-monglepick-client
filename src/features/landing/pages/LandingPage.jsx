@@ -1002,7 +1002,8 @@ export default function LandingPage() {
               <S.GradientText>추천 5편</S.GradientText>이 되기까지
             </S.SectionTitle>
             <S.SectionSubtitle style={{ margin: '12px auto 0' }}>
-              몽글픽 에이전트가 어떻게 동작하는지 카드별로 풀어드려요. 클릭하면 더 깊이 들어갑니다.
+              몽글픽 에이전트가 어떻게 동작하는지 카드별로 풀어드려요. <br />
+              클릭하면 더 깊이 들어갑니다.
             </S.SectionSubtitle>
           </S.Reveal>
           <S.Reveal className="lp-reveal" $delay="0.1s">
