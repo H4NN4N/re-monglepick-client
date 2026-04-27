@@ -1562,7 +1562,7 @@ export default function MyPagePage() {
                     <S.PreferencesTitle>선호 장르</S.PreferencesTitle>
                     <S.PreferencesHint>
                       장르를 고르면 아래 `선택된 장르` 영역으로 이동합니다. 순서를 조정한 뒤
-                      오른쪽 `저장하기`를 눌러야 DB에 반영됩니다.
+                      오른쪽 `저장하기`를 눌러야 반영됩니다.
                     </S.PreferencesHint>
                   </div>
                   <S.FavoriteMoviesHeaderActions>
@@ -1573,7 +1573,7 @@ export default function MyPagePage() {
                       }}
                       disabled={!isFavoriteGenreDirty || isFavoriteGenreSaving}
                     >
-                      {isFavoriteGenreSaving ? '저장 중...' : '저장하기'}
+                      {isFavoriteGenreSaving ? '저장 중...' : <>저장<wbr />하기</>}
                     </S.FavoriteMoviesOrderSaveButton>
                   </S.FavoriteMoviesHeaderActions>
                 </S.FavoriteMoviesHeader>
@@ -1581,7 +1581,7 @@ export default function MyPagePage() {
                 <S.PreferencesTitle as="h4">선택된 장르</S.PreferencesTitle>
                 <S.PreferencesHint>
                   {selectedFavoriteGenres.length > 0
-                    ? `${selectedFavoriteGenres.length}개 선택됨. 드래그해서 priority를 바꾸고, 다시 클릭하면 제거됩니다.`
+                    ? `${selectedFavoriteGenres.length}개 선택됨. 드래그하여 선호하는 순서대로 장르를 배치할 수 있습니다.`
                     : '아직 선택한 장르가 없습니다.'}
                 </S.PreferencesHint>
 

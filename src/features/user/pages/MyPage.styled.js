@@ -694,13 +694,15 @@ export const FavoriteMoviesCount = styled.span`
 `;
 
 export const FavoriteMoviesOrderSaveButton = styled.button`
-  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.lg}`};
+  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.xl}`};
   border: none;
   border-radius: ${({ theme }) => theme.radius.md};
   background: ${({ theme }) => theme.gradients.primary};
   color: white;
   font-size: ${({ theme }) => theme.typography.textSm};
   font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  word-break: keep-all;
+  overflow-wrap: normal;
   cursor: pointer;
   transition: all ${({ theme }) => theme.transitions.fast};
 
