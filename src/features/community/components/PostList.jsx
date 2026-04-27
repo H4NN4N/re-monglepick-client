@@ -89,9 +89,28 @@ export default function PostList({ posts = [], loading = false }) {
 
             {/* 하단 메타 정보 */}
             <S.Meta>
-              {/* 작성자 */}
+              {/* 작성자 — 2026-04-27: 아바타 imageUrl + 배지 SVG 노출.
+                  Backend PostResponse 는 author 를 string 닉네임 + authorEquippedAvatarUrl/BadgeUrl 로 분리.
+                  레거시 author 객체(.nickname) 형태도 호환. */}
               <S.Author>
-                👤 {post.author?.nickname || '익명'}
+                {post.authorEquippedAvatarUrl ? (
+                  <S.AuthorAvatar
+                    src={post.authorEquippedAvatarUrl}
+                    alt=""
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                ) : (
+                  <span aria-hidden="true">👤</span>
+                )}
+                <span>{post.author?.nickname || post.author || '익명'}</span>
+                {post.authorEquippedBadgeUrl && (
+                  <S.AuthorBadge
+                    src={post.authorEquippedBadgeUrl}
+                    alt={post.authorEquippedBadgeName || '배지'}
+                    title={post.authorEquippedBadgeName || '배지'}
+                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                  />
+                )}
               </S.Author>
 
               {/* 통계 (좋아요, 댓글) */}

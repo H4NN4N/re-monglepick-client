@@ -173,11 +173,35 @@ export const Meta = styled.div`
   margin-top: ${({ theme }) => theme.spacing.xs};
 `;
 
-/** 작성자 */
+/** 작성자 — 아바타 + 닉네임 + 배지 가로 배치 */
 export const Author = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: ${({ theme }) => theme.typography.textXs};
   color: ${({ theme }) => theme.colors.textMuted};
   font-weight: ${({ theme }) => theme.typography.fontMedium};
+  min-width: 0;
+`;
+
+/** 작성자 아바타 — 16x16 원형. EQUIPPED 아바타가 있을 때만 노출. */
+export const AuthorAvatar = styled.img`
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid ${({ theme }) => theme.colors.borderLight};
+  background: ${({ theme }) => theme.colors.bgElevated};
+  flex-shrink: 0;
+`;
+
+/** 작성자 배지 — 14x14 SVG, 닉네임 우측에 살짝 겹치는 chip. */
+export const AuthorBadge = styled.img`
+  width: 14px;
+  height: 14px;
+  object-fit: contain;
+  flex-shrink: 0;
+  margin-left: 2px;
 `;
 
 /** 통계(좋아요·댓글) 묶음 */
