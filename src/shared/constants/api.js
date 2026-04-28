@@ -347,6 +347,19 @@ export const USER_ITEM_ENDPOINTS = {
 };
 
 /**
+ * 영화 티켓 추첨 응모 현황 엔드포인트 — 2026-04-28 신규.
+ *
+ * <p>응모권(APPLY_MOVIE_TICKET) 사용 시 자동 발급된 entry 의 회차/결과를 조회한다.
+ * 응모 자체는 USER_ITEM_ENDPOINTS.USE 가 트랜잭션 내에서 처리하므로 별도 응모 EP 는 없다.</p>
+ *
+ * <p>관리자는 별도 경로(/api/v1/admin/lottery/...) — 이 엔드포인트는 사용자 본인 데이터만 노출한다.</p>
+ */
+export const LOTTERY_ENDPOINTS = {
+  /** 내 응모 현황 페이징 - GET (query: page, size — 회차/결과/응모시각 정렬은 서버에서 createdAt DESC) */
+  MY_ENTRIES: `${API_VERSION}/users/me/lottery/entries`,
+};
+
+/**
  * 결제(Payment) 관련 엔드포인트.
  * Toss Payments 연동 결제를 처리한다.
  */
