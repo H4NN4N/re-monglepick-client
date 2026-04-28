@@ -151,13 +151,17 @@ export default function SupportChatbotWidget() {
 
       /* Agent v3 matched_faq 페이로드 shape: {faq_id, category, question}
          → UI 는 {id, question} 키를 사용하므로 여기서 매핑한다. (점수는 더 이상
-         전송되지 않음 — LLM 이 직접 '관련 FAQ' 선정하므로 점수 개념 없음) */
+         전송되지 않음 — LLM 이 직접 '관련 FAQ' 선정하므로 점수 개념 없음)
+         question 이 비어 있는 항목은 카드 본문이 "📋 "만 찍히는 빈 박스로
+         노출되므로 클라이언트에서도 방어적으로 필터링한다 (QA 2026-04-28). */
       const mapMatchedFaqs = (items) =>
-        (items || []).map((m) => ({
-          id: m.faq_id,
-          category: m.category,
-          question: m.question,
-        }));
+        (items || [])
+          .filter((m) => (m?.question || '').trim().length > 0)
+          .map((m) => ({
+            id: m.faq_id,
+            category: m.category,
+            question: m.question,
+          }));
 
       try {
         await sendSupportChatSse(
