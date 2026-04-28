@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 배경 - 팝콘 패턴. 노란 배경 + 팝콘 알갱이 산포 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="ppBg" cx="50%" cy="50%" r="80%">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="100%" stop-color="#fde68a"/>
+    </radialGradient>
+    <radialGradient id="kernel" cx="35%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="80%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#ppBg)"/>
+  <!-- 팝콘 알갱이 — 24개 산포 (구름같은 모양) -->
+  <g stroke="#92400e" stroke-width="0.8">
+    <path d="M 50 50 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 130 80 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 220 60 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 310 40 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 80 150 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 170 170 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 260 140 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 350 170 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 30 250 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 120 270 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 210 240 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 300 270 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 60 350 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 150 360 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 240 350 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+    <path d="M 330 360 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z" fill="url(#kernel)"/>
+  </g>
+</svg>

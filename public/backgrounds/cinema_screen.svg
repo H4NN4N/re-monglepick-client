@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 배경 - 영화관 스크린. 어두운 룸에서 본 빛나는 흰 스크린 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="csScreen" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="60%" stop-color="#f1f5f9"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </radialGradient>
+    <radialGradient id="csRoom" cx="50%" cy="35%" r="80%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="400" height="400" fill="url(#csRoom)"/>
+
+  <!-- 천장 ceiling 라이트 (작은 점 6개) -->
+  <g fill="#fef3c7" opacity="0.6">
+    <circle cx="50"  cy="40" r="3"/>
+    <circle cx="120" cy="40" r="3"/>
+    <circle cx="200" cy="40" r="3"/>
+    <circle cx="280" cy="40" r="3"/>
+    <circle cx="350" cy="40" r="3"/>
+  </g>
+
+  <!-- 스크린 (큰 흰 직사각) -->
+  <rect x="60" y="100" width="280" height="170" rx="6" fill="url(#csScreen)"/>
+  <rect x="60" y="100" width="280" height="170" rx="6" fill="none" stroke="#0f172a" stroke-width="3"/>
+
+  <!-- 스크린 위 상영 라이트 빔 (사다리꼴) -->
+  <polygon points="60,100 340,100 380,400 20,400" fill="#fef3c7" opacity="0.06"/>
+
+  <!-- 좌석 실루엣 (앞쪽) -->
+  <g fill="#0f172a">
+    <rect x="0"   y="350" width="80"  height="50" rx="6"/>
+    <rect x="90"  y="345" width="70"  height="55" rx="6"/>
+    <rect x="170" y="340" width="60"  height="60" rx="6"/>
+    <rect x="240" y="345" width="70"  height="55" rx="6"/>
+    <rect x="320" y="350" width="80"  height="50" rx="6"/>
+  </g>
+</svg>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  프레임 - 클래퍼보드 골드
+  - 황금빛 외곽 + 검은 사선 슬레이트 패턴
+  - 가운데 원형은 비워 아바타가 보이도록
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde68a"/>
+      <stop offset="50%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <mask id="cgMask">
+      <rect width="200" height="200" fill="white"/>
+      <circle cx="100" cy="100" r="60" fill="black"/>
+    </mask>
+  </defs>
+
+  <!-- 황금 링 본체 -->
+  <circle cx="100" cy="100" r="95" fill="url(#goldGrad)" mask="url(#cgMask)"/>
+
+  <!-- 사선 슬레이트 — 위·아래에 stripe 4개씩 (검은) -->
+  <g fill="#0f172a" mask="url(#cgMask)" opacity="0.85">
+    <polygon points="40,8 70,8 50,40 20,40"/>
+    <polygon points="90,8 120,8 100,40 70,40"/>
+    <polygon points="140,8 170,8 150,40 120,40"/>
+    <polygon points="40,160 70,160 50,192 20,192"/>
+    <polygon points="90,160 120,160 100,192 70,192"/>
+    <polygon points="140,160 170,160 150,192 120,192"/>
+  </g>
+
+  <!-- 외곽 가는 검은 윤곽선 -->
+  <circle cx="100" cy="100" r="95" fill="none" stroke="#78350f" stroke-width="2" opacity="0.7"/>
+  <circle cx="100" cy="100" r="60" fill="none" stroke="#78350f" stroke-width="2" opacity="0.7"/>
+</svg>

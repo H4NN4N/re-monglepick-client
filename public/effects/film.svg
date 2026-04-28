@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 이펙트 - 필름 스트립 회전 (film). 회전하는 필름릴 + 외곽 sprocket holes -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <mask id="filmRing">
+      <rect width="200" height="200" fill="white"/>
+      <circle cx="100" cy="100" r="55" fill="black"/>
+    </mask>
+  </defs>
+  <!-- 필름 링 -->
+  <circle cx="100" cy="100" r="90" fill="#0f172a" opacity="0.55" mask="url(#filmRing)"/>
+  <!-- sprocket holes 8 -->
+  <g fill="#f1f5f9">
+    <rect x="96" y="14" width="8" height="6" rx="1"/>
+    <rect x="158" y="38" width="8" height="6" rx="1" transform="rotate(45 162 41)"/>
+    <rect x="180" y="96" width="6" height="8" rx="1"/>
+    <rect x="158" y="156" width="8" height="6" rx="1" transform="rotate(-45 162 159)"/>
+    <rect x="96" y="180" width="8" height="6" rx="1"/>
+    <rect x="34" y="156" width="8" height="6" rx="1" transform="rotate(45 38 159)"/>
+    <rect x="14" y="96" width="6" height="8" rx="1"/>
+    <rect x="34" y="38" width="8" height="6" rx="1" transform="rotate(-45 38 41)"/>
+  </g>
+  <!-- 가운데 릴 hub -->
+  <circle cx="100" cy="100" r="14" fill="none" stroke="#fbbf24" stroke-width="2"/>
+  <circle cx="100" cy="100" r="4" fill="#fbbf24"/>
+</svg>

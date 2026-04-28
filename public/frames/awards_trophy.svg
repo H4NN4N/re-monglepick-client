@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  프레임 - 시상식 트로피
+  - 짙은 골드 그라데이션 링 + 12개의 별 장식 (아카데미 풍)
+  - 가운데 원형은 비워 아바타가 보이도록
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="trophyGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="#facc15"/>
+      <stop offset="80%" stop-color="#ca8a04"/>
+      <stop offset="100%" stop-color="#713f12"/>
+    </radialGradient>
+    <mask id="atMask">
+      <rect width="200" height="200" fill="white"/>
+      <circle cx="100" cy="100" r="60" fill="black"/>
+    </mask>
+  </defs>
+
+  <!-- 트로피 링 본체 -->
+  <circle cx="100" cy="100" r="95" fill="url(#trophyGrad)" mask="url(#atMask)"/>
+
+  <!-- 안쪽 어두운 트림 -->
+  <circle cx="100" cy="100" r="62" fill="none" stroke="#78350f" stroke-width="2"/>
+  <circle cx="100" cy="100" r="93" fill="none" stroke="#78350f" stroke-width="2"/>
+
+  <!-- 별 12개 — 아카데미 트로피 풍 장식 -->
+  <g fill="#fff7ed" stroke="#78350f" stroke-width="0.5">
+    <polygon points="100,10 102.5,18 110.5,18 104,23 106.5,31 100,26 93.5,31 96,23 89.5,18 97.5,18"/>
+    <polygon points="146,21 148.5,29 156.5,29 150,34 152.5,42 146,37 139.5,42 142,34 135.5,29 143.5,29"/>
+    <polygon points="178,52 180.5,60 188.5,60 182,65 184.5,73 178,68 171.5,73 174,65 167.5,60 175.5,60"/>
+    <polygon points="190,98 192.5,106 200.5,106 194,111 196.5,119 190,114 183.5,119 186,111 179.5,106 187.5,106" transform="translate(-10 0)"/>
+    <polygon points="178,148 180.5,156 188.5,156 182,161 184.5,169 178,164 171.5,169 174,161 167.5,156 175.5,156"/>
+    <polygon points="146,179 148.5,187 156.5,187 150,192 152.5,200 146,195 139.5,200 142,192 135.5,187 143.5,187" transform="translate(0 -10)"/>
+    <polygon points="100,180 102.5,188 110.5,188 104,193 106.5,201 100,196 93.5,201 96,193 89.5,188 97.5,188" transform="translate(0 -3)"/>
+    <polygon points="54,179 56.5,187 64.5,187 58,192 60.5,200 54,195 47.5,200 50,192 43.5,187 51.5,187" transform="translate(0 -10)"/>
+    <polygon points="22,148 24.5,156 32.5,156 26,161 28.5,169 22,164 15.5,169 18,161 11.5,156 19.5,156"/>
+    <polygon points="10,98 12.5,106 20.5,106 14,111 16.5,119 10,114 3.5,119 6,111 -0.5,106 7.5,106" transform="translate(10 0)"/>
+    <polygon points="22,52 24.5,60 32.5,60 26,65 28.5,73 22,68 15.5,73 18,65 11.5,60 19.5,60"/>
+    <polygon points="54,21 56.5,29 64.5,29 58,34 60.5,42 54,37 47.5,42 50,34 43.5,29 51.5,29"/>
+  </g>
+</svg>

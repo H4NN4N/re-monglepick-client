@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  배경 - 극장 좌석
+  - 어두운 극장에서 본 빨간 좌석 행렬 (원근 효과)
+  - PreviewBackgroundLayer 가 background-image 로 깔며 0.85 흰 그라데이션이 위에 덮인다 (가독성)
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="theaterBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b"/>
+      <stop offset="60%" stop-color="#3b0764"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="seatGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#7f1d1d"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 극장 어두운 배경 -->
+  <rect width="400" height="400" fill="url(#theaterBg)"/>
+
+  <!-- 스크린 (멀리 보임 — 작은 흰 사각) -->
+  <rect x="120" y="40" width="160" height="60" fill="#f1f5f9" opacity="0.85"/>
+  <rect x="120" y="40" width="160" height="60" fill="none" stroke="#94a3b8" stroke-width="2"/>
+
+  <!-- 좌석 4 행 — 원근법으로 점점 커짐 -->
+  <g fill="url(#seatGrad)" stroke="#450a0a" stroke-width="1">
+    <!-- 1행 (멀리, 작음) -->
+    <rect x="100" y="180" width="30" height="22" rx="5"/>
+    <rect x="135" y="180" width="30" height="22" rx="5"/>
+    <rect x="170" y="180" width="30" height="22" rx="5"/>
+    <rect x="205" y="180" width="30" height="22" rx="5"/>
+    <rect x="240" y="180" width="30" height="22" rx="5"/>
+    <rect x="275" y="180" width="30" height="22" rx="5"/>
+    <!-- 2행 -->
+    <rect x="80"  y="220" width="38" height="28" rx="6"/>
+    <rect x="123" y="220" width="38" height="28" rx="6"/>
+    <rect x="166" y="220" width="38" height="28" rx="6"/>
+    <rect x="209" y="220" width="38" height="28" rx="6"/>
+    <rect x="252" y="220" width="38" height="28" rx="6"/>
+    <rect x="295" y="220" width="38" height="28" rx="6"/>
+    <!-- 3행 -->
+    <rect x="50"  y="270" width="48" height="36" rx="8"/>
+    <rect x="103" y="270" width="48" height="36" rx="8"/>
+    <rect x="156" y="270" width="48" height="36" rx="8"/>
+    <rect x="209" y="270" width="48" height="36" rx="8"/>
+    <rect x="262" y="270" width="48" height="36" rx="8"/>
+    <rect x="315" y="270" width="48" height="36" rx="8"/>
+    <!-- 4행 (앞, 큼) -->
+    <rect x="20"  y="330" width="60" height="48" rx="10"/>
+    <rect x="85"  y="330" width="60" height="48" rx="10"/>
+    <rect x="150" y="330" width="60" height="48" rx="10"/>
+    <rect x="215" y="330" width="60" height="48" rx="10"/>
+    <rect x="280" y="330" width="60" height="48" rx="10"/>
+  </g>
+</svg>

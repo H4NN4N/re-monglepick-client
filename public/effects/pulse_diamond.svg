@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 이펙트 - 다이아몬드 펄스. 시안/화이트 결정 광택 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="pulseDia" cx="50%" cy="50%" r="50%">
+      <stop offset="78%" stop-color="#06b6d4" stop-opacity="0"/>
+      <stop offset="90%" stop-color="#a5f3fc" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#0891b2" stop-opacity="0.95"/>
+    </radialGradient>
+    <filter id="pulseDiaBlur">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+  </defs>
+  <!-- 외곽 시안 글로우 -->
+  <circle cx="100" cy="100" r="98" fill="url(#pulseDia)" filter="url(#pulseDiaBlur)"/>
+  <!-- 메인 펄스 링 -->
+  <circle cx="100" cy="100" r="92" fill="none" stroke="#06b6d4" stroke-width="3"/>
+  <circle cx="100" cy="100" r="86" fill="none" stroke="#a5f3fc" stroke-width="1.5" opacity="0.8"/>
+  <circle cx="100" cy="100" r="78" fill="none" stroke="#67e8f9" stroke-width="1" opacity="0.5"/>
+  <!-- 결정 컷 작은 다이아몬드 8개 -->
+  <g fill="#fff" stroke="#0c4a6e" stroke-width="0.4">
+    <polygon points="100,10 103,16 100,22 97,16"/>
+    <polygon points="146,24 149,30 146,36 143,30" transform="rotate(45 146 30)"/>
+    <polygon points="176,56 179,62 176,68 173,62" transform="rotate(45 176 62)"/>
+    <polygon points="190,100 193,106 190,112 187,106"/>
+    <polygon points="176,144 179,150 176,156 173,150" transform="rotate(45 176 150)"/>
+    <polygon points="146,176 149,182 146,188 143,182" transform="rotate(45 146 182)"/>
+    <polygon points="100,190 103,196 100,202 97,196" transform="translate(0 -2)"/>
+    <polygon points="54,176 57,182 54,188 51,182" transform="rotate(45 54 182)"/>
+    <polygon points="24,144 27,150 24,156 21,150" transform="rotate(45 24 150)"/>
+    <polygon points="10,100 13,106 10,112 7,106"/>
+    <polygon points="24,56 27,62 24,68 21,62" transform="rotate(45 24 62)"/>
+    <polygon points="54,24 57,30 54,36 51,30" transform="rotate(45 54 30)"/>
+  </g>
+</svg>

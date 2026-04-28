@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 이펙트 - 팝콘 영구 (popcorn). 영구 버전이지만 시각적으로는 popcorn.svg 와 동일 — 더 큰 알갱이 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="kgp" cx="35%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="80%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </radialGradient>
+  </defs>
+  <g fill="url(#kgp)" stroke="#7c2d12" stroke-width="0.8">
+    <path d="M 40 30 q -10 -5 -12 5 q -12 -2 -10 10 q -8 5 5 10 q 0 10 12 7 q 8 8 15 -3 q 10 0 7 -10 q 8 -8 -5 -12 q -5 -10 -12 -7 z"/>
+    <path d="M 110 40 q -10 -5 -12 5 q -12 -2 -10 10 q -8 5 5 10 q 0 10 12 7 q 8 8 15 -3 q 10 0 7 -10 q 8 -8 -5 -12 q -5 -10 -12 -7 z"/>
+    <path d="M 165 30 q -10 -5 -12 5 q -12 -2 -10 10 q -8 5 5 10 q 0 10 12 7 q 8 8 15 -3 q 10 0 7 -10 q 8 -8 -5 -12 q -5 -10 -12 -7 z"/>
+    <path d="M 70 100 q -10 -5 -12 5 q -12 -2 -10 10 q -8 5 5 10 q 0 10 12 7 q 8 8 15 -3 q 10 0 7 -10 q 8 -8 -5 -12 q -5 -10 -12 -7 z"/>
+    <path d="M 145 110 q -10 -5 -12 5 q -12 -2 -10 10 q -8 5 5 10 q 0 10 12 7 q 8 8 15 -3 q 10 0 7 -10 q 8 -8 -5 -12 q -5 -10 -12 -7 z"/>
+    <path d="M 100 160 q -10 -5 -12 5 q -12 -2 -10 10 q -8 5 5 10 q 0 10 12 7 q 8 8 15 -3 q 10 0 7 -10 q 8 -8 -5 -12 q -5 -10 -12 -7 z"/>
+  </g>
+</svg>

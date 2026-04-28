@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 이펙트 - 별빛 영구 (sparkle). 영구 버전 — 더 큰 별 + 더 화려한 색감 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <g fill="#fef3c7" stroke="#fbbf24" stroke-width="0.6">
+    <polygon points="40,30 44,42 56,46 44,50 40,62 36,50 24,46 36,42"/>
+    <polygon points="100,15 104,27 116,31 104,35 100,47 96,35 84,31 96,27"/>
+    <polygon points="160,40 164,52 176,56 164,60 160,72 156,60 144,56 156,52"/>
+    <polygon points="40,170 44,182 56,186 44,190 40,202 36,190 24,186 36,182" transform="translate(0 -20)"/>
+    <polygon points="100,170 104,182 116,186 104,190 100,202 96,190 84,186 96,182" transform="translate(0 -10)"/>
+    <polygon points="160,170 164,182 176,186 164,190 160,202 156,190 144,186 156,182" transform="translate(0 -20)"/>
+  </g>
+  <g fill="#fbbf24">
+    <circle cx="120" cy="100" r="2"/>
+    <circle cx="80" cy="100" r="2"/>
+    <circle cx="100" cy="80" r="1.5"/>
+    <circle cx="100" cy="120" r="1.5"/>
+  </g>
+</svg>

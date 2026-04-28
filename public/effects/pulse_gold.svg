@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 이펙트 - 골드 펄스. 황금 링이 펄스 keyframes 로 확장/수축 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="pulseGold" cx="50%" cy="50%" r="50%">
+      <stop offset="80%" stop-color="#fbbf24" stop-opacity="0"/>
+      <stop offset="92%" stop-color="#fde68a" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0.85"/>
+    </radialGradient>
+    <filter id="pulseGoldBlur">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+  </defs>
+  <circle cx="100" cy="100" r="98" fill="url(#pulseGold)" filter="url(#pulseGoldBlur)"/>
+  <circle cx="100" cy="100" r="92" fill="none" stroke="#fbbf24" stroke-width="3"/>
+  <circle cx="100" cy="100" r="86" fill="none" stroke="#fde68a" stroke-width="1.5" opacity="0.7"/>
+</svg>
