@@ -26,8 +26,6 @@ export const Overlay = styled.div`
   inset: 0;
   z-index: ${({ theme }) => theme.zIndex.modalBackdrop};
   background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
   animation: ${({ $closing }) => ($closing ? backdropFadeOut : backdropFadeIn)}
     ${({ $closing }) => ($closing ? '200ms' : '250ms')} ease forwards;
 `;
