@@ -72,13 +72,17 @@ export default function ChatbotTab({ onSwitchToTicket }) {
       });
     };
 
-    /* Agent v3 matched_faq 페이로드 {faq_id, category, question} → UI {id, question} 매핑 */
+    /* Agent v3 matched_faq 페이로드 {faq_id, category, question} → UI {id, question} 매핑.
+       question 이 비어 있으면 FaqMatchCard 가 "📋 "만 찍힌 빈 박스로 노출되므로
+       방어적으로 필터링한다 (QA 2026-04-28). */
     const mapMatchedFaqs = (items) =>
-      (items || []).map((m) => ({
-        id: m.faq_id,
-        category: m.category,
-        question: m.question,
-      }));
+      (items || [])
+        .filter((m) => (m?.question || '').trim().length > 0)
+        .map((m) => ({
+          id: m.faq_id,
+          category: m.category,
+          question: m.question,
+        }));
 
     try {
       await sendSupportChatSse(
