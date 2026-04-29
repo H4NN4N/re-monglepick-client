@@ -412,6 +412,20 @@ export const SectionTab = styled.span`
   letter-spacing: 0.02em;
 `;
 
+/* 섹션 제목 + 우측 배지 한 줄 정렬 */
+export const SectionHeading = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  flex-wrap: wrap;
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+
+  ${SectionTitle} {
+    margin: 0;
+  }
+
+`;
+
 /* ── 줄거리 ── */
 
 /*

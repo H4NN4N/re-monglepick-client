@@ -458,13 +458,11 @@ export default function MovieDetailCard({
       {/* ── 같은 시리즈 작품 ── */}
       {collectionMovieSeedExists && (
         <S.Section>
-          <S.SectionTab>시리즈</S.SectionTab>
-          <S.SectionTitle>
-            {movie.collection_name || '같은 시리즈 작품'}
-          </S.SectionTitle>
-          <S.RelatedSectionDescription>
-            같은 컬렉션에 속한 작품만 따로 모았습니다. 순서대로 훑어보시고, 마우스를 올리면 상세 정보가 나타납니다.
-          </S.RelatedSectionDescription>
+          <S.SectionHeading>
+            <S.SectionTitle>
+              {movie.collection_name || '같은 시리즈 작품'}
+            </S.SectionTitle>
+          </S.SectionHeading>
 
           {renderMovieCarousel({
             movies: collectionMovies,
@@ -480,9 +478,6 @@ export default function MovieDetailCard({
       {relatedMovieSeedExists && (
         <S.Section>
           <S.SectionTitle>연관 영화</S.SectionTitle>
-          <S.RelatedSectionDescription>
-            줄거리 유사도와 메타데이터를 바탕으로 찾은 별도 추천입니다. 좌우로 넘겨 보시고, 마우스를 올리면 상세 정보가 나타납니다.
-          </S.RelatedSectionDescription>
 
           {renderMovieCarousel({
             movies: relatedMovies,

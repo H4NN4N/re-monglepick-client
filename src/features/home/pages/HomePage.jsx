@@ -57,6 +57,14 @@ const SUGGESTION_CARDS = [
   },
 ];
 
+/**
+ * 홈 영화 섹션 최대 노출 개수.
+ *
+ * 개인화 추천 전용 API 도입 전까지는 기존 인기/최신 영화 API를 재사용하되,
+ * 홈 화면 프레임만 10개 기준으로 맞춘다.
+ */
+const HOME_MOVIE_SECTION_LIMIT = 12;
+
 export default function HomePage() {
   /**
    * 2026-04-23 신규: 홈 상단 검색 입력 상태.
@@ -104,8 +112,8 @@ export default function HomePage() {
     setLatestError(null);
 
     const [popularResult, latestResult, noticeResult] = await Promise.allSettled([
-      getPopularMovies(1, 8),
-      getLatestMovies(1, 8),
+      getPopularMovies(1, HOME_MOVIE_SECTION_LIMIT),
+      getLatestMovies(1, HOME_MOVIE_SECTION_LIMIT),
       // 2026-04-15: pinned=true 로 제한. 고정된 BANNER/POPUP/MODAL 만 홈에 노출한다.
       // 고정되지 않은 공지는 커뮤니티 공지사항 탭에서만 조회 가능.
       getActiveNotices({ pinned: true }),
@@ -113,7 +121,7 @@ export default function HomePage() {
 
     /* 인기 영화 처리 */
     if (popularResult.status === 'fulfilled') {
-      setPopularMovies(popularResult.value?.movies || []);
+      setPopularMovies((popularResult.value?.movies || []).slice(0, HOME_MOVIE_SECTION_LIMIT));
     } else {
       console.error('[HomePage] 인기 영화 로드 실패:', popularResult.reason);
       setPopularError(
@@ -125,7 +133,7 @@ export default function HomePage() {
 
     /* 최신 영화 처리 */
     if (latestResult.status === 'fulfilled') {
-      setLatestMovies(latestResult.value?.movies || []);
+      setLatestMovies((latestResult.value?.movies || []).slice(0, HOME_MOVIE_SECTION_LIMIT));
     } else {
       console.error('[HomePage] 최신 영화 로드 실패:', latestResult.reason);
       setLatestError(
