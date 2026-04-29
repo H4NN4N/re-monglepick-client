@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  프레임 - 빈티지 스튜디오
+  - 1950년대 헐리우드 사진 액자 풍 짙은 갈색 + 베이지 패턴 링
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="vintageGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="#a16207"/>
+      <stop offset="80%" stop-color="#713f12"/>
+      <stop offset="100%" stop-color="#451a03"/>
+    </radialGradient>
+    <mask id="vsMask">
+      <rect width="200" height="200" fill="white"/>
+      <circle cx="100" cy="100" r="60" fill="black"/>
+    </mask>
+  </defs>
+
+  <!-- 본체 짙은 갈색 링 -->
+  <circle cx="100" cy="100" r="95" fill="url(#vintageGrad)" mask="url(#vsMask)"/>
+
+  <!-- 베이지 안팎 트림 -->
+  <circle cx="100" cy="100" r="93" fill="none" stroke="#fef3c7" stroke-width="1.5" opacity="0.6"/>
+  <circle cx="100" cy="100" r="78" fill="none" stroke="#fef3c7" stroke-width="1" opacity="0.4"/>
+  <circle cx="100" cy="100" r="63" fill="none" stroke="#fef3c7" stroke-width="1.5" opacity="0.6"/>
+
+  <!-- 빈티지 코너 장식 — 4 모서리 작은 곡선 -->
+  <g fill="none" stroke="#fef3c7" stroke-width="2" opacity="0.7">
+    <path d="M 100 14 Q 85 14 75 22"/>
+    <path d="M 100 14 Q 115 14 125 22"/>
+    <path d="M 14 100 Q 14 85 22 75"/>
+    <path d="M 14 100 Q 14 115 22 125"/>
+    <path d="M 186 100 Q 186 85 178 75"/>
+    <path d="M 186 100 Q 186 115 178 125"/>
+    <path d="M 100 186 Q 85 186 75 178"/>
+    <path d="M 100 186 Q 115 186 125 178"/>
+  </g>
+</svg>

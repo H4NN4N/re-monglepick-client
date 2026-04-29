@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  프레임 - 카라멜 글로우
+  - 따뜻한 카라멜 톤 그라데이션 링 + 부드러운 외곽 글로우
+  - 카라멜팝콘 등급 영감
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="caramelGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="60%" stop-color="#fb923c"/>
+      <stop offset="80%" stop-color="#c2410c"/>
+      <stop offset="100%" stop-color="#7c2d12"/>
+    </radialGradient>
+    <filter id="caramelBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <mask id="cgMask2">
+      <rect width="200" height="200" fill="white"/>
+      <circle cx="100" cy="100" r="60" fill="black"/>
+    </mask>
+  </defs>
+
+  <!-- 외곽 글로우 -->
+  <circle cx="100" cy="100" r="98" fill="#fed7aa" opacity="0.5" filter="url(#caramelBlur)"/>
+
+  <!-- 카라멜 링 본체 -->
+  <circle cx="100" cy="100" r="95" fill="url(#caramelGrad)" mask="url(#cgMask2)"/>
+
+  <!-- 안쪽 따뜻한 하이라이트 -->
+  <circle cx="100" cy="100" r="64" fill="none" stroke="#fed7aa" stroke-width="2" opacity="0.7"/>
+
+  <!-- 작은 카라멜 알갱이 (점들) — 12 곳 산포 -->
+  <g fill="#fef3c7" opacity="0.85">
+    <circle cx="100" cy="14" r="3"/>
+    <circle cx="143" cy="27" r="2.5"/>
+    <circle cx="173" cy="57" r="3"/>
+    <circle cx="186" cy="100" r="2.5"/>
+    <circle cx="173" cy="143" r="3"/>
+    <circle cx="143" cy="173" r="2.5"/>
+    <circle cx="100" cy="186" r="3"/>
+    <circle cx="57" cy="173" r="2.5"/>
+    <circle cx="27" cy="143" r="3"/>
+    <circle cx="14" cy="100" r="2.5"/>
+    <circle cx="27" cy="57" r="3"/>
+    <circle cx="57" cy="27" r="2.5"/>
+  </g>
+</svg>

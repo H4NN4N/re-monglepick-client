@@ -19,7 +19,8 @@ import { USER_ITEM_ENDPOINTS } from '../../../shared/constants/api';
  * 내 보유 아이템 목록 조회 (페이징 + 카테고리 필터).
  *
  * @param {Object} [opts={}]
- * @param {string} [opts.category] — "coupon"/"avatar"/"badge"/"apply"/"hint" (선택)
+ * @param {string} [opts.category] — 꾸미기 6슬롯(avatar/badge/frame/background/title/effect)
+ *   또는 비꾸미기(coupon/apply/hint) 카테고리 문자열 (선택)
  * @param {number} [opts.page=0] — 0-indexed
  * @param {number} [opts.size=20]
  * @returns {Promise<Object>} Spring Page 구조
@@ -49,11 +50,12 @@ export async function getMyItemsSummary() {
 }
 
 /**
- * 착용 중인 아이템만 조회 (프로필 렌더링 경량 API).
+ * 착용 중인 꾸미기 6슬롯 아이템 조회 (프로필 렌더링 경량 API, 2026-04-28 v3.5 확장).
  *
- * 리스트 인덱스: [0]=avatar, [1]=badge. 미착용 시 null 포함.
+ * 리스트 인덱스 고정: [0]=avatar, [1]=badge, [2]=frame, [3]=background, [4]=title, [5]=effect.
+ * 미착용 슬롯은 null. 레거시 클라이언트는 [0]/[1] 만 사용.
  *
- * @returns {Promise<Array<Object|null>>} 2-원소 배열
+ * @returns {Promise<Array<Object|null>>} 6-원소 배열
  */
 export async function getEquippedItems() {
   requireAuth();
@@ -63,7 +65,7 @@ export async function getEquippedItems() {
 // ── 상태 전이 ──
 
 /**
- * 아이템 착용 (아바타/배지).
+ * 아이템 착용 (꾸미기 6슬롯 — avatar/badge/frame/background/title/effect).
  * 같은 카테고리 기존 착용 아이템은 백엔드에서 자동 해제된다.
  *
  * @param {number} userItemId

@@ -770,24 +770,33 @@ export default function MyPagePage() {
   const [isEditModalOpen, openEditModal, closeEditModal] = useModalRoute('editProfile');
 
   /**
-   * 착용 아바타 / 배지 (2026-04-14 신설, C 방향).
+   * 착용 꾸미기 6슬롯 (2026-04-28 v3.5 6슬롯 확장).
    *
-   * <p>Backend GET /api/v1/users/me/items/equipped 는 [avatar, badge] 2-원소 배열을 반환한다.
-   * 각 원소는 UserItemResponse 또는 null (미착용).
-   * 프로필 수정 이미지가 없을 때 아바타가, 항상 닉네임 옆에 배지가 표시된다.</p>
+   * <p>Backend GET /api/v1/users/me/items/equipped 는 6원소 배열을 고정 순서로 반환한다:
+   * [avatar, badge, frame, background, title, effect]. 각 원소는 UserItemResponse 또는 null.
+   * 프로필 수정 이미지가 없을 때 아바타가, 항상 닉네임 옆/위에 배지·칭호가 표시된다.</p>
    */
   const [equippedAvatar, setEquippedAvatar] = useState(null);
   const [equippedBadge, setEquippedBadge] = useState(null);
+  const [equippedFrame, setEquippedFrame] = useState(null);
+  const [equippedBackground, setEquippedBackground] = useState(null);
+  const [equippedTitle, setEquippedTitle] = useState(null);
+  const [equippedEffect, setEquippedEffect] = useState(null);
 
   /**
-   * 꾸미기 탭 — 보유 아바타/배지 인벤토리 (2026-04-27 신설).
+   * 꾸미기 탭 — 6 카테고리 보유 인벤토리 (2026-04-28 v3.5 확장).
    *
-   * <p>Backend GET /api/v1/users/me/items?category=avatar|badge 응답을 카테고리별로 보관한다.
+   * <p>Backend GET /api/v1/users/me/items?category={category} 응답을 카테고리별로 보관한다.
    * 만료(expired=true) 또는 사용 완료(USED) 상태도 포함하지만, ProfileCustomizeSection 이 시각적으로
-   * 비활성 표시한다. 처음 customize 탭에 진입할 때 1회 로드하며, 이후 장착/해제 시 부분 갱신.</p>
+   * 비활성 표시한다. 처음 customize 탭에 진입할 때 6 카테고리를 병렬로 로드하며, 이후 장착/해제
+   * 시 부분 갱신.</p>
    */
   const [ownedAvatars, setOwnedAvatars] = useState([]);
   const [ownedBadges, setOwnedBadges] = useState([]);
+  const [ownedFrames, setOwnedFrames] = useState([]);
+  const [ownedBackgrounds, setOwnedBackgrounds] = useState([]);
+  const [ownedTitles, setOwnedTitles] = useState([]);
+  const [ownedEffects, setOwnedEffects] = useState([]);
   /** 꾸미기 인벤토리 로드 상태 — 첫 진입 시 true, 로드 완료 시 false */
   const [customizeLoading, setCustomizeLoading] = useState(false);
   /** 꾸미기 탭 진입 후 1회만 로드하기 위한 플래그 */
@@ -875,19 +884,31 @@ export default function MyPagePage() {
   const loadEquippedItems = useCallback(async () => {
     try {
       const result = await getEquippedItems();
-      /* Backend 는 [avatar, badge] 고정 순서로 반환. 타입 방어를 위해 null 체크 포함. */
-      if (Array.isArray(result) && result.length >= 2) {
+      /* Backend 6슬롯 고정 순서: [avatar, badge, frame, background, title, effect]. 타입 방어 포함. */
+      if (Array.isArray(result)) {
         setEquippedAvatar(result[0] || null);
         setEquippedBadge(result[1] || null);
+        setEquippedFrame(result[2] || null);
+        setEquippedBackground(result[3] || null);
+        setEquippedTitle(result[4] || null);
+        setEquippedEffect(result[5] || null);
       } else {
         setEquippedAvatar(null);
         setEquippedBadge(null);
+        setEquippedFrame(null);
+        setEquippedBackground(null);
+        setEquippedTitle(null);
+        setEquippedEffect(null);
       }
     } catch (err) {
       /* 비로그인 상태에서 호출되었거나 네트워크 오류 — 무시하고 fallback UI 유지 */
       console.debug('착용 아이템 조회 실패 (무시):', err?.message);
       setEquippedAvatar(null);
       setEquippedBadge(null);
+      setEquippedFrame(null);
+      setEquippedBackground(null);
+      setEquippedTitle(null);
+      setEquippedEffect(null);
     }
   }, []);
 
@@ -900,17 +921,31 @@ export default function MyPagePage() {
   const loadCustomizeInventory = useCallback(async () => {
     setCustomizeLoading(true);
     try {
-      const [avatarsResp, badgesResp] = await Promise.all([
-        getMyItems({ category: 'avatar', page: 0, size: 100 }),
-        getMyItems({ category: 'badge', page: 0, size: 100 }),
-      ]);
+      /* 2026-04-28 v3.5 — 6 카테고리 병렬 로드. 각 응답은 Spring Page 형식. */
+      const [avatarsResp, badgesResp, framesResp, backgroundsResp, titlesResp, effectsResp] =
+        await Promise.all([
+          getMyItems({ category: 'avatar',     page: 0, size: 100 }),
+          getMyItems({ category: 'badge',      page: 0, size: 100 }),
+          getMyItems({ category: 'frame',      page: 0, size: 100 }),
+          getMyItems({ category: 'background', page: 0, size: 100 }),
+          getMyItems({ category: 'title',      page: 0, size: 100 }),
+          getMyItems({ category: 'effect',     page: 0, size: 100 }),
+        ]);
       setOwnedAvatars(Array.isArray(avatarsResp?.content) ? avatarsResp.content : []);
       setOwnedBadges(Array.isArray(badgesResp?.content) ? badgesResp.content : []);
+      setOwnedFrames(Array.isArray(framesResp?.content) ? framesResp.content : []);
+      setOwnedBackgrounds(Array.isArray(backgroundsResp?.content) ? backgroundsResp.content : []);
+      setOwnedTitles(Array.isArray(titlesResp?.content) ? titlesResp.content : []);
+      setOwnedEffects(Array.isArray(effectsResp?.content) ? effectsResp.content : []);
       customizeLoadedRef.current = true;
     } catch (err) {
       console.warn('[꾸미기] 인벤토리 로드 실패:', err?.message);
       setOwnedAvatars([]);
       setOwnedBadges([]);
+      setOwnedFrames([]);
+      setOwnedBackgrounds([]);
+      setOwnedTitles([]);
+      setOwnedEffects([]);
     } finally {
       setCustomizeLoading(false);
     }
@@ -922,31 +957,43 @@ export default function MyPagePage() {
    * <p>Backend equipItem 은 같은 카테고리의 기존 장착 아이템을 자동 해제한다.
    * 따라서 여기서는 응답에 따라 equippedAvatar 또는 equippedBadge 만 갱신하면 충분.</p>
    */
+  /**
+   * 카테고리 → equipped state setter 매핑 (2026-04-28 6슬롯 확장).
+   *
+   * <p>handleEquip/handleUnequip 양쪽에서 공유. 신규 카테고리 추가 시 이 매핑만 늘리면 된다.</p>
+   */
+  const equippedSetterByCategory = {
+    avatar:     setEquippedAvatar,
+    badge:      setEquippedBadge,
+    frame:      setEquippedFrame,
+    background: setEquippedBackground,
+    title:      setEquippedTitle,
+    effect:     setEquippedEffect,
+  };
+
   const handleEquipFromCustomize = useCallback(async (userItem) => {
     if (!userItem?.userItemId) return;
-    /* 낙관적 갱신 — 동일 카테고리 내 active 표시 즉시 반영 */
-    if (userItem.category === 'avatar') {
-      setEquippedAvatar(userItem);
-    } else if (userItem.category === 'badge') {
-      setEquippedBadge(userItem);
-    }
+    /* 낙관적 갱신 — 6슬롯 카테고리 매핑으로 즉시 반영 */
+    const setter = equippedSetterByCategory[userItem.category];
+    if (setter) setter(userItem);
     try {
       const updated = await equipItem(userItem.userItemId);
       /* 서버 응답에 표준화된 imageUrl/itemName 이 있으면 보정 */
-      if (updated?.category === 'avatar') setEquippedAvatar(updated);
-      if (updated?.category === 'badge')  setEquippedBadge(updated);
+      const updatedSetter = equippedSetterByCategory[updated?.category];
+      if (updatedSetter) updatedSetter(updated);
     } catch (err) {
       console.warn('[꾸미기] 장착 실패:', err?.message);
       /* 실패 시 서버 진실 원본을 다시 가져와 동기화 */
       loadEquippedItems();
       showAlert({ title: '장착 실패', message: '잠시 후 다시 시도해 주세요.', type: 'error' });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadEquippedItems, showAlert]);
 
   const handleUnequipFromCustomize = useCallback(async (userItem) => {
     if (!userItem?.userItemId) return;
-    if (userItem.category === 'avatar') setEquippedAvatar(null);
-    if (userItem.category === 'badge')  setEquippedBadge(null);
+    const setter = equippedSetterByCategory[userItem.category];
+    if (setter) setter(null);
     try {
       await unequipItem(userItem.userItemId);
     } catch (err) {
@@ -954,6 +1001,7 @@ export default function MyPagePage() {
       loadEquippedItems();
       showAlert({ title: '해제 실패', message: '잠시 후 다시 시도해 주세요.', type: 'error' });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadEquippedItems, showAlert]);
 
   const loadMyReviews = useCallback(async (page = 1) => {
@@ -1388,13 +1436,21 @@ export default function MyPagePage() {
             </div>
           )}
 
-          {/* 꾸미기 탭 — 보유 아바타·배지 그리드 + 미리보기 (2026-04-27 신설) */}
+          {/* 꾸미기 탭 — 6슬롯 보유 그리드 + z-index 합성 미리보기 (2026-04-28 v3.5 확장) */}
           {activeTab === 'customize' && (
             <ProfileCustomizeSection
               avatars={ownedAvatars}
               badges={ownedBadges}
+              frames={ownedFrames}
+              backgrounds={ownedBackgrounds}
+              titles={ownedTitles}
+              effects={ownedEffects}
               equippedAvatar={equippedAvatar}
               equippedBadge={equippedBadge}
+              equippedFrame={equippedFrame}
+              equippedBackground={equippedBackground}
+              equippedTitle={equippedTitle}
+              equippedEffect={equippedEffect}
               user={user}
               fallbackAvatar={profile?.profileImageUrl || null}
               onEquip={handleEquipFromCustomize}

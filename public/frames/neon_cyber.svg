@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  프레임 - 네온 사이버
+  - 사이버펑크 풍 핑크/시안 듀얼 글로우 링
+  - 가운데 원형 영역은 비워 아바타가 보이도록
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <linearGradient id="neonGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899"/>
+      <stop offset="50%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#22d3ee"/>
+    </linearGradient>
+    <filter id="neonBlur" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+    <mask id="ncMask">
+      <rect width="200" height="200" fill="white"/>
+      <circle cx="100" cy="100" r="60" fill="black"/>
+    </mask>
+  </defs>
+
+  <!-- 외곽 핑크 글로우 -->
+  <circle cx="100" cy="100" r="97" fill="none" stroke="#f472b6" stroke-width="6" opacity="0.45" filter="url(#neonBlur)"/>
+
+  <!-- 메인 네온 링 -->
+  <circle cx="100" cy="100" r="93" fill="url(#neonGrad)" mask="url(#ncMask)"/>
+
+  <!-- 시안 안쪽 하이라이트 -->
+  <circle cx="100" cy="100" r="64" fill="none" stroke="#22d3ee" stroke-width="3" opacity="0.9"/>
+  <circle cx="100" cy="100" r="62" fill="none" stroke="#67e8f9" stroke-width="1" opacity="0.8" filter="url(#neonBlur)"/>
+
+  <!-- 사이버 회로 패턴 — 직선 노드 8개 -->
+  <g stroke="#fff" stroke-width="1.2" opacity="0.85">
+    <line x1="100" y1="8"   x2="100" y2="20"/>
+    <line x1="100" y1="180" x2="100" y2="192"/>
+    <line x1="8"   y1="100" x2="20"  y2="100"/>
+    <line x1="180" y1="100" x2="192" y2="100"/>
+    <line x1="35"  y1="35"  x2="45"  y2="45"/>
+    <line x1="155" y1="35"  x2="165" y2="45"/>
+    <line x1="35"  y1="165" x2="45"  y2="155"/>
+    <line x1="155" y1="165" x2="165" y2="155"/>
+  </g>
+</svg>

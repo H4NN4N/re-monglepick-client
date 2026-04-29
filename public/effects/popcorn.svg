@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  이펙트 - 팝콘 떨어짐 (popcorn).
+  - PreviewEffectOverlay 가 popcorn keyframes 로 위→아래 이동
+  - 본 SVG 는 한 회 떨어지는 팝콘 알갱이 4-5 개
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <defs>
+    <radialGradient id="kg" cx="35%" cy="35%" r="60%">
+      <stop offset="0%" stop-color="#fef3c7"/>
+      <stop offset="80%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </radialGradient>
+  </defs>
+  <g fill="url(#kg)" stroke="#92400e" stroke-width="0.6">
+    <path d="M 50 30 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z"/>
+    <path d="M 110 50 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z"/>
+    <path d="M 150 30 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z"/>
+    <path d="M 70 90 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z"/>
+    <path d="M 130 110 q -8 -4 -10 4 q -10 -2 -8 8 q -6 4 4 8 q 0 8 10 6 q 6 6 12 -2 q 8 0 6 -8 q 6 -6 -4 -10 q -4 -8 -10 -6 z"/>
+  </g>
+</svg>

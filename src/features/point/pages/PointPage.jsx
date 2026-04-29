@@ -57,6 +57,8 @@ import {
   unequipItem,
   useItem as consumeItemApi,
 } from '../api/userItemApi';
+/* 영화 티켓 응모 현황 API — 2026-04-28 신규 (관리자 추첨 관리와 함께 도입) */
+import { getMyLotteryEntries } from '../api/lotteryApi';
 /* 라우트 경로 상수 — shared/constants에서 가져옴 */
 import { ROUTES } from '../../../shared/constants/routes';
 /* 로딩 스피너 — shared/components에서 가져옴 */
@@ -72,6 +74,8 @@ import MyItemsSection from '../components/MyItemsSection';
 /* 2026-04-14 신설 — 리워드 지급 기준 카탈로그 + 내 진행 현황 */
 import RewardPolicyGuide from '../components/RewardPolicyGuide';
 import RewardProgress from '../components/RewardProgress';
+/* 2026-04-28 신설 — 영화 티켓 응모 현황 (응모권 사용 결과 추첨 결과 조회) */
+import LotteryEntries from '../components/LotteryEntries';
 /* 포맷 유틸 — shared/utils에서 가져옴 */
 import { formatDate, formatNumberWithComma as formatNumber } from '../../../shared/utils/formatters';
 import * as S from './PointPage.styled';
@@ -89,6 +93,8 @@ const TABS = [
   { id: 'overview', label: '현황' },
   { id: 'shop', label: '상점' },
   { id: 'inventory', label: '내 아이템' },
+  /* 2026-04-28 추가 — 응모권 사용 후 회차/추첨 결과 조회 */
+  { id: 'lottery', label: '응모 현황' },
   { id: 'history', label: '이력' },
 ];
 
@@ -126,6 +132,14 @@ export default function PointPage() {
   const [history, setHistory] = useState({ content: [], totalPages: 0, totalElements: 0 });
   /* 현재 이력 페이지 번호 (0-indexed) */
   const [historyPage, setHistoryPage] = useState(0);
+
+  /* ── 영화 티켓 응모 현황 상태 (2026-04-28 신규) ── */
+  /* Backend EntryPageResponse — { content, page, size, totalElements, totalPages } */
+  const [lotteryEntries, setLotteryEntries] = useState({ content: [], totalPages: 0, totalElements: 0 });
+  /* 현재 응모 현황 페이지 번호 (0-indexed) */
+  const [lotteryPage, setLotteryPage] = useState(0);
+  /* 응모 현황 로딩 플래그 */
+  const [isLoadingLottery, setIsLoadingLottery] = useState(false);
 
   /* ── "내 아이템" 인벤토리 상태 (2026-04-14 신설, C 방향) ── */
   /* UserItemSummaryResponse — 카테고리별 개수 + 착용 정보 */
@@ -323,6 +337,31 @@ export default function PointPage() {
   }, [user?.id, myItemsCategory, myItemsPageIndex]);
 
   /**
+   * 영화 티켓 응모 현황을 로드한다 (2026-04-28 신규).
+   *
+   * <p>응모 탭이 선택되어 있거나 페이지가 바뀌면 호출한다.
+   * Backend GET /api/v1/users/me/lottery/entries 응답({content, page, size, totalElements, totalPages})
+   * 을 그대로 state 에 저장한다.</p>
+   */
+  const loadLotteryEntries = useCallback(async () => {
+    if (!user?.id) return;
+    setIsLoadingLottery(true);
+    try {
+      const data = await getMyLotteryEntries({ page: lotteryPage, size: 10 });
+      setLotteryEntries({
+        content: data?.content || [],
+        totalPages: data?.totalPages || 0,
+        totalElements: data?.totalElements || 0,
+      });
+    } catch (err) {
+      console.error('응모 현황 조회 실패:', err);
+      setLotteryEntries({ content: [], totalPages: 0, totalElements: 0 });
+    } finally {
+      setIsLoadingLottery(false);
+    }
+  }, [user?.id, lotteryPage]);
+
+  /**
    * 포인트 이력을 로드한다.
    * 페이지 변경 시 호출된다.
    */
@@ -426,6 +465,14 @@ export default function PointPage() {
       loadHistory();
     }
   }, [isAuthenticated, user?.id, loadHistory]);
+
+  /* 응모 탭 활성 또는 페이지 변경 시 응모 현황 재로드 (2026-04-28 신규).
+   * 다른 탭에 있을 때는 호출하지 않아 불필요한 네트워크 트래픽을 줄인다. */
+  useEffect(() => {
+    if (isAuthenticated && user?.id && activeTab === 'lottery') {
+      loadLotteryEntries();
+    }
+  }, [isAuthenticated, user?.id, activeTab, loadLotteryEntries]);
 
   /* ── 이벤트 핸들러 ── */
 
@@ -595,7 +642,14 @@ export default function PointPage() {
     setError(null);
     try {
       await consumeItemApi(userItem.userItemId);
-      await Promise.all([loadMyItemsSummary(), loadMyItemsPage()]);
+      /* 응모권(category=apply) 을 사용한 경우 entry 가 자동 발급되므로 응모 현황도 갱신.
+       * 힌트는 응모와 무관해 갱신할 필요가 없지만, 단일 await Promise.all 로 일괄 처리해도
+       * 응모 EP 호출 1회로 가벼워 분기보다 단순성을 우선한다. */
+      await Promise.all([
+        loadMyItemsSummary(),
+        loadMyItemsPage(),
+        userItem.category === 'apply' ? loadLotteryEntries() : Promise.resolve(),
+      ]);
     } catch (err) {
       setError(err.message || '아이템 사용에 실패했습니다.');
       if (errorTimerRef.current) clearTimeout(errorTimerRef.current);
@@ -786,7 +840,19 @@ export default function PointPage() {
             />
           )}
 
-          {/* 탭 4 · 이력: 적립/차감 내역 페이징 테이블 */}
+          {/* 탭 4 · 응모 현황: 영화 티켓 응모 결과 (2026-04-28 신규) */}
+          {activeTab === 'lottery' && (
+            <LotteryEntries
+              entries={lotteryEntries}
+              currentPage={lotteryPage}
+              isLoading={isLoadingLottery}
+              onPageChange={setLotteryPage}
+              formatNumber={formatNumber}
+              formatDate={formatDate}
+            />
+          )}
+
+          {/* 탭 5 · 이력: 적립/차감 내역 페이징 테이블 */}
           {activeTab === 'history' && (
             <PointHistory
               history={history}

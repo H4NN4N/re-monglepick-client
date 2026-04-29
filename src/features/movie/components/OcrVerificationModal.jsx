@@ -221,6 +221,17 @@ export default function OcrVerificationModal({
             {event.memo && <EventMemo>{event.memo}</EventMemo>}
           </EventSummary>
 
+          <GuideBox>
+            <GuideTitle>📸 사진 촬영 가이드</GuideTitle>
+            <GuideList>
+              <li>영수증 전체가 나오게 업로드해주세요</li>
+              <li>영화명, 관람일, 인원 수가 잘 보이게 찍어주세요</li>
+              <li>글자가 흐리거나 흔들리지 않게 촬영해주세요</li>
+              <li>빛 반사나 그림자가 생기지 않게 촬영해주세요</li>
+              <li>반듯하게 찍어주세요 (기울기 ×)</li>
+            </GuideList>
+          </GuideBox>
+
           <FieldLabel>영수증 이미지 <Required>*</Required></FieldLabel>
           <UploadZone
             type="button"
@@ -252,17 +263,11 @@ export default function OcrVerificationModal({
             const status = ocrResult.status ?? 'FAILED';
             const isFailed  = status === 'FAILED';
             const isPartial = status === 'PARTIAL_SUCCESS';
-            // 날짜+시간 조합(watchedAt)이 있으면 "관람일시"로, 없으면 "관람일"로 표시
-            const dateField = ocrResult.watchedAt?.ok
-              ? { label: '관람일시', field: ocrResult.watchedAt,  fmt: v => v }
-              : { label: '관람일',   field: ocrResult.watchDate,  fmt: v => v };
             const fields = [
               { label: '영화명',   field: ocrResult.movieName,  fmt: v => v },
-              dateField,
-              { label: '인원 수',  field: ocrResult.headcount,  fmt: v => `${v}명` },
-              { label: '좌석',     field: ocrResult.seat,        fmt: v => v },
-              { label: '상영관',   field: ocrResult.theater,     fmt: v => v },
+              { label: '관람일',   field: ocrResult.watchDate,  fmt: v => v },
               { label: '영화관',   field: ocrResult.venue,       fmt: v => v },
+              { label: '인원 수',  field: ocrResult.headcount,  fmt: v => `${v}명` },
             ];
             const okCount = fields.filter(f => f.field?.ok).length;
 
@@ -270,7 +275,7 @@ export default function OcrVerificationModal({
               <OcrResultBox $partial={isPartial} $fail={isFailed}>
                 <OcrResultTitle>
                   {isFailed   ? '⚠️ 추출 실패' :
-                   isPartial  ? `⚡ 일부 정보만 추출되었습니다 (${okCount}/6 항목)` :
+                   isPartial  ? `⚡ 일부 정보만 추출되었습니다 (${okCount}/4 항목)` :
                                 '✅ 분석 완료'}
                 </OcrResultTitle>
                 {fields.map(({ label, field, fmt }) => (
@@ -291,6 +296,9 @@ export default function OcrVerificationModal({
                     </OcrConfidence>
                   </OcrRow>
                 )}
+                <OcrDisclaimer>
+                  OCR 검사가 부정확할 수 있습니다. 제출 후 관리자 검토가 한 번 더 이루어집니다.
+                </OcrDisclaimer>
               </OcrResultBox>
             );
           })()}
@@ -593,6 +601,43 @@ const OcrConfidence = styled.span`
     $pct >= 80 ? theme.colors.success :
     $pct >= 50 ? theme.colors.warning :
     theme.colors.error};
+`;
+
+const GuideBox = styled.div`
+  background: ${({ theme }) => theme.colors.bgTertiary};
+  border-radius: ${({ theme }) => theme.radius.sm};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+`;
+
+const GuideTitle = styled.div`
+  font-size: ${({ theme }) => theme.typography.textXs};
+  font-weight: ${({ theme }) => theme.typography.fontSemibold};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  margin-bottom: 4px;
+`;
+
+const GuideList = styled.ul`
+  margin: 0;
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+
+  li {
+    font-size: ${({ theme }) => theme.typography.textXs};
+    color: ${({ theme }) => theme.colors.textMuted};
+    line-height: 1.5;
+  }
+`;
+
+const OcrDisclaimer = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.xs};
+  padding-top: ${({ theme }) => theme.spacing.xs};
+  border-top: 1px solid ${({ theme }) => theme.colors.borderDefault};
+  font-size: ${({ theme }) => theme.typography.textXs};
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-style: italic;
+  line-height: 1.5;
 `;
 
 const Notice = styled.div`

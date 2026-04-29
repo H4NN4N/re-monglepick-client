@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 배경 - 호러 안개숲. 자욱한 안개 + 시들어 가는 나무 실루엣 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="hfBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1f2937"/>
+      <stop offset="60%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <radialGradient id="hfFog" cx="50%" cy="60%" r="60%">
+      <stop offset="0%" stop-color="#cbd5e1" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#cbd5e1" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#hfBg)"/>
+  <!-- 시든 나무 실루엣 5 -->
+  <g fill="#0f172a" stroke="#1f2937" stroke-width="1">
+    <path d="M 50 380 L 50 200 M 50 240 L 30 200 M 50 240 L 70 220 M 50 200 L 35 170 M 50 200 L 65 180" stroke="#0f172a" stroke-width="3" fill="none"/>
+    <path d="M 130 380 L 130 220 M 130 250 L 110 220 M 130 250 L 150 230 M 130 220 L 115 195 M 130 220 L 145 200" stroke="#0f172a" stroke-width="3" fill="none"/>
+    <path d="M 210 380 L 210 180 M 210 220 L 185 190 M 210 220 L 235 200 M 210 180 L 195 155 M 210 180 L 225 160 M 210 200 L 230 180" stroke="#0f172a" stroke-width="3" fill="none"/>
+    <path d="M 290 380 L 290 230 M 290 260 L 270 230 M 290 260 L 310 240 M 290 230 L 275 205 M 290 230 L 305 210" stroke="#0f172a" stroke-width="3" fill="none"/>
+    <path d="M 360 380 L 360 210 M 360 240 L 340 215 M 360 240 L 380 220 M 360 210 L 345 185 M 360 210 L 375 190" stroke="#0f172a" stroke-width="3" fill="none"/>
+  </g>
+  <!-- 안개 레이어 -->
+  <ellipse cx="200" cy="280" rx="220" ry="50" fill="url(#hfFog)"/>
+  <ellipse cx="100" cy="320" rx="180" ry="40" fill="url(#hfFog)"/>
+  <ellipse cx="300" cy="340" rx="200" ry="40" fill="url(#hfFog)"/>
+  <!-- 멀리서 빛나는 노란 눈 (호러 분위기) -->
+  <circle cx="195" cy="260" r="2" fill="#fbbf24" opacity="0.85"/>
+  <circle cx="205" cy="260" r="2" fill="#fbbf24" opacity="0.85"/>
+</svg>

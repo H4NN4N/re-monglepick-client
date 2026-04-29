@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 배경 - 레드카펫. 빨간 카펫 + 양옆 골드 로프 + 플래시 라이트 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="rcBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1f2937"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="rcCarpet" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#7f1d1d"/>
+      <stop offset="50%" stop-color="#dc2626"/>
+      <stop offset="100%" stop-color="#7f1d1d"/>
+    </linearGradient>
+    <radialGradient id="rcFlash" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fef3c7" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#fef3c7" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- 어두운 배경 -->
+  <rect width="400" height="400" fill="url(#rcBg)"/>
+
+  <!-- 레드카펫 (사다리꼴 원근) -->
+  <polygon points="100,400 300,400 240,80 160,80" fill="url(#rcCarpet)"/>
+
+  <!-- 카펫 양쪽 골드 라인 -->
+  <line x1="100" y1="400" x2="160" y2="80" stroke="#fbbf24" stroke-width="3"/>
+  <line x1="300" y1="400" x2="240" y2="80" stroke="#fbbf24" stroke-width="3"/>
+
+  <!-- 양옆 골드 폴 (rope stand) -->
+  <g fill="#fbbf24" stroke="#92400e" stroke-width="1.5">
+    <rect x="50"  y="200" width="6" height="120"/>
+    <rect x="344" y="200" width="6" height="120"/>
+    <circle cx="53"  cy="195" r="9"/>
+    <circle cx="347" cy="195" r="9"/>
+  </g>
+  <!-- 골드 로프 곡선 -->
+  <path d="M 56 200 Q 200 280 344 200" stroke="#fbbf24" stroke-width="3" fill="none" opacity="0.8"/>
+
+  <!-- 플래시 라이트 (3 곳) -->
+  <circle cx="60"  cy="80"  r="40" fill="url(#rcFlash)"/>
+  <circle cx="200" cy="40"  r="50" fill="url(#rcFlash)"/>
+  <circle cx="340" cy="80"  r="40" fill="url(#rcFlash)"/>
+</svg>
