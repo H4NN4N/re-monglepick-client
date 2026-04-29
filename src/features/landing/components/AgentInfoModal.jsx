@@ -10,8 +10,15 @@
  *   - 섹션(섹션 제목 + 본문 / 리스트 / 코드 블록 / 표)
  *   - 닫기 버튼 + ESC 닫기 + 오버레이 클릭 닫기 + body 스크롤 잠금
  *
- * 사용:
- *   <AgentInfoModal isOpen={open} onClose={...} content={CONTENT.chatAgent} />
+ * 사용 (lazy-load 호환 단일 ID 기반 API):
+ *   <AgentInfoModal isOpen={open} onClose={...} contentId="chatAgent" />
+ *
+ * 2026-04-29 lazy-load 전환:
+ *   기존 `content={CONTENT.chatAgent}` API 는 LandingPage 가 AGENT_MODAL_CONTENT 을
+ *   직접 import 하게 만들어 정적 번들링을 강제 → 1.6MB 단일 청크의 주요 원인.
+ *   contentId 기반 API 로 바꿔 LandingPage 는 string 만 전달하고, 모달 내부에서
+ *   AGENT_MODAL_CONTENT[contentId] 로 lookup. 모달 자체가 lazy chunk 로 분리되면
+ *   3,000+ 줄 콘텐츠가 카드 클릭 시점에만 다운로드됨.
  *
  * content 스키마는 파일 하단의 AGENT_MODAL_CONTENT 참조.
  */
@@ -23,7 +30,7 @@ import styled, { keyframes } from 'styled-components';
    1. 모달 컴포넌트
    ────────────────────────────────────────────────────────────── */
 
-export default function AgentInfoModal({ isOpen, onClose, content }) {
+export default function AgentInfoModal({ isOpen, onClose, contentId }) {
   /* ESC 닫기 + body 스크롤 잠금 */
   useEffect(() => {
     if (!isOpen) return;
@@ -35,6 +42,10 @@ export default function AgentInfoModal({ isOpen, onClose, content }) {
       document.body.style.overflow = '';
     };
   }, [isOpen, onClose]);
+
+  /* contentId 로 본문 데이터 조회 (lazy chunk 내부에서 lookup → LandingPage 의
+     AGENT_MODAL_CONTENT 정적 의존성 제거). 미매핑 ID 면 빈 모달 대신 null 반환. */
+  const content = contentId ? AGENT_MODAL_CONTENT[contentId] : null;
 
   if (!isOpen || !content) return null;
 

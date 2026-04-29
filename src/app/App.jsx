@@ -13,7 +13,7 @@
  *   Layer 4 — 레거시 경로 리다이렉트              외부 링크·북마크 하위호환
  */
 
-import { useEffect } from 'react';
+import { useEffect, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 /* Zustand 인증 스토어 */
 import useAuthStore from '../shared/stores/useAuthStore';
@@ -28,51 +28,70 @@ import RedirectWithParams from '../shared/components/RedirectWithParams';
 /* 전역 플로팅 챗봇 위젯 */
 import SupportChatbotWidget from '../shared/components/SupportChatbotWidget/SupportChatbotWidget';
 
-/* ── Layer 0 페이지 ── */
+/* ──────────────────────────────────────────────────────────────
+   2026-04-29 라우트 단위 lazy 분할.
+
+   직전 작업(모달 lazy + manualChunks) 후 메인 청크가 1,322 kB / gzip 313 kB 였다.
+   여전히 chunkSizeWarningLimit 500 kB 초과 → 라우트 단위로 페이지를 lazy 분할해
+   사용자가 실제 진입한 페이지 청크만 다운로드하도록 추가 절감.
+
+   ── 정책 ──
+   정적 유지: 게이트웨이 페이지(랜딩/로그인/가입/OAuth/404). 첫 진입 직후 즉시
+              렌더되어야 하거나, fallback 으로 사용되는 페이지.
+   lazy 변환: 인증 후 진입 또는 메뉴 깊은 곳의 페이지 (~25개).
+
+   Suspense fallback:
+     - 라우트 전환 시 깜빡임 방지를 위해 Loading 컴포넌트 (기존 PrivateRoute 와 동일)
+     - 모든 lazy 라우트를 Routes 바깥 단일 Suspense 로 감싸 fallback 1회만 노출.
+
+   효과 (예상): 메인 청크 → ~700~900 kB. 라우트별 청크 50~250 kB 분산 분리.
+   ────────────────────────────────────────────────────────────── */
+
+/* ── Layer 0 페이지 (정적 유지 — 게이트웨이) ── */
 import LandingPage from '../features/landing/pages/LandingPage';
 import LoginPage from '../features/auth/pages/LoginPage';
 import SignUpPage from '../features/auth/pages/SignUpPage';
 import OAuthCallbackPage from '../features/auth/pages/OAuthCallbackPage';
 import OAuthCookiePage from '../features/auth/pages/OAuthCookiePage';
 
-/* ── Layer 2 페이지 ── */
-import ChatWindow from '../features/chat/components/ChatWindow';
-/* 회원가입 직후 시작 미션 온보딩 페이지 */
-import OnboardingPage from '../features/onboarding/pages/OnboardingPage';
-
-/* ── Layer 1 공용 페이지 ── */
-import HomePage from '../features/home/pages/HomePage';
-import SearchPage from '../features/search/pages/SearchPage';
-import MovieDetailPage from '../features/movie/pages/MovieDetailPage';
-import CommunityPage from '../features/community/pages/CommunityPage';
-import PostDetailPage from '../features/community/pages/PostDetailPage';
-import SharedPlaylistDetailPage from '../features/community/pages/SharedPlaylistDetailPage';
-import MatchPage from '../features/match/pages/MatchPage';
-import SupportPage from '../features/support/pages/SupportPage';
-import PaymentFailPage from '../features/payment/pages/PaymentFailPage';
-
-/* ── 법적 정책 페이지 (2026-04-23 Footer 후속) ── */
-import TermsPage from '../features/legal/pages/TermsPage';
-import PrivacyPage from '../features/legal/pages/PrivacyPage';
-import OperationPolicyPage from '../features/legal/pages/OperationPolicyPage';
-import RefundPolicyPage from '../features/legal/pages/RefundPolicyPage';
-
-/* ── Layer 3 계정 페이지 ── */
-import MyPage from '../features/user/pages/MyPage';
-import PointPage from '../features/point/pages/PointPage';
-import PaymentPage from '../features/payment/pages/PaymentPage';
-import PaymentSuccessPage from '../features/payment/pages/PaymentSuccessPage';
-import RecommendationPage from '../features/recommendation/pages/RecommendationPage';
-import PlaylistPage from '../features/playlist/pages/PlaylistPage';
-import AchievementPage from '../features/achievement/pages/AchievementPage';
-import AchievementDetailPage from '../features/achievement/pages/AchievementDetailPage';
-import WorldcupPage from '../features/worldcup/pages/WorldcupPage';
-import RoadmapPage from '../features/roadmap/pages/RoadmapPage';
-import StampReviewPage from '../features/roadmap/pages/StampReviewPage';
-import FinalReviewPage from '../features/roadmap/pages/FinalReviewPage';
-
+/* ── 404 + Loading (정적 유지 — fallback) ── */
 import NotFoundPage from '../features/error/pages/NotFoundPage';
 import Loading from '../shared/components/Loading/Loading';
+
+/* ── Layer 1 공용 페이지 (lazy) ── */
+const HomePage = lazy(() => import('../features/home/pages/HomePage'));
+const SearchPage = lazy(() => import('../features/search/pages/SearchPage'));
+const MovieDetailPage = lazy(() => import('../features/movie/pages/MovieDetailPage'));
+const CommunityPage = lazy(() => import('../features/community/pages/CommunityPage'));
+const PostDetailPage = lazy(() => import('../features/community/pages/PostDetailPage'));
+const SharedPlaylistDetailPage = lazy(() => import('../features/community/pages/SharedPlaylistDetailPage'));
+const MatchPage = lazy(() => import('../features/match/pages/MatchPage'));
+const SupportPage = lazy(() => import('../features/support/pages/SupportPage'));
+const PaymentFailPage = lazy(() => import('../features/payment/pages/PaymentFailPage'));
+
+/* ── 법적 정책 페이지 4종 (lazy — 진입 빈도 매우 낮음) ── */
+const TermsPage = lazy(() => import('../features/legal/pages/TermsPage'));
+const PrivacyPage = lazy(() => import('../features/legal/pages/PrivacyPage'));
+const OperationPolicyPage = lazy(() => import('../features/legal/pages/OperationPolicyPage'));
+const RefundPolicyPage = lazy(() => import('../features/legal/pages/RefundPolicyPage'));
+
+/* ── Layer 2 페이지 (lazy) ── */
+const ChatWindow = lazy(() => import('../features/chat/components/ChatWindow'));
+const OnboardingPage = lazy(() => import('../features/onboarding/pages/OnboardingPage'));
+
+/* ── Layer 3 계정 페이지 (lazy — 인증 후 진입) ── */
+const MyPage = lazy(() => import('../features/user/pages/MyPage'));
+const PointPage = lazy(() => import('../features/point/pages/PointPage'));
+const PaymentPage = lazy(() => import('../features/payment/pages/PaymentPage'));
+const PaymentSuccessPage = lazy(() => import('../features/payment/pages/PaymentSuccessPage'));
+const RecommendationPage = lazy(() => import('../features/recommendation/pages/RecommendationPage'));
+const PlaylistPage = lazy(() => import('../features/playlist/pages/PlaylistPage'));
+const AchievementPage = lazy(() => import('../features/achievement/pages/AchievementPage'));
+const AchievementDetailPage = lazy(() => import('../features/achievement/pages/AchievementDetailPage'));
+const WorldcupPage = lazy(() => import('../features/worldcup/pages/WorldcupPage'));
+const RoadmapPage = lazy(() => import('../features/roadmap/pages/RoadmapPage'));
+const StampReviewPage = lazy(() => import('../features/roadmap/pages/StampReviewPage'));
+const FinalReviewPage = lazy(() => import('../features/roadmap/pages/FinalReviewPage'));
 
 /**
  * 인증이 필요한 라우트를 보호하는 래퍼 컴포넌트.
@@ -127,6 +146,13 @@ function App() {
 
   return (
     <BrowserRouter>
+      {/*
+        Suspense 단일 래퍼 — 모든 lazy 라우트의 fallback.
+        라우트 전환 시 청크 다운로드 동안 Loading 컴포넌트 노출.
+        이미 캐시된 청크는 즉시 마운트되므로 두 번째 진입부터는 fallback 미노출.
+        Routes 바깥의 SupportChatbotWidget 은 Suspense 영향 없음 (정적 import 유지).
+      */}
+      <Suspense fallback={<Loading message="페이지 불러오는 중..." />}>
       <Routes>
         {/* ══════════════════════════════════════════════════════════════
             Layer 0 — 레이아웃 없음
@@ -263,6 +289,7 @@ function App() {
         {/* 매칭되지 않는 모든 경로 */}
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      </Suspense>
 
       {/*
         전역 플로팅 챗봇 위젯 — BrowserRouter 내부에 위치해 useLocation 동작을 보장.

@@ -7,7 +7,7 @@
  * CSS 전환: LandingPage.css → LandingPage.styled.js (styled-components)
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense, lazy } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '../../../shared/constants/routes';
 import * as S from './LandingPage.styled';
@@ -18,10 +18,22 @@ import {
   AgentFlowDiagram,
   RAGDiagram,
 } from '../components/LandingDiagrams';
-import IAModal from '../components/IAModal';
-import PlanningModal from '../components/PlanningModal';
-import DiagramModal from '../components/DiagramModal';
-import AgentInfoModal, { AGENT_MODAL_CONTENT } from '../components/AgentInfoModal';
+
+/* ──────────────────────────────────────────────────────────────
+   2026-04-29 모달 4종 lazy-load 전환.
+
+   기존 정적 import 는 4 모달을 메인 청크에 인라인시켜 1.6MB 단일 파일을 만들었다.
+   특히 AgentInfoModal 은 28종 카드의 심층 콘텐츠 ~3,000줄 + styled 가 포함되어
+   비중이 가장 크다. 카드 클릭 전까지 다운로드를 지연시키기 위해 React.lazy 로 분리.
+
+   Suspense fallback 은 모달 직전이라 화면 어디에도 렌더되지 않음 → null.
+   첫 클릭 시 청크 다운로드 100~300ms 지연이 발생하지만, 모달은 즉시 응답하지 않는
+   사용자 액션 후이므로 체감 거의 없음. 두 번째 클릭부터 캐시.
+   ────────────────────────────────────────────────────────────── */
+const IAModal = lazy(() => import('../components/IAModal'));
+const PlanningModal = lazy(() => import('../components/PlanningModal'));
+const DiagramModal = lazy(() => import('../components/DiagramModal'));
+const AgentInfoModal = lazy(() => import('../components/AgentInfoModal'));
 
 /* ── AI Agent 심층 카드 데이터 ──
    각 카드는 클릭 시 AgentInfoModal 을 연다. id 는 AGENT_MODAL_CONTENT 의 키와 일치. */
@@ -1171,109 +1183,117 @@ export default function LandingPage() {
         </S.Container>
       </S.LpFooter>
 
-      {/* ── AI Agent 심층 정보 모달 (8종 동적 렌더) ── */}
-      <AgentInfoModal
-        isOpen={openAgentInfo !== null}
-        onClose={() => setOpenAgentInfo(null)}
-        content={openAgentInfo ? AGENT_MODAL_CONTENT[openAgentInfo] : null}
-      />
+      {/* ── 모달 4종 (lazy-load + Suspense) ──
+          AgentInfoModal · IAModal · PlanningModal · DiagramModal 모두 React.lazy 로
+          분리되어 첫 클릭 시점에만 다운로드. fallback 은 모달 가림막 — null 로
+          초기 페이지 로드에 시각 영향 없음.
+          AgentInfoModal API 변경: content prop → contentId (LandingPage 가
+          AGENT_MODAL_CONTENT 정적 import 를 갖지 않도록 lookup 을 모달 내부로 이동) */}
+      <Suspense fallback={null}>
+        {/* ── AI Agent 심층 정보 모달 (28종 동적 렌더) ── */}
+        <AgentInfoModal
+          isOpen={openAgentInfo !== null}
+          onClose={() => setOpenAgentInfo(null)}
+          contentId={openAgentInfo}
+        />
 
-      {/* ── 정보구조도 모달 ── */}
-      <IAModal isOpen={isIAOpen} onClose={() => setIsIAOpen(false)} />
+        {/* ── 정보구조도 모달 ── */}
+        <IAModal isOpen={isIAOpen} onClose={() => setIsIAOpen(false)} />
 
-      {/* ── 초기 기획서 모달 ── */}
-      <PlanningModal isOpen={isPlanningOpen} onClose={() => setIsPlanningOpen(false)} />
+        {/* ── 초기 기획서 모달 ── */}
+        <PlanningModal isOpen={isPlanningOpen} onClose={() => setIsPlanningOpen(false)} />
 
-      {/* ── 다이어그램 모달 10종 ── */}
-      <DiagramModal
-        isOpen={openDiagram === 'infra-svg'}
-        onClose={() => setOpenDiagram(null)}
-        title="Infrastructure Architecture"
-        desc="카카오 클라우드 4-VM 기반 서비스 토폴로지"
-      >
-        <InfraArchDiagram />
-      </DiagramModal>
+        {/* ── 다이어그램 모달 10종 ── */}
+        <DiagramModal
+          isOpen={openDiagram === 'infra-svg'}
+          onClose={() => setOpenDiagram(null)}
+          title="Infrastructure Architecture"
+          desc="카카오 클라우드 4-VM 기반 서비스 토폴로지"
+        >
+          <InfraArchDiagram />
+        </DiagramModal>
 
-      <DiagramModal
-        isOpen={openDiagram === 'infra-prod'}
-        onClose={() => setOpenDiagram(null)}
-        title="Production Infrastructure"
-        desc="카카오 클라우드 VPC 4-VM 프로덕션 구성"
-      >
-        <S.DiagramImage src="/diagrams/infra_production.png" alt="프로덕션 인프라" />
-      </DiagramModal>
+        <DiagramModal
+          isOpen={openDiagram === 'infra-prod'}
+          onClose={() => setOpenDiagram(null)}
+          title="Production Infrastructure"
+          desc="카카오 클라우드 VPC 4-VM 프로덕션 구성"
+        >
+          <S.DiagramImage src="/diagrams/infra_production.png" alt="프로덕션 인프라" />
+        </DiagramModal>
 
-      <DiagramModal
-        isOpen={openDiagram === 'infra-stage'}
-        onClose={() => setOpenDiagram(null)}
-        title="Staging Infrastructure"
-        desc="MacBook Air Docker 기반 스테이징 환경"
-      >
-        <S.DiagramImage src="/diagrams/infra_staging.png" alt="스테이징 인프라" />
-      </DiagramModal>
+        <DiagramModal
+          isOpen={openDiagram === 'infra-stage'}
+          onClose={() => setOpenDiagram(null)}
+          title="Staging Infrastructure"
+          desc="MacBook Air Docker 기반 스테이징 환경"
+        >
+          <S.DiagramImage src="/diagrams/infra_staging.png" alt="스테이징 인프라" />
+        </DiagramModal>
 
-      <DiagramModal
-        isOpen={openDiagram === 'infra-full'}
-        onClose={() => setOpenDiagram(null)}
-        title="Full Architecture"
-        desc="스테이징 → 프로덕션 전체 인프라 흐름"
-      >
-        <S.DiagramImage src="/diagrams/infra_full.png" alt="전체 인프라" />
-      </DiagramModal>
+        <DiagramModal
+          isOpen={openDiagram === 'infra-full'}
+          onClose={() => setOpenDiagram(null)}
+          title="Full Architecture"
+          desc="스테이징 → 프로덕션 전체 인프라 흐름"
+        >
+          <S.DiagramImage src="/diagrams/infra_full.png" alt="전체 인프라" />
+        </DiagramModal>
 
-      <DiagramModal
-        isOpen={openDiagram === 'erd-svg'}
-        onClose={() => setOpenDiagram(null)}
-        title="ERD Overview"
-        desc="85개 테이블 · 8개 도메인 그룹 관계도"
-      >
-        <ERDDiagram />
-      </DiagramModal>
+        <DiagramModal
+          isOpen={openDiagram === 'erd-svg'}
+          onClose={() => setOpenDiagram(null)}
+          title="ERD Overview"
+          desc="85개 테이블 · 8개 도메인 그룹 관계도"
+        >
+          <ERDDiagram />
+        </DiagramModal>
 
-      <DiagramModal
-        isOpen={openDiagram === 'erd-img'}
-        onClose={() => setOpenDiagram(null)}
-        title="ERD Diagram"
-        desc="MySQL 85개 테이블 전체 ERD"
-      >
-        <S.DiagramImage src="/diagrams/monglepick_ERD.png" alt="몽글픽 ERD" />
-      </DiagramModal>
+        <DiagramModal
+          isOpen={openDiagram === 'erd-img'}
+          onClose={() => setOpenDiagram(null)}
+          title="ERD Diagram"
+          desc="MySQL 85개 테이블 전체 ERD"
+        >
+          <S.DiagramImage src="/diagrams/monglepick_ERD.png" alt="몽글픽 ERD" />
+        </DiagramModal>
 
-      <DiagramModal
-        isOpen={openDiagram === 'code'}
-        onClose={() => setOpenDiagram(null)}
-        title="Code Structure"
-        desc="5개 서비스 · 주요 디렉터리 구조"
-      >
-        <CodeStructDiagram />
-      </DiagramModal>
+        <DiagramModal
+          isOpen={openDiagram === 'code'}
+          onClose={() => setOpenDiagram(null)}
+          title="Code Structure"
+          desc="5개 서비스 · 주요 디렉터리 구조"
+        >
+          <CodeStructDiagram />
+        </DiagramModal>
 
-      <DiagramModal
-        isOpen={openDiagram === 'agent'}
-        onClose={() => setOpenDiagram(null)}
-        title="Chat Agent Graph"
-        desc="LangGraph 16노드 StateGraph · 4분기 처리 흐름"
-      >
-        <AgentFlowDiagram />
-      </DiagramModal>
+        <DiagramModal
+          isOpen={openDiagram === 'agent'}
+          onClose={() => setOpenDiagram(null)}
+          title="Chat Agent Graph"
+          desc="LangGraph 18노드 StateGraph · 4분기 처리 흐름"
+        >
+          <AgentFlowDiagram />
+        </DiagramModal>
 
-      <DiagramModal
-        isOpen={openDiagram === 'rag'}
-        onClose={() => setOpenDiagram(null)}
-        title="RAG Pipeline"
-        desc="Qdrant + Elasticsearch + Neo4j → RRF 하이브리드 검색"
-      >
-        <RAGDiagram />
-      </DiagramModal>
+        <DiagramModal
+          isOpen={openDiagram === 'rag'}
+          onClose={() => setOpenDiagram(null)}
+          title="RAG Pipeline"
+          desc="Qdrant + Elasticsearch + Neo4j → RRF 하이브리드 검색"
+        >
+          <RAGDiagram />
+        </DiagramModal>
 
-      <DiagramModal
-        isOpen={openDiagram === 'screen'}
-        onClose={() => setOpenDiagram(null)}
-        title="Screen Design"
-        desc="UI/UX 화면설계서"
-      >
-        <S.DiagramImage src="/diagrams/screen_design.png" alt="화면설계" />
-      </DiagramModal>
+        <DiagramModal
+          isOpen={openDiagram === 'screen'}
+          onClose={() => setOpenDiagram(null)}
+          title="Screen Design"
+          desc="UI/UX 화면설계서"
+        >
+          <S.DiagramImage src="/diagrams/screen_design.png" alt="화면설계" />
+        </DiagramModal>
+      </Suspense>
     </S.LandingWrapper>
   );
 }
