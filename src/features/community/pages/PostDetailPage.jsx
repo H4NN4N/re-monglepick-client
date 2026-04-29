@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { getPostDetail, deletePost, togglePostLike, reportPost } from '../api/communityApi';
+import { getPostDetail, deletePost, togglePostLike, reportPost, updatePost } from '../api/communityApi';
 import { formatRelativeTime } from '../../../shared/utils/formatters';
 import Loading from '../../../shared/components/Loading/Loading';
 import CommentSection from '../components/CommentSection';
 import ReportModal from '../components/ReportModal';
+import PostForm from '../components/PostForm';
 import useAuthStore from '../../../shared/stores/useAuthStore';
 import * as S from './PostDetailPage.styled';
 
@@ -33,6 +34,8 @@ export default function PostDetailPage() {
   const [isLiking, setIsLiking] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [toasts, setToasts] = useState([]);
   const toastIdRef = useRef(0);
 
@@ -81,6 +84,20 @@ export default function PostDetailPage() {
     } catch {
       showToast('삭제에 실패했습니다. 다시 시도해주세요.', 'error');
       setIsDeleting(false);
+    }
+  };
+
+  const handleUpdate = async ({ title, content, category }) => {
+    setIsUpdating(true);
+    try {
+      const updated = await updatePost(postId, { title, content, category });
+      setPost(updated);
+      setIsEditing(false);
+      showToast('게시글이 수정되었습니다.', 'success');
+    } catch {
+      showToast('수정에 실패했습니다. 다시 시도해주세요.', 'error');
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -165,46 +182,58 @@ export default function PostDetailPage() {
                 신고
               </S.ReportButton>
             )}
-            {isOwner && (
-              <S.DeleteButton onClick={() => setDeleteConfirm(true)} disabled={isDeleting}>
-                {isDeleting ? '삭제 중...' : '삭제'}
-              </S.DeleteButton>
+            {isOwner && !isEditing && (
+              <>
+                <S.EditButton onClick={() => setIsEditing(true)}>
+                  수정
+                </S.EditButton>
+                <S.DeleteButton onClick={() => setDeleteConfirm(true)} disabled={isDeleting}>
+                  {isDeleting ? '삭제 중...' : '삭제'}
+                </S.DeleteButton>
+              </>
             )}
           </S.Header>
 
-          {/* 제목 */}
-          <S.Title>{post.title}</S.Title>
+          {isEditing ? (
+            <PostForm
+              initialData={{ title: post.title, content: post.content, category: post.category }}
+              onSubmit={handleUpdate}
+              isSubmitting={isUpdating}
+              onCancel={() => setIsEditing(false)}
+            />
+          ) : (
+            <>
+              {/* 제목 */}
+              <S.Title>{post.title}</S.Title>
 
-          {/* 작성자 */}
-          <S.AuthorBar>
-            <span>작성자</span>
-            <strong>{post.author?.nickname || '익명'}</strong>
-            <S.ViewCount>👁 {post.viewCount ?? 0}</S.ViewCount>
-          </S.AuthorBar>
+              {/* 작성자 */}
+              <S.AuthorBar>
+                <span>작성자</span>
+                <strong>{post.author?.nickname || '익명'}</strong>
+                <S.ViewCount>👁 {post.viewCount ?? 0}</S.ViewCount>
+              </S.AuthorBar>
 
-          {/* 본문 */}
-          <S.Body>{post.content}</S.Body>
+              {/* 본문 */}
+              <S.Body>{post.content}</S.Body>
 
-          {/* 첨부 이미지
-              로컬: http://localhost:8080/images/userId/파일명.jpg
-              서버: http://210.109.15.187/images/userId/파일명.jpg
-              추후 S3 전환 시 URL 형식만 바뀌고 이 코드는 그대로 유지 */}
-          {post.imageUrls && post.imageUrls.length > 0 && (
-            <S.ImageList>
-              {post.imageUrls.map((url, i) => (
-                <S.ImageItem key={i}>
-                  <img src={url} alt={`첨부 이미지 ${i + 1}`} />
-                </S.ImageItem>
-              ))}
-            </S.ImageList>
+              {post.imageUrls && post.imageUrls.length > 0 && (
+                <S.ImageList>
+                  {post.imageUrls.map((url, i) => (
+                    <S.ImageItem key={i}>
+                      <img src={url} alt={`첨부 이미지 ${i + 1}`} />
+                    </S.ImageItem>
+                  ))}
+                </S.ImageList>
+              )}
+
+              {/* 좋아요 버튼 */}
+              <S.LikeBar>
+                <S.LikeButton onClick={handleLike} $liked={liked} disabled={isLiking}>
+                  {liked ? '❤️' : '🤍'} {likeCount}
+                </S.LikeButton>
+              </S.LikeBar>
+            </>
           )}
-
-          {/* 좋아요 버튼 */}
-          <S.LikeBar>
-            <S.LikeButton onClick={handleLike} $liked={liked} disabled={isLiking}>
-              {liked ? '❤️' : '🤍'} {likeCount}
-            </S.LikeButton>
-          </S.LikeBar>
         </S.Card>
 
         {/* 댓글 */}

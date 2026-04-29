@@ -192,6 +192,22 @@ export const ReportButton = styled.button`
   }
 `;
 
+export const EditButton = styled.button`
+  padding: 6px 14px;
+  background: none;
+  border: 1px solid ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.primary};
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primary};
+    color: #fff;
+  }
+`;
+
 export const DeleteButton = styled.button`
   padding: 6px 14px;
   background: none;
