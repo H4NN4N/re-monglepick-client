@@ -264,10 +264,12 @@ export default function OcrVerificationModal({
             const isFailed  = status === 'FAILED';
             const isPartial = status === 'PARTIAL_SUCCESS';
             const fields = [
-              { label: '영화명',   field: ocrResult.movieName,  fmt: v => v },
-              { label: '관람일',   field: ocrResult.watchDate,  fmt: v => v },
-              { label: '영화관',   field: ocrResult.venue,       fmt: v => v },
-              { label: '인원 수',  field: ocrResult.headcount,  fmt: v => `${v}명` },
+              { label: '영화명',   field: ocrResult.movieName,      fmt: v => v },
+              { label: '관람일',   field: ocrResult.watchDate,      fmt: v => v },
+              { label: '인원 수',  field: ocrResult.headcount,      fmt: v => `${v}명` },
+              { label: '좌석',     field: ocrResult.seat,           fmt: v => v },
+              { label: '상영관',   field: ocrResult.theater,        fmt: v => v },
+              { label: '영화관',   field: ocrResult.venue,          fmt: v => v },
             ];
             const okCount = fields.filter(f => f.field?.ok).length;
 
@@ -275,7 +277,7 @@ export default function OcrVerificationModal({
               <OcrResultBox $partial={isPartial} $fail={isFailed}>
                 <OcrResultTitle>
                   {isFailed   ? '⚠️ 추출 실패' :
-                   isPartial  ? `⚡ 일부 정보만 추출되었습니다 (${okCount}/4 항목)` :
+                   isPartial  ? `⚡ 일부 정보만 추출되었습니다 (${okCount}/6 항목)` :
                                 '✅ 분석 완료'}
                 </OcrResultTitle>
                 {fields.map(({ label, field, fmt }) => (
