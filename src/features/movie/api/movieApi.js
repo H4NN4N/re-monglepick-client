@@ -629,6 +629,28 @@ export async function getPopularMovies(page = 1, size = 20) {
 }
 
 /**
+ * 홈 인기 영화 섹션용 최신 일간 박스오피스 목록을 조회한다.
+ *
+ * recommend `GET /api/v2/search/home/box-office` 는 검색 응답과 동일한
+ * `{ movies, pagination }` 구조를 반환한다. HomePage 에서는 최신
+ * `box_office_daily.target_dt`부터 과거 날짜로 내려가며 중복 없는 박스오피스 영화를
+ * 모아 12칸을 채우므로, Spring backend의 공용 인기 영화 API와 분리한다.
+ *
+ * @param {number} [page=1] - 페이지 번호 (1-based)
+ * @param {number} [size=20] - 페이지 크기
+ * @returns {Promise<Object>} 홈 인기 영화 목록 ({ movies: [], total: number })
+ */
+export async function getHomeBoxOfficeMovies(page = 1, size = 20) {
+  const result = await recommendApi.get(RECOMMEND_MOVIE_ENDPOINTS.HOME_BOX_OFFICE, {
+    params: { page, size },
+  });
+  return {
+    movies: result?.movies || [],
+    total: result?.pagination?.total || 0,
+  };
+}
+
+/**
  * 최신 영화 목록을 조회한다.
  *
  * 백엔드 `GET /api/v1/movies/latest` 는 Spring Data `Page<MovieResponse>` 를 반환한다.
