@@ -87,6 +87,8 @@ export const MOVIE_ENDPOINTS = {
  * recommend(FastAPI)의 Redis 하이브리드 캐시 구현을 직접 호출한다.
  */
 export const RECOMMEND_MOVIE_ENDPOINTS = {
+  /** 홈 인기 영화용 박스오피스 목록 - GET (공개) */
+  HOME_BOX_OFFICE: `${API_V2_VERSION}/search/home/box-office`,
   /** 영화 상세 조회 - GET (공개) */
   DETAIL: (id) => `${API_V2_VERSION}/search/movies/${id}`,
   /** 영화 상세의 컬렉션 작품 조회 - GET (공개) */

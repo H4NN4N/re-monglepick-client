@@ -13,8 +13,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ROUTES } from '../../../shared/constants/routes';
 /* 영화 목록 컴포넌트 — shared/components에서 가져옴 */
 import MovieList from '../../../shared/components/MovieList/MovieList';
-/* 인기/최신 영화 API — features/movie에서 가져옴 */
-import { getPopularMovies, getLatestMovies } from '../../movie/api/movieApi';
+/* 홈 인기/최신 영화 API — features/movie에서 가져옴 */
+import { getHomeBoxOfficeMovies, getLatestMovies } from '../../movie/api/movieApi';
 /* 공지사항 API — shared/api에서 가져옴 */
 import { getActiveNotices } from '../../../shared/api/noticeApi';
 /* 히어로 우측 슬라이드 배너 위젯 — 관리자 등록 배너를 작게 노출 (2026-04-14 신규) */
@@ -57,12 +57,7 @@ const SUGGESTION_CARDS = [
   },
 ];
 
-/**
- * 홈 영화 섹션 최대 노출 개수.
- *
- * 개인화 추천 전용 API 도입 전까지는 기존 인기/최신 영화 API를 재사용하되,
- * 홈 화면 프레임만 10개 기준으로 맞춘다.
- */
+/** 홈 영화 섹션 최대 노출 개수. */
 const HOME_MOVIE_SECTION_LIMIT = 12;
 
 export default function HomePage() {
@@ -72,7 +67,7 @@ export default function HomePage() {
    * 제출 시 `/search?q=...` 로 이동해 SearchPage 가 결과를 렌더.
    */
   const [searchQuery, setSearchQuery] = useState('');
-  /** 인기 영화 목록 (backend /movies/popular) */
+  /** 인기 영화 목록 (recommend /search/home/box-office) */
   const [popularMovies, setPopularMovies] = useState([]);
   /** 인기 영화 로딩 상태 */
   const [isPopularLoading, setIsPopularLoading] = useState(true);
@@ -112,7 +107,7 @@ export default function HomePage() {
     setLatestError(null);
 
     const [popularResult, latestResult, noticeResult] = await Promise.allSettled([
-      getPopularMovies(1, HOME_MOVIE_SECTION_LIMIT),
+      getHomeBoxOfficeMovies(1, HOME_MOVIE_SECTION_LIMIT),
       getLatestMovies(1, HOME_MOVIE_SECTION_LIMIT),
       // 2026-04-15: pinned=true 로 제한. 고정된 BANNER/POPUP/MODAL 만 홈에 노출한다.
       // 고정되지 않은 공지는 커뮤니티 공지사항 탭에서만 조회 가능.
