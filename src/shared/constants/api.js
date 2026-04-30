@@ -89,6 +89,8 @@ export const MOVIE_ENDPOINTS = {
 export const RECOMMEND_MOVIE_ENDPOINTS = {
   /** 홈 인기 영화용 박스오피스 목록 - GET (공개) */
   HOME_BOX_OFFICE: `${API_V2_VERSION}/search/home/box-office`,
+  /** 검색 초기 화면 개인화 TOP picks - GET (JWT 필요) */
+  PERSONALIZED_TOP_PICKS: `${API_V2_VERSION}/search/personalized/top-picks`,
   /** 영화 상세 조회 - GET (공개) */
   DETAIL: (id) => `${API_V2_VERSION}/search/movies/${id}`,
   /** 영화 상세의 컬렉션 작품 조회 - GET (공개) */

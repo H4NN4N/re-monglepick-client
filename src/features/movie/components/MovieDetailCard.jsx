@@ -111,6 +111,10 @@ export default function MovieDetailCard({
   const posterSrc = resolveImageUrl(
     movie.posterUrl || movie.poster_url || movie.poster_path
   );
+  const releaseYear = movie.releaseYear || movie.release_year || null;
+  const releaseMetaText = movie.release_date
+    ? `${formatDate(movie.release_date)} 개봉`
+    : (releaseYear ? `${releaseYear}년 개봉` : null);
   const buildMovieSkeletons = (movies) => Array.from(
     { length: movies.length > 0 ? 3 : 5 },
     (_, index) => index
@@ -341,8 +345,8 @@ export default function MovieDetailCard({
 
           {/* 메타 정보 (개봉일, 러닝타임, 관람등급) */}
           <S.Meta>
-            {movie.release_date && (
-              <S.MetaItem>{formatDate(movie.release_date)} 개봉</S.MetaItem>
+            {releaseMetaText && (
+              <S.MetaItem>{releaseMetaText}</S.MetaItem>
             )}
             {movie.runtime && (
               <S.MetaItem>{formatRuntime(movie.runtime)}</S.MetaItem>

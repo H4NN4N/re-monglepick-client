@@ -1601,6 +1601,17 @@ export const PersonalizedPosterTitle = styled.h4`
   overflow: hidden;
 `;
 
+export const PersonalizedPosterReason = styled.span`
+  color: rgba(255, 255, 255, 0.92);
+  font-size: ${({ theme }) => theme.typography.textXs};
+  font-weight: ${({ theme }) => theme.typography.fontMedium};
+  line-height: ${({ theme }) => theme.typography.leadingTight};
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
 export const PersonalizedPosterMeta = styled.span`
   color: rgba(255, 255, 255, 0.82);
   font-size: ${({ theme }) => theme.typography.textXs};

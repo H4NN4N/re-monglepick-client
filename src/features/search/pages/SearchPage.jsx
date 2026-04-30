@@ -18,7 +18,8 @@ import {
   deleteAllRecentSearches,
   deleteRecentSearchKeyword,
   getAutocompleteSuggestions,
-  getPopularMovies,
+  getHomeBoxOfficeMovies,
+  getPersonalizedTopPicks,
   getRecentSearches,
   getRelatedMovies,
   getSearchGenres,
@@ -350,6 +351,12 @@ function parsePersonalizedGenres(genres) {
 function normalizePersonalizedPreviewMovie(entry) {
   const movie = extractPersonalizedMovieSource(entry);
   const id = resolvePersonalizedMovieId(entry);
+  const personalizedReasons = Array.isArray(movie?.personalizedReasons)
+    ? movie.personalizedReasons
+    : (Array.isArray(movie?.personalized_reasons) ? movie.personalized_reasons : []);
+  const reasonText = personalizedReasons
+    .map((reason) => String(reason || '').trim())
+    .find(Boolean) || null;
 
   if (!id || !movie) {
     return null;
@@ -362,6 +369,7 @@ function normalizePersonalizedPreviewMovie(entry) {
     releaseYear: resolvePersonalizedReleaseYear(entry),
     posterSrc: resolvePersonalizedPosterSrc(entry),
     genres: parsePersonalizedGenres(movie?.genres || entry?.genres),
+    reasonText,
   };
 }
 
@@ -1040,6 +1048,7 @@ export default function SearchPage() {
       setIsPersonalizedLoading(true);
 
       const [
+        personalizedTopPicksResult,
         favoriteGenresResult,
         favoriteMoviesResult,
         recommendationsResult,
@@ -1047,12 +1056,13 @@ export default function SearchPage() {
         reviewsResult,
         popularMoviesResult,
       ] = await Promise.allSettled([
+        getPersonalizedTopPicks({ limit: PERSONALIZED_TOP_PICK_LIMIT }),
         getFavoriteGenres(),
         getFavoriteMovies(),
         getRecommendations({ page: 0, size: 60, status: 'ALL' }),
         getWishlist({ page: 1, size: PERSONALIZED_WISHLIST_SECTION_LIMIT }),
         getMyReviews({ page: 1, size: 60 }),
-        getPopularMovies(1, 60),
+        getHomeBoxOfficeMovies(1, 30),
       ]);
 
       if (!isMounted) {
@@ -1120,6 +1130,12 @@ export default function SearchPage() {
 
       const popularMovies = popularMoviesResult.status === 'fulfilled'
         ? normalizePersonalizedPreviewMovies(popularMoviesResult.value?.movies || [], 60)
+        : [];
+      const personalizedTopPicks = personalizedTopPicksResult.status === 'fulfilled'
+        ? normalizePersonalizedPreviewMovies(
+          personalizedTopPicksResult.value?.movies || [],
+          PERSONALIZED_TOP_PICK_LIMIT,
+        )
         : [];
 
       const filledGenreNames = [
@@ -1214,17 +1230,19 @@ export default function SearchPage() {
         ? similarTasteMovies
         : popularMovies.slice(0, PERSONALIZED_SIMILAR_TASTE_LIMIT);
 
-      const nextTopPicks = mergePersonalizedMovieCollections(
-        [
-          chatRecommendationMovies,
-          wishlistMovies,
-          genreSections.flatMap((section) => section.movies),
-          reviewSections.flatMap((section) => section.movies),
-          nextSimilarTasteMovies,
-          popularMovies,
-        ],
-        PERSONALIZED_TOP_PICK_LIMIT,
-      );
+      const nextTopPicks = personalizedTopPicks.length > 0
+        ? personalizedTopPicks
+        : mergePersonalizedMovieCollections(
+          [
+            chatRecommendationMovies,
+            wishlistMovies,
+            genreSections.flatMap((section) => section.movies),
+            reviewSections.flatMap((section) => section.movies),
+            nextSimilarTasteMovies,
+            popularMovies,
+          ],
+          PERSONALIZED_TOP_PICK_LIMIT,
+        );
 
       setPersonalizedSections({
         topPicks: nextTopPicks,
@@ -2138,6 +2156,9 @@ export default function SearchPage() {
 
                 <S.PersonalizedPosterOverlay>
                   <S.PersonalizedPosterTitle>{movie.title}</S.PersonalizedPosterTitle>
+                  {movie.reasonText && (
+                    <S.PersonalizedPosterReason>{movie.reasonText}</S.PersonalizedPosterReason>
+                  )}
                   <S.PersonalizedPosterMeta>
                     {movie.rating !== null ? `★ ${movie.rating.toFixed(1)}` : '평점 정보 없음'}
                   </S.PersonalizedPosterMeta>

@@ -59,7 +59,7 @@ function normalizeRecommendMovieDetail(movie) {
     backdropUrl: movie.backdrop_url ?? null,
     original_title: movie.original_title,
     releaseYear: movie.release_year,
-    release_date: movie.release_date || (movie.release_year ? `${movie.release_year}-01-01` : null),
+    release_date: movie.release_date ?? null,
     trailer_url: movie.trailer_url ?? null,
     trailerUrl: movie.trailer_url ?? null,
     genres: Array.isArray(movie.genres) ? movie.genres : [],
@@ -100,6 +100,21 @@ function normalizeRelatedMovie(movie) {
     relationScore: movie.relation_score ?? movie.relationScore ?? 0,
     relationReasons: movie.relation_reasons || movie.relationReasons || [],
     relationSources: movie.relation_sources || movie.relationSources || [],
+  };
+}
+
+function normalizePersonalizedTopPick(movie) {
+  const normalizedMovie = normalizeSearchMovie(movie);
+
+  return {
+    ...normalizedMovie,
+    personalizedScore: movie.personalized_score ?? movie.personalizedScore ?? 0,
+    personalizedReasons: Array.isArray(movie.personalized_reasons)
+      ? movie.personalized_reasons
+      : (Array.isArray(movie.personalizedReasons) ? movie.personalizedReasons : []),
+    personalizedSources: Array.isArray(movie.personalized_sources)
+      ? movie.personalized_sources
+      : (Array.isArray(movie.personalizedSources) ? movie.personalizedSources : []),
   };
 }
 
@@ -641,12 +656,34 @@ export async function getPopularMovies(page = 1, size = 20) {
  * @returns {Promise<Object>} 홈 인기 영화 목록 ({ movies: [], total: number })
  */
 export async function getHomeBoxOfficeMovies(page = 1, size = 20) {
+  const normalizedSize = Math.max(1, Math.min(Number(size) || 20, 30));
   const result = await recommendApi.get(RECOMMEND_MOVIE_ENDPOINTS.HOME_BOX_OFFICE, {
-    params: { page, size },
+    params: { page, size: normalizedSize },
   });
   return {
     movies: result?.movies || [],
     total: result?.pagination?.total || 0,
+  };
+}
+
+/**
+ * 검색 초기 화면 개인화 TOP picks를 조회한다.
+ *
+ * recommend v2 엔드포인트가 유저 신호를 합쳐 직접 랭킹한 결과를 반환하며,
+ * 클라이언트는 이 결과를 `/search` 상단 예상 픽 섹션에 그대로 사용한다.
+ *
+ * @param {Object} [options={}] - 조회 옵션
+ * @param {number} [options.limit=10] - 최대 반환 개수
+ * @returns {Promise<{movies: Array, totalCandidates: number}>}
+ */
+export async function getPersonalizedTopPicks({ limit = 10 } = {}) {
+  const result = await recommendApi.get(RECOMMEND_MOVIE_ENDPOINTS.PERSONALIZED_TOP_PICKS, {
+    params: { limit },
+  });
+
+  return {
+    movies: (result?.movies || []).map(normalizePersonalizedTopPick),
+    totalCandidates: result?.total_candidates || result?.totalCandidates || 0,
   };
 }
 
