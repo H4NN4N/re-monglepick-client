@@ -483,10 +483,20 @@ export default function MovieDetailPage() {
         showReward(result.rewardPoints, '리뷰 작성');
       }
 
-      // 리뷰 작성 직후 최신 목록을 다시 받아 하단 리뷰 섹션을 즉시 갱신한다.
-      const reviewData = await getReviews(id);
-      setReviews(reviewData?.reviews || []);
       setShowFeedback(false);
+      await showAlert({
+        title: '리뷰 작성 완료',
+        message: '리뷰가 작성되었습니다.',
+        type: 'success',
+      });
+
+      // 리뷰 작성 직후 최신 목록을 다시 받아 하단 리뷰 섹션을 즉시 갱신한다.
+      try {
+        const reviewData = await getReviews(id);
+        setReviews(reviewData?.reviews || []);
+      } catch {
+        // 리뷰 재동기화 실패는 무시한다. 작성 성공 여부는 createReview 응답으로 판단한다.
+      }
     } catch (err) {
       if (err?.status === 409) {
         try {
@@ -501,9 +511,15 @@ export default function MovieDetailPage() {
           message: '이 영화는 이미 리뷰를 남겼습니다. 아래 리뷰 목록에서 수정하거나 삭제할 수 있습니다.',
           type: 'warning',
         });
+        return;
       }
 
       setShowFeedback(false);
+      await showAlert({
+        title: '리뷰 작성 실패',
+        message: '리뷰 작성에 실패하였습니다.',
+        type: 'error',
+      });
     }
   };
 
