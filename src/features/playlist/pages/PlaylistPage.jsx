@@ -617,7 +617,7 @@ export default function PlaylistPage() {
             {!editTarget && (
               <>
                 <S.ToggleRow>
-                  <S.ToggleLabel>{formIsPublic ? '🌐 공개 — 커뮤니티에 공유됩니다' : '🔒 비공개'}</S.ToggleLabel>
+                  <S.ToggleLabel>{formIsPublic ? '🌐 공개 — 커뮤니티에 공유됩니다' : '🔒 비공유 — 토글을 누르면 플레이리스트가 공개로 바뀝니다'}</S.ToggleLabel>
                   <S.ToggleSwitch
                     type="button"
                     $on={formIsPublic}
