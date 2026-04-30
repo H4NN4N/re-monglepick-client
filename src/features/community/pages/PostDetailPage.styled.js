@@ -175,8 +175,14 @@ export const Status = styled.div`
   font-size: ${({ theme }) => theme.typography.textSm};
 `;
 
-export const ReportButton = styled.button`
+export const ActionGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-left: auto;
+`;
+
+export const ReportButton = styled.button`
   padding: 6px 14px;
   background: none;
   border: 1px solid ${({ theme }) => theme.colors.borderDefault};
@@ -189,6 +195,22 @@ export const ReportButton = styled.button`
   &:hover {
     border-color: #e53e3e;
     color: #e53e3e;
+  }
+`;
+
+export const EditButton = styled.button`
+  padding: 6px 14px;
+  background: none;
+  border: 1px solid ${({ theme }) => theme.colors.primary};
+  color: ${({ theme }) => theme.colors.primary};
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    background: ${({ theme }) => theme.colors.primary};
+    color: #fff;
   }
 `;
 
