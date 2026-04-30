@@ -24,7 +24,7 @@ function normalizeReview(review) {
     movieTitle: review.movie_title || review.movieTitle || null,
     posterUrl: review.poster_url || review.posterUrl || null,
     rating: review.rating,
-    content: review.content,
+    content: review.content ?? review.contents ?? null,
     author: {
       nickname: getDisplayNickname({ ...review, ...review.author }, '익명'),
       withdrawn: isWithdrawnUser({ ...review, ...review.author }),
@@ -37,6 +37,15 @@ function normalizeReview(review) {
     likeCount: review.like_count ?? review.likeCount ?? 0,
     liked: Boolean(review.liked ?? false),
   };
+}
+
+function normalizeOptionalReviewContent(content) {
+  if (typeof content !== 'string') {
+    return content ?? null;
+  }
+
+  const trimmedContent = content.trim();
+  return trimmedContent ? trimmedContent : null;
 }
 
 // ── 리뷰 (Reviews) ──
@@ -90,7 +99,7 @@ export async function createReview(
   requireAuth();
   const result = await recommendApi.post(RECOMMEND_REVIEW_ENDPOINTS.REVIEWS(movieId), {
     movie_id: movieId,
-    content,
+    content: normalizeOptionalReviewContent(content),
     rating,
     is_spoiler: isSpoiler,
     review_source: reviewSource,
@@ -118,7 +127,7 @@ export async function updateReview(movieId, reviewId, { content, rating, isSpoil
   const result = await recommendApi.put(
     RECOMMEND_REVIEW_ENDPOINTS.REVIEW_DETAIL(movieId, reviewId),
     {
-      content,
+      content: normalizeOptionalReviewContent(content),
       rating,
       is_spoiler: isSpoiler,
     },
