@@ -97,7 +97,10 @@ export default function HomePage() {
 
   const navigate = useNavigate();
   const homeSearchRef = useRef(null);
-  const { keywords: popularSearchKeywords, isLoading: isPopularSearchLoading } = (
+  const {
+    keywords: popularSearchKeywords,
+    isLoading: isPopularSearchLoading,
+  } = (
     usePopularSearchKeywords()
   );
 
@@ -287,21 +290,19 @@ export default function HomePage() {
                   !nextValue.trim() && document.activeElement === e.target
                 );
               }}
-              onFocus={(e) => {
-                if (!e.target.value.trim()) {
-                  setIsPopularSearchOpen(true);
-                }
+              onFocus={() => {
+                setIsPopularSearchOpen(true);
               }}
               placeholder="보고 싶은 영화·감독·배우를 검색해보세요"
               aria-label="영화 검색"
-              aria-expanded={isPopularSearchOpen && !searchQuery.trim()}
+              aria-expanded={isPopularSearchOpen}
             />
             <S.HomeSearchBtn type="submit">
               검색
             </S.HomeSearchBtn>
           </S.HomeSearchForm>
 
-          {isPopularSearchOpen && !searchQuery.trim() && (
+          {isPopularSearchOpen && (
             <PopularSearchPanel
               keywords={popularSearchKeywords}
               isLoading={isPopularSearchLoading}

@@ -663,7 +663,10 @@ export default function SearchPage() {
   const loadMoreRef = useRef(null);
   const autocompleteRef = useRef(null);
   const searchInputRef = useRef(null);
-  const { keywords: popularSearchKeywords, isLoading: isPopularSearchLoading } = (
+  const {
+    keywords: popularSearchKeywords,
+    isLoading: isPopularSearchLoading,
+  } = (
     usePopularSearchKeywords()
   );
   const currentUser = useAuthStore((state) => state.user);
@@ -2237,22 +2240,16 @@ export default function SearchPage() {
                 onChange={(e) => handleQueryChange(e.target.value)}
                 onKeyDown={handleQueryKeyDown}
                 onFocus={() => {
-                  if (!query.trim()) {
-                    setIsPopularSearchOpen(true);
-                    return;
-                  }
-
-                  if (autocompleteSuggestions.length > 0 || autocompleteDidYouMean) {
-                    setIsAutocompleteOpen(true);
-                  }
+                  closeAutocomplete();
+                  setIsPopularSearchOpen(true);
                 }}
                 placeholder="영화 제목, 배우, 감독을 검색하세요..."
                 aria-autocomplete="list"
-                aria-expanded={isAutocompleteOpen || (query.trim() === '' && isPopularSearchOpen)}
+                aria-expanded={isAutocompleteOpen || isPopularSearchOpen}
                 autoFocus
               />
 
-              {query.trim() === '' && isPopularSearchOpen && (
+              {isPopularSearchOpen && (
                 <PopularSearchPanel
                   keywords={popularSearchKeywords}
                   isLoading={isPopularSearchLoading}
