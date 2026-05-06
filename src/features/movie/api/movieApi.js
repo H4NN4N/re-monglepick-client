@@ -700,7 +700,7 @@ export async function getHomeBoxOfficeMovies(page = 1, size = 20) {
  *
  * @param {Object} [options={}] - 조회 옵션
  * @param {number} [options.limit=10] - 최대 반환 개수
- * @returns {Promise<{movies: Array, totalCandidates: number, genreSections: Array, wishlistMovies: Array, similarTasteMovies: Array, reviewSections: Array, cacheState: string, isCalculating: boolean, lastComputedAt: string|null}>}
+ * @returns {Promise<{movies: Array, totalCandidates: number, genreSections: Array, wishlistMovies: Array, similarTasteMovies: Array, reviewSections: Array, cacheState: string, isCalculating: boolean, isDirty: boolean, shouldRefresh: boolean, lastComputedAt: string|null}>}
  */
 export async function getPersonalizedTopPicks({ limit = 10 } = {}) {
   const result = await recommendApi.get(RECOMMEND_MOVIE_ENDPOINTS.PERSONALIZED_TOP_PICKS, {
@@ -716,6 +716,8 @@ export async function getPersonalizedTopPicks({ limit = 10 } = {}) {
     reviewSections: (result?.review_sections || result?.reviewSections || []).map(normalizePersonalizedSection),
     cacheState: result?.cache_state || result?.cacheState || 'empty',
     isCalculating: Boolean(result?.is_calculating ?? result?.isCalculating ?? false),
+    isDirty: Boolean(result?.is_dirty ?? result?.isDirty ?? false),
+    shouldRefresh: Boolean(result?.should_refresh ?? result?.shouldRefresh ?? false),
     lastComputedAt: result?.last_computed_at || result?.lastComputedAt || null,
   };
 }
