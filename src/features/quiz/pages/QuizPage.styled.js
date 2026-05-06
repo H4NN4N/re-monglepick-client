@@ -113,6 +113,13 @@ export const SectionDesc = styled.p`
   color: ${({ theme }) => theme.colors.textMuted};
 `;
 
+/** 퀴즈 섹션과 통계/이력 섹션 사이 구분선 */
+export const Divider = styled.hr`
+  border: none;
+  border-top: 2px solid ${({ theme }) => theme.colors.borderDefault};
+  margin: ${({ theme }) => theme.spacing.xl} 0 ${({ theme }) => theme.spacing.lg};
+`;
+
 /** 퀴즈 카드 세로 리스트 */
 export const QuizList = styled.div`
   display: flex;

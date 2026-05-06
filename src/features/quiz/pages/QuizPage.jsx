@@ -101,12 +101,6 @@ export default function QuizPage({ embedded = false }) {
 
   const body = (
     <>
-      {/* ── 내 응시 현황 카드 (로그인 시만 노출) ── */}
-      <MyQuizStatsCard refreshKey={statsRefreshKey} />
-
-      {/* ── 내 응시 이력 ── */}
-      <MyQuizHistoryList refreshKey={statsRefreshKey} />
-
       {/* ── 오늘의 퀴즈 섹션 헤더 ── */}
       <S.SectionHeader>
         <S.SectionTitleRow>
@@ -166,6 +160,15 @@ export default function QuizPage({ embedded = false }) {
           ))}
         </S.QuizList>
       )}
+
+      {/* ── 구분선 ── */}
+      <S.Divider />
+
+      {/* ── 내 응시 현황 카드 (로그인 시만 노출) ── */}
+      <MyQuizStatsCard refreshKey={statsRefreshKey} />
+
+      {/* ── 내 응시 이력 ── */}
+      <MyQuizHistoryList refreshKey={statsRefreshKey} />
     </>
   );
 
