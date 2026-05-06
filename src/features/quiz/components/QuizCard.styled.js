@@ -294,3 +294,36 @@ export const RetryButton = styled.button`
     color: ${({ theme }) => theme.colors.textPrimary};
   }
 `;
+
+/** 힌트 사용 버튼 */
+export const HintButton = styled.button`
+  padding: 8px 18px;
+  border-radius: ${({ theme }) => theme.radius.md};
+  background: transparent;
+  color: ${({ theme }) => theme.colors.warning ?? '#f59e0b'};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontMedium};
+  border: 1px solid ${({ theme }) => theme.colors.warning ?? '#f59e0b'};
+  cursor: pointer;
+  transition: all ${({ theme }) => theme.transitions.fast};
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.warning ?? '#f59e0b'}22;
+  }
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+`;
+
+/** 힌트 표시 박스 */
+export const HintBox = styled.div`
+  margin-top: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+  background: ${({ theme }) => theme.colors.warning ?? '#f59e0b'}18;
+  border-left: 3px solid ${({ theme }) => theme.colors.warning ?? '#f59e0b'};
+  border-radius: 0 ${({ theme }) => theme.radius.sm} ${({ theme }) => theme.radius.sm} 0;
+  font-size: ${({ theme }) => theme.typography.textSm};
+  color: ${({ theme }) => theme.colors.textPrimary};
+  line-height: 1.5;
+`;
