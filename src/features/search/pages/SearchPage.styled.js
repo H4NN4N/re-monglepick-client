@@ -1414,6 +1414,46 @@ export const PersonalizedSkeletonStack = styled.div`
   gap: ${({ theme }) => theme.spacing.xl};
 `;
 
+export const PersonalizedSkeletonFrame = styled.div`
+  position: relative;
+`;
+
+export const PersonalizedSkeletonOverlay = styled.div`
+  position: absolute;
+  top: ${({ theme }) => theme.spacing.md};
+  left: 50%;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.xs};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
+  border-radius: ${({ theme }) => theme.radius.xl};
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: ${({ theme }) => theme.shadows.md};
+  backdrop-filter: blur(8px);
+  transform: translateX(-50%);
+  pointer-events: none;
+  text-align: center;
+
+  ${mediaSmall} {
+    width: calc(100% - ${({ theme }) => theme.spacing.lg} * 2);
+    max-width: 320px;
+  }
+`;
+
+export const PersonalizedSkeletonOverlayIcon = styled.span`
+  font-size: ${({ theme }) => theme.typography.text2xl};
+  line-height: 1;
+`;
+
+export const PersonalizedSkeletonOverlayText = styled.span`
+  color: ${({ theme }) => theme.colors.textPrimary};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+  line-height: ${({ theme }) => theme.typography.leadingNormal};
+`;
+
 export const PersonalizedSkeletonSection = styled.div`
   display: flex;
   flex-direction: column;

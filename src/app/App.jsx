@@ -13,12 +13,13 @@
  *   Layer 4 — 레거시 경로 리다이렉트              외부 링크·북마크 하위호환
  */
 
-import { useEffect, Suspense, lazy } from 'react';
+import { useEffect, useRef, Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 /* Zustand 인증 스토어 */
 import useAuthStore from '../shared/stores/useAuthStore';
 /* 게스트 쿠키 발급 — 비로그인 평생 1회 무료 체험 식별자 (2026-04-22) */
 import { initGuestToken } from '../shared/api/guestApi';
+import { startPersonalizedTopPicksRefresh } from '../features/movie/api/movieApi';
 /* 메인 레이아웃 — Outlet 기반, variant 로 default/compact 분기 (PR-2) */
 import MainLayout from '../shared/components/Layout/MainLayout';
 /* 계정 허브 레이아웃 — Outlet + 사이드바 (PR-1 에서 스켈레톤 배치, PR-4 에서 활성화) */
@@ -136,6 +137,10 @@ function PrivateRoute({ children }) {
 }
 
 function App() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated());
+  const authenticatedUserId = useAuthStore((state) => state.user?.id || null);
+  const lastTriggeredPersonalizedRefreshUserIdRef = useRef(null);
+
   /*
    * 앱 최초 마운트 시 게스트 쿠키(mongle_guest) 발급/재확인.
    * 서버가 멱등 처리하므로 로그인/비로그인 상관없이 1회 호출한다.
@@ -143,6 +148,27 @@ function App() {
   useEffect(() => {
     initGuestToken();
   }, []);
+
+  /*
+   * 로그인 직후 개인화 TOP picks 계산을 비동기로 선요청한다.
+   * 동일 사용자에 대해 App 생명주기 내 중복 요청은 막고, 로그아웃 시 가드를 초기화한다.
+   */
+  useEffect(() => {
+    if (!isAuthenticated || !authenticatedUserId) {
+      lastTriggeredPersonalizedRefreshUserIdRef.current = null;
+      return;
+    }
+
+    if (lastTriggeredPersonalizedRefreshUserIdRef.current === authenticatedUserId) {
+      return;
+    }
+
+    lastTriggeredPersonalizedRefreshUserIdRef.current = authenticatedUserId;
+    startPersonalizedTopPicksRefresh({
+      limit: 10,
+      reason: 'login',
+    }).catch(() => {});
+  }, [authenticatedUserId, isAuthenticated]);
 
   return (
     <BrowserRouter>

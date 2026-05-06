@@ -18,21 +18,13 @@ import {
   deleteAllRecentSearches,
   deleteRecentSearchKeyword,
   getAutocompleteSuggestions,
-  getHomeBoxOfficeMovies,
   getPersonalizedTopPicks,
   getRecentSearches,
-  getRelatedMovies,
   getSearchGenres,
   logSearchResultClick,
   searchMovies,
+  startPersonalizedTopPicksRefresh,
 } from '../../movie/api/movieApi';
-import { getRecommendations } from '../../recommendation/api/recommendationApi';
-import {
-  getFavoriteGenres,
-  getFavoriteMovies,
-  getMyReviews,
-  getWishlist,
-} from '../../user/api/userApi';
 /* Phase 2: 사용자 행동 이벤트 추적 */
 import { trackEvent } from '../../../shared/utils/eventTracker';
 import { buildPath, ROUTES } from '../../../shared/constants/routes';
@@ -60,13 +52,7 @@ const MIN_RATING = 0.5;
 const MAX_RATING = 10;
 const TMDB_POSTER_BASE = 'https://image.tmdb.org/t/p/w500';
 const PERSONALIZED_TOP_PICK_LIMIT = 10;
-const PERSONALIZED_GENRE_SECTION_COUNT = 5;
-const PERSONALIZED_GENRE_SECTION_LIMIT = 20;
-const PERSONALIZED_CHAT_SECTION_LIMIT = 20;
-const PERSONALIZED_WISHLIST_SECTION_LIMIT = 20;
-const PERSONALIZED_SIMILAR_TASTE_LIMIT = 40;
-const PERSONALIZED_REVIEW_SECTION_COUNT = 5;
-const PERSONALIZED_REVIEW_SECTION_LIMIT = 25;
+const PERSONALIZED_TOP_PICK_POLLING_MS = 2500;
 
 /** 장르 필터 옵션 */
 const GENRE_FILTERS = [
@@ -121,7 +107,6 @@ function createInitialPersonalizedSections() {
   return {
     topPicks: [],
     genreSections: [],
-    chatRecommendationMovies: [],
     wishlistMovies: [],
     similarTasteMovies: [],
     reviewSections: [],
@@ -397,30 +382,6 @@ function normalizePersonalizedPreviewMovies(entries, limit) {
   return Number.isFinite(limit) ? normalizedMovies.slice(0, limit) : normalizedMovies;
 }
 
-function mergePersonalizedMovieCollections(collections, limit) {
-  return normalizePersonalizedPreviewMovies(collections.flat(), limit);
-}
-
-function collectTopGenreNamesFromMovies(movies, limit, excludedGenreNames = []) {
-  const excludedSet = new Set(excludedGenreNames.map((genre) => String(genre || '').trim()));
-  const genreCounts = new Map();
-
-  movies.forEach((movie) => {
-    parsePersonalizedGenres(movie?.genres).forEach((genreName) => {
-      if (!genreName || excludedSet.has(genreName)) {
-        return;
-      }
-
-      genreCounts.set(genreName, (genreCounts.get(genreName) || 0) + 1);
-    });
-  });
-
-  return [...genreCounts.entries()]
-    .sort((left, right) => right[1] - left[1])
-    .slice(0, limit)
-    .map(([genreName]) => genreName);
-}
-
 function toFilterInputValue(value) {
   return value === null || value === undefined ? '' : String(value);
 }
@@ -660,9 +621,11 @@ export default function SearchPage() {
   const [searchSource, setSearchSource] = useState(null);
   const [personalizedSections, setPersonalizedSections] = useState(createInitialPersonalizedSections);
   const [isPersonalizedLoading, setIsPersonalizedLoading] = useState(false);
+  const [isPersonalizedCalculating, setIsPersonalizedCalculating] = useState(false);
   const loadMoreRef = useRef(null);
   const autocompleteRef = useRef(null);
   const searchInputRef = useRef(null);
+  const personalizedRefreshRequestedRef = useRef(false);
   const {
     keywords: popularSearchKeywords,
     isLoading: isPopularSearchLoading,
@@ -706,6 +669,14 @@ export default function SearchPage() {
   const personalizedNickname = currentUser?.nickname || currentUser?.name || '회원';
   const personalizedTopSectionTitle = `${personalizedNickname}님 예상 픽 TOP 10`;
   const wishlistMoreLink = `${ROUTES.ACCOUNT_PROFILE}?tab=wishlist`;
+  const shouldShowPersonalizedRecommendations = isAuthenticated && !hasSearched && !isLoading;
+  const hasPersonalizedContent = personalizedSections.topPicks.length > 0
+    || personalizedSections.genreSections.length > 0
+    || personalizedSections.wishlistMovies.length > 0
+    || personalizedSections.similarTasteMovies.length > 0
+    || personalizedSections.reviewSections.length > 0;
+  const shouldShowPersonalizedSkeleton = isPersonalizedLoading
+    || (isPersonalizedCalculating && !hasPersonalizedContent);
 
   const isAutocompleteSupportedSearchType = searchType === 'all' || searchType === 'title';
 
@@ -1058,216 +1029,77 @@ export default function SearchPage() {
       if (!isAuthenticated) {
         setPersonalizedSections(createInitialPersonalizedSections());
         setIsPersonalizedLoading(false);
+        setIsPersonalizedCalculating(false);
+        personalizedRefreshRequestedRef.current = false;
         return;
       }
 
       setIsPersonalizedLoading(true);
 
-      const [
-        personalizedTopPicksResult,
-        favoriteGenresResult,
-        favoriteMoviesResult,
-        recommendationsResult,
-        wishlistResult,
-        reviewsResult,
-        popularMoviesResult,
-      ] = await Promise.allSettled([
+      const personalizedTopPicksResult = await Promise.resolve(
         getPersonalizedTopPicks({ limit: PERSONALIZED_TOP_PICK_LIMIT }),
-        getFavoriteGenres(),
-        getFavoriteMovies(),
-        getRecommendations({ page: 0, size: 60, status: 'ALL' }),
-        getWishlist({ page: 1, size: PERSONALIZED_WISHLIST_SECTION_LIMIT }),
-        getMyReviews({ page: 1, size: 60 }),
-        getHomeBoxOfficeMovies(1, 30),
-      ]);
+      )
+        .then((value) => ({ status: 'fulfilled', value }))
+        .catch((reason) => ({ status: 'rejected', reason }));
 
       if (!isMounted) {
         return;
       }
 
-      const selectedFavoriteGenres = favoriteGenresResult.status === 'fulfilled'
-        ? (favoriteGenresResult.value?.selectedGenres || [])
-            .map((item) => item?.genre?.genreName)
-            .map((genreName) => String(genreName || '').trim())
-            .filter(Boolean)
-        : [];
-
-      const favoriteMovies = favoriteMoviesResult.status === 'fulfilled'
-        ? normalizePersonalizedPreviewMovies(
-          (favoriteMoviesResult.value?.favoriteMovies || [])
-            .map((item) => item?.movie)
-            .filter(Boolean),
-          12,
-        )
-        : [];
-
-      const recommendationItems = recommendationsResult.status === 'fulfilled'
-        ? (recommendationsResult.value?.content || [])
-        : [];
-
-      const chatRecommendationMovies = normalizePersonalizedPreviewMovies(
-        recommendationItems
-          .filter((item) => !item?.watched)
-          .map((item) => item?.movie || item),
-        PERSONALIZED_CHAT_SECTION_LIMIT,
+      const personalizedTopPicksPayload = personalizedTopPicksResult.status === 'fulfilled'
+        ? personalizedTopPicksResult.value
+        : {
+          movies: [],
+          cacheState: 'empty',
+          isCalculating: false,
+        };
+      const personalizedTopPicks = normalizePersonalizedPreviewMovies(
+        personalizedTopPicksPayload?.movies || [],
+        PERSONALIZED_TOP_PICK_LIMIT,
       );
+      let nextIsPersonalizedCalculating = Boolean(personalizedTopPicksPayload?.isCalculating);
 
-      const wishlistMovies = wishlistResult.status === 'fulfilled'
-        ? normalizePersonalizedPreviewMovies(
-          (wishlistResult.value?.wishlist || [])
-            .map((item) => item?.movie)
-            .filter(Boolean),
-          PERSONALIZED_WISHLIST_SECTION_LIMIT,
-        )
-        : [];
-
-      const reviews = reviewsResult.status === 'fulfilled'
-        ? (reviewsResult.value?.reviews || [])
-        : [];
-
-      const sortedReviews = [...reviews].sort((left, right) => {
-        const ratingGap = Number(right?.rating || 0) - Number(left?.rating || 0);
-        if (ratingGap !== 0) {
-          return ratingGap;
-        }
-
-        return new Date(right?.createdAt || 0).getTime() - new Date(left?.createdAt || 0).getTime();
-      });
-
-      const highRatedReviews = [...sortedReviews.filter((review) => Number(review?.rating || 0) >= 4), ...sortedReviews]
-        .filter((review, index, array) => {
-          if (!review?.movieId || !review?.movieTitle) {
-            return false;
+      if (
+        personalizedTopPicks.length === 0
+        && !nextIsPersonalizedCalculating
+        && !personalizedRefreshRequestedRef.current
+      ) {
+        nextIsPersonalizedCalculating = true;
+        personalizedRefreshRequestedRef.current = true;
+        startPersonalizedTopPicksRefresh({
+          limit: PERSONALIZED_TOP_PICK_LIMIT,
+          reason: 'search_page',
+        }).catch(() => {
+          if (!isMounted) {
+            return;
           }
 
-          return array.findIndex((candidate) => candidate?.movieId === review.movieId) === index;
-        })
-        .slice(0, PERSONALIZED_REVIEW_SECTION_COUNT);
-
-      const popularMovies = popularMoviesResult.status === 'fulfilled'
-        ? normalizePersonalizedPreviewMovies(popularMoviesResult.value?.movies || [], 60)
-        : [];
-      const personalizedTopPicks = personalizedTopPicksResult.status === 'fulfilled'
-        ? normalizePersonalizedPreviewMovies(
-          personalizedTopPicksResult.value?.movies || [],
-          PERSONALIZED_TOP_PICK_LIMIT,
-        )
-        : [];
-
-      const filledGenreNames = [
-        ...selectedFavoriteGenres,
-        ...collectTopGenreNamesFromMovies(
-          [
-            ...favoriteMovies,
-            ...chatRecommendationMovies,
-            ...wishlistMovies,
-            ...popularMovies,
-          ],
-          PERSONALIZED_GENRE_SECTION_COUNT,
-          selectedFavoriteGenres,
-        ),
-      ].slice(0, PERSONALIZED_GENRE_SECTION_COUNT);
-
-      const [genreSectionResults, reviewSectionResults, similarTasteResults] = await Promise.all([
-        Promise.allSettled(
-          filledGenreNames.map(async (genreName) => {
-            const result = await searchMovies({
-              genres: [genreName],
-              sort: 'rating',
-              size: PERSONALIZED_GENRE_SECTION_LIMIT,
-            });
-
-            return {
-              key: `genre-${genreName}`,
-              title: `${genreName} 장르 예상 픽`,
-              movies: normalizePersonalizedPreviewMovies(
-                result?.movies || [],
-                PERSONALIZED_GENRE_SECTION_LIMIT,
-              ),
-            };
-          }),
-        ),
-        Promise.allSettled(
-          highRatedReviews.map(async (review) => {
-            const relatedMovies = await getRelatedMovies(review.movieId, {
-              limit: PERSONALIZED_REVIEW_SECTION_LIMIT,
-            });
-
-            return {
-              key: `review-${review.movieId}`,
-              title: `${review.movieTitle}에 높은 점수를 주셨어요`,
-              movies: normalizePersonalizedPreviewMovies(
-                relatedMovies,
-                PERSONALIZED_REVIEW_SECTION_LIMIT,
-              ),
-            };
-          }),
-        ),
-        Promise.allSettled(
-          normalizePersonalizedPreviewMovies(
-            [
-              ...favoriteMovies,
-              ...highRatedReviews.map((review) => ({
-                id: review.movieId,
-                title: review.movieTitle,
-              })),
-            ],
-            4,
-          ).map((seedMovie) => (
-            getRelatedMovies(seedMovie.id, {
-              limit: 15,
-            })
-          )),
-        ),
-      ]);
-
-      if (!isMounted) {
-        return;
+          personalizedRefreshRequestedRef.current = false;
+          setIsPersonalizedCalculating(false);
+        });
+      } else if (nextIsPersonalizedCalculating) {
+        personalizedRefreshRequestedRef.current = true;
+      } else {
+        personalizedRefreshRequestedRef.current = false;
       }
 
-      const genreSections = genreSectionResults
-        .filter((result) => result.status === 'fulfilled')
-        .map((result) => result.value)
-        .filter((section) => section.movies.length > 0);
-
-      const reviewSections = reviewSectionResults
-        .filter((result) => result.status === 'fulfilled')
-        .map((result) => result.value)
-        .filter((section) => section.movies.length > 0);
-
-      const similarTasteMovies = mergePersonalizedMovieCollections(
-        similarTasteResults
-          .filter((result) => result.status === 'fulfilled')
-          .map((result) => result.value),
-        PERSONALIZED_SIMILAR_TASTE_LIMIT,
-      );
-
-      const nextSimilarTasteMovies = similarTasteMovies.length > 0
-        ? similarTasteMovies
-        : popularMovies.slice(0, PERSONALIZED_SIMILAR_TASTE_LIMIT);
-
-      const nextTopPicks = personalizedTopPicks.length > 0
-        ? personalizedTopPicks
-        : mergePersonalizedMovieCollections(
-          [
-            chatRecommendationMovies,
-            wishlistMovies,
-            genreSections.flatMap((section) => section.movies),
-            reviewSections.flatMap((section) => section.movies),
-            nextSimilarTasteMovies,
-            popularMovies,
-          ],
-          PERSONALIZED_TOP_PICK_LIMIT,
-        );
-
       setPersonalizedSections({
-        topPicks: nextTopPicks,
-        genreSections,
-        chatRecommendationMovies,
-        wishlistMovies,
-        similarTasteMovies: nextSimilarTasteMovies,
-        reviewSections,
+        topPicks: personalizedTopPicks,
+        genreSections: personalizedTopPicksPayload?.genreSections || [],
+        wishlistMovies: normalizePersonalizedPreviewMovies(
+          personalizedTopPicksPayload?.wishlistMovies || [],
+          20,
+        ),
+        similarTasteMovies: normalizePersonalizedPreviewMovies(
+          personalizedTopPicksPayload?.similarTasteMovies || [],
+          40,
+        ),
+        reviewSections: (personalizedTopPicksPayload?.reviewSections || []).map((section) => ({
+          ...section,
+          movies: normalizePersonalizedPreviewMovies(section?.movies || [], 25),
+        })),
       });
+      setIsPersonalizedCalculating(nextIsPersonalizedCalculating);
       setIsPersonalizedLoading(false);
     };
 
@@ -1279,12 +1111,72 @@ export default function SearchPage() {
 
         setPersonalizedSections(createInitialPersonalizedSections());
         setIsPersonalizedLoading(false);
+        setIsPersonalizedCalculating(false);
+        personalizedRefreshRequestedRef.current = false;
       });
 
     return () => {
       isMounted = false;
     };
-  }, [isAuthenticated]);
+  }, [currentUser?.id, isAuthenticated]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !shouldShowPersonalizedRecommendations || !isPersonalizedCalculating) {
+      return undefined;
+    }
+
+    let isMounted = true;
+
+    const pollPersonalizedTopPicks = async () => {
+      try {
+        const result = await getPersonalizedTopPicks({ limit: PERSONALIZED_TOP_PICK_LIMIT });
+        if (!isMounted) {
+          return;
+        }
+
+        setPersonalizedSections((prev) => ({
+          ...prev,
+          topPicks: normalizePersonalizedPreviewMovies(
+            result?.movies || [],
+            PERSONALIZED_TOP_PICK_LIMIT,
+          ),
+          genreSections: result?.genreSections || [],
+          wishlistMovies: normalizePersonalizedPreviewMovies(
+            result?.wishlistMovies || [],
+            20,
+          ),
+          similarTasteMovies: normalizePersonalizedPreviewMovies(
+            result?.similarTasteMovies || [],
+            40,
+          ),
+          reviewSections: (result?.reviewSections || []).map((section) => ({
+            ...section,
+            movies: normalizePersonalizedPreviewMovies(section?.movies || [], 25),
+          })),
+        }));
+        setIsPersonalizedCalculating(Boolean(result?.isCalculating));
+
+        if (!result?.isCalculating) {
+          personalizedRefreshRequestedRef.current = false;
+        }
+      } catch {
+        if (!isMounted) {
+          return;
+        }
+      }
+    };
+
+    pollPersonalizedTopPicks();
+    const intervalId = window.setInterval(
+      pollPersonalizedTopPicks,
+      PERSONALIZED_TOP_PICK_POLLING_MS,
+    );
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, [isAuthenticated, isPersonalizedCalculating, shouldShowPersonalizedRecommendations]);
 
   /**
    * 검색창 아래에 노출할 최근 검색 기록 미리보기 5개를 불러온다.
@@ -2144,8 +2036,6 @@ export default function SearchPage() {
     }
   }, [lastSearchContext]);
 
-  const shouldShowPersonalizedRecommendations = isAuthenticated && !hasSearched && !isLoading;
-
   const renderPersonalizedSection = ({
     key,
     title,
@@ -2760,26 +2650,38 @@ export default function SearchPage() {
           {/* 초기 상태 — 회원 전용 개인화 추천 프레임 */}
           {shouldShowPersonalizedRecommendations && (
             <S.PersonalizedDiscover>
-              {isPersonalizedLoading ? (
-                <S.PersonalizedSkeletonStack>
-                  {[1, 2, 3].map((sectionIndex) => (
-                    <S.PersonalizedSkeletonSection key={`personalized-skeleton-${sectionIndex}`}>
-                      <S.PersonalizedSkeletonHeading />
-                      <S.PersonalizedSkeletonShelf>
-                        {[1, 2, 3, 4, 5, 6].map((cardIndex) => (
-                          <S.PersonalizedSkeletonPoster key={`skeleton-poster-${sectionIndex}-${cardIndex}`} />
-                        ))}
-                      </S.PersonalizedSkeletonShelf>
-                    </S.PersonalizedSkeletonSection>
-                  ))}
-                </S.PersonalizedSkeletonStack>
+              {shouldShowPersonalizedSkeleton ? (
+                <S.PersonalizedSkeletonFrame>
+                  {isPersonalizedCalculating && (
+                    <S.PersonalizedSkeletonOverlay role="status" aria-live="polite">
+                      <S.PersonalizedSkeletonOverlayIcon aria-hidden="true">🎬</S.PersonalizedSkeletonOverlayIcon>
+                      <S.PersonalizedSkeletonOverlayText>
+                        몽글픽이 취향을 계산 중이에요
+                      </S.PersonalizedSkeletonOverlayText>
+                    </S.PersonalizedSkeletonOverlay>
+                  )}
+                  <S.PersonalizedSkeletonStack>
+                    {[1, 2, 3].map((sectionIndex) => (
+                      <S.PersonalizedSkeletonSection key={`personalized-skeleton-${sectionIndex}`}>
+                        <S.PersonalizedSkeletonHeading />
+                        <S.PersonalizedSkeletonShelf>
+                          {[1, 2, 3, 4, 5, 6].map((cardIndex) => (
+                            <S.PersonalizedSkeletonPoster key={`skeleton-poster-${sectionIndex}-${cardIndex}`} />
+                          ))}
+                        </S.PersonalizedSkeletonShelf>
+                      </S.PersonalizedSkeletonSection>
+                    ))}
+                  </S.PersonalizedSkeletonStack>
+                </S.PersonalizedSkeletonFrame>
               ) : (
                 <>
                   {renderPersonalizedSection({
                     key: 'top-picks',
                     title: personalizedTopSectionTitle,
                     movies: personalizedSections.topPicks,
-                    emptyMessage: '아직 예상 픽을 구성할 데이터가 부족합니다.',
+                    emptyMessage: isPersonalizedCalculating
+                      ? '취향 계산이 끝나면 예상 픽이 여기에 표시됩니다.'
+                      : '아직 예상 픽을 구성할 데이터가 부족합니다.',
                   })}
 
                   {personalizedSections.genreSections.map((section) => (
@@ -2790,14 +2692,6 @@ export default function SearchPage() {
                       emptyMessage: '선호 장르 추천을 준비 중입니다.',
                     })
                   ))}
-
-                  {renderPersonalizedSection({
-                    key: 'chat-recommendations',
-                    title: 'AI 채팅으로 추천받았는데 아직 보지 않은 영화',
-                    movies: personalizedSections.chatRecommendationMovies,
-                    moreLink: ROUTES.ACCOUNT_RECOMMENDATIONS,
-                    emptyMessage: '아직 남아 있는 AI 채팅 추천 영화가 없습니다.',
-                  })}
 
                   {renderPersonalizedSection({
                     key: 'wishlist',

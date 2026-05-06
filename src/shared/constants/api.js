@@ -91,6 +91,8 @@ export const RECOMMEND_MOVIE_ENDPOINTS = {
   HOME_BOX_OFFICE: `${API_V2_VERSION}/search/home/box-office`,
   /** 검색 초기 화면 개인화 TOP picks - GET (JWT 필요) */
   PERSONALIZED_TOP_PICKS: `${API_V2_VERSION}/search/personalized/top-picks`,
+  /** 검색 초기 화면 개인화 TOP picks 백그라운드 재계산 요청 - POST (JWT 필요) */
+  PERSONALIZED_TOP_PICKS_REFRESH: `${API_V2_VERSION}/search/personalized/top-picks/refresh`,
   /** 영화 상세 조회 - GET (공개) */
   DETAIL: (id) => `${API_V2_VERSION}/search/movies/${id}`,
   /** 영화 상세의 컬렉션 작품 조회 - GET (공개) */

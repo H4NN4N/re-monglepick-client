@@ -118,6 +118,14 @@ function normalizePersonalizedTopPick(movie) {
   };
 }
 
+function normalizePersonalizedSection(section) {
+  return {
+    key: section?.key || '',
+    title: section?.title || '',
+    movies: (section?.movies || []).map(normalizePersonalizedTopPick),
+  };
+}
+
 function hasRelatedMoviePoster(movie) {
   return Boolean(movie?.poster_path || movie?.posterUrl || movie?.poster_url);
 }
@@ -686,12 +694,13 @@ export async function getHomeBoxOfficeMovies(page = 1, size = 20) {
 /**
  * 검색 초기 화면 개인화 TOP picks를 조회한다.
  *
- * recommend v2 엔드포인트가 유저 신호를 합쳐 직접 랭킹한 결과를 반환하며,
- * 클라이언트는 이 결과를 `/search` 상단 예상 픽 섹션에 그대로 사용한다.
+ * recommend v2 엔드포인트는 이미 계산되어 캐시에 저장된 개인화 결과만 반환한다.
+ * 캐시 상태와 백그라운드 계산 여부도 함께 내려주므로, 클라이언트는 이를 이용해
+ * "계산 중" 배너를 노출하고 완료 시점에만 새 결과로 교체할 수 있다.
  *
  * @param {Object} [options={}] - 조회 옵션
  * @param {number} [options.limit=10] - 최대 반환 개수
- * @returns {Promise<{movies: Array, totalCandidates: number}>}
+ * @returns {Promise<{movies: Array, totalCandidates: number, genreSections: Array, wishlistMovies: Array, similarTasteMovies: Array, reviewSections: Array, cacheState: string, isCalculating: boolean, lastComputedAt: string|null}>}
  */
 export async function getPersonalizedTopPicks({ limit = 10 } = {}) {
   const result = await recommendApi.get(RECOMMEND_MOVIE_ENDPOINTS.PERSONALIZED_TOP_PICKS, {
@@ -701,6 +710,42 @@ export async function getPersonalizedTopPicks({ limit = 10 } = {}) {
   return {
     movies: (result?.movies || []).map(normalizePersonalizedTopPick),
     totalCandidates: result?.total_candidates || result?.totalCandidates || 0,
+    genreSections: (result?.genre_sections || result?.genreSections || []).map(normalizePersonalizedSection),
+    wishlistMovies: (result?.wishlist_movies || result?.wishlistMovies || []).map(normalizePersonalizedTopPick),
+    similarTasteMovies: (result?.similar_taste_movies || result?.similarTasteMovies || []).map(normalizePersonalizedTopPick),
+    reviewSections: (result?.review_sections || result?.reviewSections || []).map(normalizePersonalizedSection),
+    cacheState: result?.cache_state || result?.cacheState || 'empty',
+    isCalculating: Boolean(result?.is_calculating ?? result?.isCalculating ?? false),
+    lastComputedAt: result?.last_computed_at || result?.lastComputedAt || null,
+  };
+}
+
+/**
+ * 검색 초기 화면 개인화 TOP picks의 백그라운드 재계산을 요청한다.
+ *
+ * 기존 캐시를 즉시 지우지 않고, 계산이 끝난 뒤 새 결과로만 교체하는 서버 정책을 따른다.
+ *
+ * @param {Object} [options={}] - 재계산 요청 옵션
+ * @param {number} [options.limit=10] - 계산할 최대 반환 개수
+ * @param {string} [options.reason='manual'] - 재계산 요청 이유
+ * @returns {Promise<{accepted: boolean, cacheState: string, isCalculating: boolean}>}
+ */
+export async function startPersonalizedTopPicksRefresh({
+  limit = 10,
+  reason = 'manual',
+} = {}) {
+  const result = await recommendApi.post(
+    RECOMMEND_MOVIE_ENDPOINTS.PERSONALIZED_TOP_PICKS_REFRESH,
+    null,
+    {
+      params: { limit, reason },
+    },
+  );
+
+  return {
+    accepted: Boolean(result?.accepted ?? true),
+    cacheState: result?.cache_state || result?.cacheState || 'queued',
+    isCalculating: Boolean(result?.is_calculating ?? result?.isCalculating ?? true),
   };
 }
 
