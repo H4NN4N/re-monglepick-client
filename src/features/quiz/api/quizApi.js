@@ -128,3 +128,19 @@ export async function getMyQuizHistory({ page = 0, size = 10 } = {}) {
   requireAuth();
   return backendApi.get(QUIZ_ENDPOINTS.MY_HISTORY, { params: { page, size } });
 }
+
+/**
+ * QUIZ_HINT 아이템 1개를 소비하고 퀴즈 힌트를 받는다.
+ *
+ * JWT 인증 필수. 보유한 QUIZ_HINT 아이템이 없으면 404 에러가 발생한다.
+ *
+ * @param {number} quizId - 힌트를 사용할 퀴즈 ID
+ * @returns {Promise<{ hint: string }>} 힌트 텍스트 응답
+ * @throws {Error} 로그인되지 않은 경우
+ * @throws {Error} 보유 QUIZ_HINT 아이템이 없는 경우 (404)
+ * @throws {Error} 퀴즈에 힌트가 없는 경우 (404)
+ */
+export async function requestQuizHint(quizId) {
+  requireAuth();
+  return backendApi.post(QUIZ_ENDPOINTS.HINT(quizId));
+}
