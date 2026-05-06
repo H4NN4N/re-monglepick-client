@@ -20,6 +20,7 @@ import {
   toggleWatched,
   submitFeedback,
 } from '../api/recommendationApi';
+import { addToWishlist, removeFromWishlist } from '../../user/api/userApi';
 import RecommendationCard from '../components/RecommendationCard';
 import * as S from './RecommendationPage.styled';
 
@@ -32,6 +33,25 @@ const FILTER_TABS = [
 
 /** 페이지 크기 */
 const PAGE_SIZE = 20;
+
+/**
+ * 추천 응답에서 위시리스트 API가 요구하는 영화 ID를 추출한다.
+ *
+ * 추천 이력 응답은 시점에 따라 `movie` 중첩 객체 또는 평탄화된 필드로 올 수 있어
+ * 주요 후보 키를 순서대로 확인한다.
+ */
+function getRecommendationMovieId(recommendation) {
+  const movie = recommendation?.movie || recommendation;
+
+  return (
+    movie?.movieId
+    || movie?.movie_id
+    || movie?.id
+    || recommendation?.movieId
+    || recommendation?.movie_id
+    || null
+  );
+}
 
 export default function RecommendationPage() {
   const navigate = useNavigate();
@@ -99,17 +119,36 @@ export default function RecommendationPage() {
    *
    * Backend RecommendationHistoryController 는 payload 언랩 후 `{wishlisted: boolean}` 을 내려주므로
    * 성공 응답의 `result.wishlisted` 값을 그대로 사용하면 된다.
+   *
+   * 2026-05-06: 추천 내역 찜은 기존 RecommendationController 상태와 함께
+   * recommend `wishlist_service.py` 의 `user_wishlist` 도 동기화한다.
    */
   const handleToggleWishlist = async (recommendationId) => {
     const targetRec = recommendations.find((rec) => rec.recommendationLogId === recommendationId);
     const prevValue = targetRec?.wishlisted ?? false;
+    const nextValue = !prevValue;
+    const movieId = getRecommendationMovieId(targetRec);
+    let syncedUserWishlist = false;
+
     /* 1) 낙관적으로 먼저 뒤집기 */
     setRecommendations((prev) =>
       prev.map((rec) =>
-        rec.recommendationLogId === recommendationId ? { ...rec, wishlisted: !prevValue } : rec,
+        rec.recommendationLogId === recommendationId ? { ...rec, wishlisted: nextValue } : rec,
       ),
     );
     try {
+      if (!movieId) {
+        throw new Error(`movieId not found for recommendationLogId=${recommendationId}`);
+      }
+
+      /* recommend v2 user_wishlist 먼저 동기화해 영화 상세/마이페이지와 상태를 맞춘다. */
+      if (nextValue) {
+        await addToWishlist(String(movieId));
+      } else {
+        await removeFromWishlist(String(movieId));
+      }
+      syncedUserWishlist = true;
+
       const result = await toggleWishlist(recommendationId);
       /* 2) 서버 응답으로 최종 값 보정 (동시 클릭 등 race 방지) */
       if (result?.wishlisted != null) {
@@ -119,7 +158,20 @@ export default function RecommendationPage() {
           ),
         );
       }
-    } catch {
+    } catch (err) {
+      if (syncedUserWishlist && movieId) {
+        try {
+          if (nextValue) {
+            await removeFromWishlist(String(movieId));
+          } else {
+            await addToWishlist(String(movieId));
+          }
+        } catch (rollbackErr) {
+          console.error('[Recommendation] user_wishlist 롤백 실패:', rollbackErr.message);
+        }
+      }
+
+      console.error('[Recommendation] 찜 처리 실패:', err.message);
       /* 3) 실패 시 원상 복구 + 안내 */
       setRecommendations((prev) =>
         prev.map((rec) =>
