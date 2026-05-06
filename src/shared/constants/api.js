@@ -592,6 +592,8 @@ export const QUIZ_ENDPOINTS = {
   MY_STATS: `${API_VERSION}/quizzes/me/stats`,
   /** 내 응시 이력 페이징 - GET (JWT 필수, 2026-04-29 신규) */
   MY_HISTORY: `${API_VERSION}/quizzes/me/history`,
+  /** 퀴즈 힌트 사용 - POST (JWT 필수, QUIZ_HINT 아이템 소비) */
+  HINT: (quizId) => `${API_VERSION}/quizzes/${quizId}/hint`,
 };
 
 /**
