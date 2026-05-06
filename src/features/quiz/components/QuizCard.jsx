@@ -21,7 +21,7 @@
  */
 
 import { useState, useCallback } from 'react';
-import { submitQuizAnswer } from '../api/quizApi';
+import { submitQuizAnswer, requestQuizHint } from '../api/quizApi';
 import * as S from './QuizCard.styled';
 
 /**
@@ -42,6 +42,10 @@ export default function QuizCard({ quiz, index = 0, onSubmitted }) {
   const [result, setResult] = useState(quiz?.solved === true ? { _alreadySolved: true } : null);
   /** 제출 실패 에러 메시지 */
   const [error, setError] = useState(null);
+  /** 힌트 텍스트 (null=미사용) */
+  const [hint, setHint] = useState(null);
+  /** 힌트 API 호출 중 플래그 */
+  const [hintLoading, setHintLoading] = useState(false);
 
   /** 현재 제출 가능 여부 — 선택 되어 있고 제출 중 아니고 아직 결과가 없을 때 */
   const canSubmit = selected !== null && !submitting && !result;
@@ -80,6 +84,27 @@ export default function QuizCard({ quiz, index = 0, onSubmitted }) {
     }
   }, [quiz?.quizId, selected, onSubmitted]);
 
+  /** 힌트 사용 핸들러 — QUIZ_HINT 아이템 1개 소비 후 힌트 표시 */
+  const handleUseHint = useCallback(async () => {
+    if (!quiz?.quizId || hintLoading || hint) return;
+    setHintLoading(true);
+    setError(null);
+    try {
+      const resp = await requestQuizHint(quiz.quizId);
+      setHint(resp?.hint ?? '');
+    } catch (err) {
+      const status = err?.status ?? err?.response?.status;
+      if (status === 401) {
+        setError('힌트를 사용하려면 로그인이 필요해요.');
+      } else if (status === 404) {
+        setError(err?.message || '힌트가 없거나 보유한 퀴즈 힌트 아이템이 없어요.');
+      } else {
+        setError(err?.message || '힌트 사용 중 오류가 발생했어요.');
+      }
+    } finally {
+      setHintLoading(false);
+    }
+  }, [quiz?.quizId, hintLoading, hint]);
 
   /* 선택지가 string 배열이 아닐 경우(예: {text, id}) 방어적 정규화 */
   const options = Array.isArray(quiz?.options)
@@ -130,6 +155,9 @@ export default function QuizCard({ quiz, index = 0, onSubmitted }) {
         })}
       </S.OptionList>
 
+      {/* ── 힌트 표시 ── */}
+      {hint && <S.HintBox>💡 힌트: {hint}</S.HintBox>}
+
       {/* ── 에러 메시지 ── */}
       {error && <S.ErrorMsg>{error}</S.ErrorMsg>}
 
@@ -158,6 +186,16 @@ export default function QuizCard({ quiz, index = 0, onSubmitted }) {
       {/* ── 액션 버튼 영역 — 결과가 나오면 버튼 없음 ── */}
       {!result && (
         <S.ActionRow>
+          {!hint && (
+            <S.HintButton
+              type="button"
+              disabled={hintLoading}
+              onClick={handleUseHint}
+              title="QUIZ_HINT 아이템 1개를 소비하여 힌트를 확인합니다"
+            >
+              {hintLoading ? '힌트 불러오는 중...' : '💡 힌트 사용'}
+            </S.HintButton>
+          )}
           <S.SubmitButton
             type="button"
             disabled={!canSubmit}
