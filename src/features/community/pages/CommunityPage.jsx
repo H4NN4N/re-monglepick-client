@@ -257,15 +257,34 @@ export default function CommunityPage() {
                     ◀
                   </S.PageBtn>
 
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <S.PageBtn
-                      key={page}
-                      $active={page === currentPage}
-                      onClick={() => goToPage(page)}
-                    >
-                      {page}
-                    </S.PageBtn>
-                  ))}
+                  {(() => {
+                    const delta = 2;
+                    const rangeSet = new Set([1, totalPages]);
+                    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+                      rangeSet.add(i);
+                    }
+                    const sorted = [...rangeSet].sort((a, b) => a - b);
+                    const items = [];
+                    let prev = null;
+                    for (const p of sorted) {
+                      if (prev !== null && p - prev > 1) items.push('...');
+                      items.push(p);
+                      prev = p;
+                    }
+                    return items.map((item, idx) =>
+                      item === '...' ? (
+                        <S.Ellipsis key={`ellipsis-${idx}`}>···</S.Ellipsis>
+                      ) : (
+                        <S.PageBtn
+                          key={item}
+                          $active={item === currentPage}
+                          onClick={() => goToPage(item)}
+                        >
+                          {item}
+                        </S.PageBtn>
+                      )
+                    );
+                  })()}
 
                   <S.PageBtn
                     onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}
