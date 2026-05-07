@@ -2,7 +2,7 @@
  * 추천 내역 API 모듈.
  *
  * Backend의 RecommendationController와 통신하여
- * AI 추천 이력 조회, 찜/봤어요 토글, 만족도 피드백을 수행한다.
+ * AI 추천 이력 조회/삭제, 찜/봤어요 토글, 만족도 피드백을 수행한다.
  *
  * @module features/recommendation/api/recommendationApi
  */
@@ -24,6 +24,17 @@ export async function getRecommendations({ page = 0, size = 20, status } = {}) {
   const params = { page, size };
   if (status && status !== 'ALL') params.status = status;
   return backendApi.get(RECOMMENDATION_ENDPOINTS.LIST, { params });
+}
+
+/**
+ * 추천 이력 항목을 삭제한다.
+ *
+ * @param {string|number} recommendationId - 추천 로그 ID
+ * @returns {Promise<void>}
+ */
+export async function deleteRecommendationHistory(recommendationId) {
+  requireAuth();
+  await backendApi.delete(RECOMMENDATION_ENDPOINTS.DELETE(recommendationId));
 }
 
 /**

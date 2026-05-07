@@ -25,6 +25,7 @@ import { getEquippedItems, getMyItems, equipItem, unequipItem } from '../../poin
 import ProfileCustomizeSection from '../components/ProfileCustomizeSection';
 import { useModal } from '../../../shared/components/Modal';
 import { searchMovies } from '../../movie/api/movieApi';
+import { getOnboardingMissionStatus } from '../../onboarding/api/onboardingApi';
 import { ROUTES, buildPath } from '../../../shared/constants/routes';
 import { getGradeLabel } from '../../../shared/constants/grade';
 import MovieList from '../../../shared/components/MovieList/MovieList';
@@ -785,6 +786,8 @@ export default function MyPagePage() {
   const [myPosts, setMyPosts] = useState([]);
   const [myPostsPage, setMyPostsPage] = useState(0);
   const [myPostsPagination, setMyPostsPagination] = useState({ totalPages: 0, totalElements: 0 });
+  const [onboardingStatus, setOnboardingStatus] = useState(null);
+  const [isIncompleteOnboardingOverlayDismissed, setIsIncompleteOnboardingOverlayDismissed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isDeleteAccountModalOpen, setIsDeleteAccountModalOpen] = useState(false);
@@ -887,6 +890,17 @@ export default function MyPagePage() {
 
     return '저장이 끝났다면 시작 미션 페이지로 돌아가 진행 상태를 확인하세요.';
   }, [onboardingMission]);
+  const shouldShowIncompleteOnboardingOverlay = useMemo(() => {
+    if (
+      !onboardingStatus
+      || onboardingStatus.allCompleted
+      || isIncompleteOnboardingOverlayDismissed
+    ) {
+      return false;
+    }
+
+    return !shouldShowOnboardingReturn;
+  }, [isIncompleteOnboardingOverlayDismissed, onboardingStatus, shouldShowOnboardingReturn]);
   const favoriteMovieSlots = useMemo(() => {
     const filledSlots = favoriteMovies.slice(0, FAVORITE_GRID_SIZE);
     const emptySlots = Array.from(
@@ -1073,6 +1087,15 @@ export default function MyPagePage() {
     applyFavoriteGenreResponse(favoriteGenreData);
   }, [applyFavoriteGenreResponse]);
 
+  const loadOnboardingStatus = useCallback(async () => {
+    try {
+      const missionStatus = await getOnboardingMissionStatus();
+      setOnboardingStatus(missionStatus);
+    } catch {
+      setOnboardingStatus(null);
+    }
+  }, []);
+
   /* 마운트 시 착용 아이템 로드 — 탭 전환과 무관하게 항상 헤더에 반영 */
   useEffect(() => {
     if (locationActiveTab && locationActiveTab !== activeTab) {
@@ -1084,6 +1107,21 @@ export default function MyPagePage() {
     if (!isAuthenticated) return;
     loadEquippedItems();
   }, [isAuthenticated, loadEquippedItems]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setOnboardingStatus(null);
+      return;
+    }
+
+    void loadOnboardingStatus();
+  }, [isAuthenticated, loadOnboardingStatus]);
+
+  useEffect(() => {
+    if (onboardingStatus?.allCompleted) {
+      setIsIncompleteOnboardingOverlayDismissed(false);
+    }
+  }, [onboardingStatus?.allCompleted]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -1139,7 +1177,16 @@ export default function MyPagePage() {
     }
 
     loadTabData();
-  }, [activeTab, isAuthenticated, loadFavoriteGenres, loadFavoriteMovies, loadMyReviews, reviewPage, myPostsPage]);
+  }, [
+    activeTab,
+    isAuthenticated,
+    loadCustomizeInventory,
+    loadFavoriteGenres,
+    loadFavoriteMovies,
+    loadMyReviews,
+    reviewPage,
+    myPostsPage,
+  ]);
 
   /**
    * 리뷰 수정/삭제 후에도 마이페이지 페이지네이션 숫자를 맞추기 위해
@@ -1237,7 +1284,8 @@ export default function MyPagePage() {
   const handleFavoriteMoviesSaved = useCallback(async (movieIds) => {
     const response = await saveFavoriteMovies(movieIds);
     applyFavoriteMovieResponse(response);
-  }, [applyFavoriteMovieResponse]);
+    await loadOnboardingStatus();
+  }, [applyFavoriteMovieResponse, loadOnboardingStatus]);
 
   const handleFavoriteGenreSelect = useCallback((genre) => {
     setSelectedFavoriteGenres((prevGenres) => {
@@ -1303,6 +1351,7 @@ export default function MyPagePage() {
     try {
       const response = await saveFavoriteGenres(selectedFavoriteGenreIds);
       applyFavoriteGenreResponse(response);
+      await loadOnboardingStatus();
     } catch (err) {
       await showAlert({
         title: '선호 장르 저장 실패',
@@ -1312,7 +1361,7 @@ export default function MyPagePage() {
     } finally {
       setIsFavoriteGenreSaving(false);
     }
-  }, [applyFavoriteGenreResponse, selectedFavoriteGenreIds, showAlert]);
+  }, [applyFavoriteGenreResponse, loadOnboardingStatus, selectedFavoriteGenreIds, showAlert]);
 
   const handleFavoriteOrderSave = useCallback(async () => {
     setIsFavoriteOrderSaving(true);
@@ -1895,6 +1944,34 @@ export default function MyPagePage() {
           isSubmitting={isDeletingAccount}
           error={deleteAccountError}
         />
+      )}
+
+      {shouldShowIncompleteOnboardingOverlay && (
+        <S.IncompleteOnboardingOverlay role="status" aria-live="polite">
+          <S.IncompleteOnboardingOverlayContent>
+            <S.IncompleteOnboardingOverlayCloseButton
+              type="button"
+              onClick={() => setIsIncompleteOnboardingOverlayDismissed(true)}
+              aria-label="시작 미션 안내 닫기"
+            >
+              ×
+            </S.IncompleteOnboardingOverlayCloseButton>
+            <div>
+              <S.IncompleteOnboardingOverlayTitle>
+                완료되지 않은 시작 미션이 있습니다
+              </S.IncompleteOnboardingOverlayTitle>
+              <S.IncompleteOnboardingOverlayDescription>
+                미션을 마치면 추천 정확도를 더 높일 수 있습니다.
+              </S.IncompleteOnboardingOverlayDescription>
+            </div>
+            <S.IncompleteOnboardingOverlayButton
+              type="button"
+              onClick={() => navigate(ROUTES.ONBOARDING)}
+            >
+              시작 미션 보러가기
+            </S.IncompleteOnboardingOverlayButton>
+          </S.IncompleteOnboardingOverlayContent>
+        </S.IncompleteOnboardingOverlay>
       )}
     </S.Wrapper>
   );

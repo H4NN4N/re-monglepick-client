@@ -572,6 +572,99 @@ export const OnboardingReturnButton = styled.button`
   }
 `;
 
+export const IncompleteOnboardingOverlay = styled.div`
+  position: fixed;
+  left: 50%;
+  top: ${({ theme }) => theme.spacing.lg};
+  transform: translateX(-50%);
+  z-index: 160;
+  width: min(720px, calc(100vw - 32px));
+  animation: ${overlayFadeIn} 0.2s ease;
+
+  ${mediaMobile} {
+    width: calc(100vw - 24px);
+    bottom: ${({ theme }) => theme.spacing.lg};
+  }
+`;
+
+export const IncompleteOnboardingOverlayContent = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => `${theme.spacing.lg} ${theme.spacing.lg} ${theme.spacing.lg} calc(${theme.spacing.lg})`};
+  padding-right: ${({ theme }) => theme.spacing.xxxl || theme.spacing.xl};
+  border-radius: ${({ theme }) => theme.radius.xl};
+  background: rgba(20, 25, 38, 0.92);
+  border: 1px solid ${({ theme }) => theme.colors.primaryLight};
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+
+  ${mediaMobile} {
+    flex-direction: column;
+    align-items: stretch;
+  }
+`;
+
+export const IncompleteOnboardingOverlayCloseButton = styled.button`
+  position: absolute;
+  top: ${({ theme }) => theme.spacing.sm};
+  right: ${({ theme }) => theme.spacing.sm};
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background ${({ theme }) => theme.transitions.fast}, color ${({ theme }) => theme.transitions.fast}, transform ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: white;
+    transform: translateY(-1px);
+  }
+`;
+
+export const IncompleteOnboardingOverlayTitle = styled.strong`
+  display: block;
+  color: white;
+  font-size: ${({ theme }) => theme.typography.textBase};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+`;
+
+export const IncompleteOnboardingOverlayDescription = styled.p`
+  margin: ${({ theme }) => theme.spacing.xs} 0 0;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: ${({ theme }) => theme.typography.textSm};
+  line-height: 1.5;
+`;
+
+export const IncompleteOnboardingOverlayButton = styled.button`
+  flex-shrink: 0;
+  padding: ${({ theme }) => `${theme.spacing.sm} ${theme.spacing.lg}`};
+  border: none;
+  border-radius: ${({ theme }) => theme.radius.full};
+  background: ${({ theme }) => theme.gradients.primary};
+  color: white;
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontBold};
+  cursor: pointer;
+  transition: transform ${({ theme }) => theme.transitions.fast}, opacity ${({ theme }) => theme.transitions.fast};
+
+  &:hover {
+    transform: translateY(-1px);
+    opacity: 0.95;
+  }
+`;
+
 export const SelectedGenreEmpty = styled.div`
   border: 1px dashed ${({ theme }) => theme.colors.borderDefault};
   border-radius: ${({ theme }) => theme.radius.lg};

@@ -425,11 +425,13 @@ export const MATCH_ENDPOINTS = {
 
 /**
  * 추천 내역(Recommendation) 관련 엔드포인트.
- * AI 추천 이력 조회, 찜/봤어요 토글, 별점/코멘트 리뷰 작성을 처리한다.
+ * AI 추천 이력 조회, 삭제, 찜/봤어요 토글, 별점/코멘트 리뷰 작성을 처리한다.
  */
 export const RECOMMENDATION_ENDPOINTS = {
   /** 추천 이력 목록 - GET (query: page, size, status?) */
   LIST: `${API_VERSION}/recommendations`,
+  /** 추천 이력 삭제 - DELETE (path: recommendationId) */
+  DELETE: (id) => `${API_VERSION}/recommendations/${id}`,
   /** 찜(위시리스트) 토글 - POST (path: recommendationId) */
   WISHLIST: (id) => `${API_VERSION}/recommendations/${id}/wishlist`,
   /** 봤어요 토글 - POST (path: recommendationId) */
