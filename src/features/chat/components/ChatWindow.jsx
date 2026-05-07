@@ -62,6 +62,26 @@ function detectsTheaterIntent(text) {
   return THEATER_INTENT_RE.test(text);
 }
 
+/**
+ * 직전 봇 메시지가 "위치 재질의" 인지 판별 (Agent tool_executor_node 의 location_required 응답).
+ * 사용자가 "강남역" 같은 단일 토큰으로만 응답할 때 이 플래그를 보고 theater 의도로 강제
+ * 간주해 좌표 권한을 다시 시도한다 (단일 토큰은 THEATER_INTENT_RE 에 매칭되지 않음).
+ *
+ * Agent 측 메시지 원문(monglepick-agent/src/monglepick/agents/chat/nodes.py:2845)과
+ * 정확히 동일한 prefix 를 검사 — 메시지가 바뀌면 양쪽이 함께 갱신돼야 함.
+ */
+const LOCATION_REQUIRED_PREFIX = '어느 지역 근처에서 찾으실까요?';
+function lastAssistantAskedForLocation(messages) {
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    const m = messages[i];
+    if (m.role === 'user') return false; // 봇 메시지가 더 최근이면 그것만 보면 됨
+    if (m.role === 'assistant' && typeof m.content === 'string') {
+      return m.content.startsWith(LOCATION_REQUIRED_PREFIX);
+    }
+  }
+  return false;
+}
+
 export default function ChatWindow() {
   /* 뒤로가기 네비게이션 + URL 세션 ID */
   const navigate = useNavigate();
@@ -267,12 +287,32 @@ export default function ChatWindow() {
     const text = inputText.trim();
 
     // theater/booking 의도가 의심되고 좌표를 아직 못 받았으면 권한 요청.
-    // 권한 거부/실패는 무시 — Agent 의 지명 추출 fallback 이 받아준다.
+    // 권한 거부/실패는 사용자에게 한 번만 안내(아래 권한 에러 분기) — 그래도 메시지는 그대로 전송하고
+    // Agent 의 지명 추출 fallback 이 받아준다.
+    //
+    // 2026-05-07 회귀 픽스: 직전 봇 메시지가 "어느 지역 근처에서 찾으실까요?" 였다면
+    // 사용자 응답이 "강남역" 같은 단일 토큰이라 THEATER_INTENT_RE 에 매칭되지 않더라도
+    // 좌표 권한을 다시 시도한다. (좌표가 들어가면 Agent 가 geocoding 을 건너뛰고 즉시 검색)
     let location = geo.coords;
-    if (!location && detectsTheaterIntent(text)) {
+    const followUpToLocationRequest = lastAssistantAskedForLocation(messages);
+    const shouldRequestGeo =
+      !location && (detectsTheaterIntent(text) || followUpToLocationRequest);
+    if (shouldRequestGeo) {
       const requested = await geo.request();
       if (requested) {
         location = requested;
+      } else if (geo.status === 'denied' || geo.status === 'unsupported') {
+        // 권한 자체가 막혀 있으면 사용자에게 한 번 안내. 메시지 전송은 계속 진행한다 —
+        // Agent 가 텍스트(예: "강남역")에서 지명을 뽑아 geocoding 으로 fallback 하므로.
+        // showAlert 는 비동기지만 await 없이 띄워도 sendMessage 와 충돌하지 않는다.
+        showAlert({
+          title: '위치 권한이 막혀 있어요',
+          message:
+            geo.status === 'unsupported'
+              ? '이 브라우저에서는 위치 기능을 지원하지 않아요. 지역명(예: "강남역", "홍대 입구")을 직접 입력해주시면 찾아드릴게요. 🗺️'
+              : '주소창 자물쇠 → "위치"를 "허용"으로 바꿔주시거나, 채팅에 지역명(예: "강남역", "홍대 입구")을 직접 입력해주세요. 🗺️',
+          type: 'info',
+        });
       }
     }
 
@@ -791,9 +831,22 @@ export default function ChatWindow() {
                         const text = `${title} 근처에서 볼 수 있는 영화관 알려줘`;
                         let location = geo.coords;
                         if (!location) {
-                          // 거부/타임아웃은 null 반환 — 그대로 좌표 없이 진행 (3.b 정책)
+                          // 거부/타임아웃은 null 반환 — 그대로 좌표 없이 진행하고
+                          // Agent 가 지역명 재질의를 띄우도록 한다. 단, 권한 자체가 막혀 있으면
+                          // 사용자에게 한 번 안내(2026-05-07: 무음 실패 회귀 픽스).
                           const requested = await geo.request();
-                          if (requested) location = requested;
+                          if (requested) {
+                            location = requested;
+                          } else if (geo.status === 'denied' || geo.status === 'unsupported') {
+                            showAlert({
+                              title: '위치 권한이 막혀 있어요',
+                              message:
+                                geo.status === 'unsupported'
+                                  ? '이 브라우저에서는 위치 기능을 지원하지 않아요. 채팅에 지역명을 직접 입력해주시면 찾아드릴게요. 🗺️'
+                                  : '주소창 자물쇠 → "위치"를 "허용"으로 바꿔주세요. 또는 다음 채팅 응답에서 지역명(예: "강남역")을 직접 입력해주세요. 🗺️',
+                              type: 'info',
+                            });
+                          }
                         }
                         sendMessage(text, null, location || null);
                       }}
