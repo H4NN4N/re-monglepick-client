@@ -22,6 +22,7 @@ import { useState, useEffect, useCallback } from 'react';
 import useAuthStore from '../../../shared/stores/useAuthStore';
 import { useModal } from '../../../shared/components/Modal';
 import { useRewardToast } from '../../../shared/components/RewardToast';
+import { useAchievementUnlock } from '../../../shared/components/AchievementUnlock';
 import Loading from '../../../shared/components/Loading/Loading';
 import { formatRelativeTime } from '../../../shared/utils/formatters';
 import { getDisplayNickname, getDisplayProfileImage } from '../../../shared/utils/userDisplay';
@@ -42,6 +43,7 @@ export default function CommentSection({ postId }) {
   const currentUser = useAuthStore((s) => s.user);
   /* 리워드 획득 토스트 */
   const { showReward } = useRewardToast();
+  const { showAchievements } = useAchievementUnlock();
 
   /* 커스텀 모달 */
   const { showAlert, showConfirm } = useModal();
@@ -89,7 +91,8 @@ export default function CommentSection({ postId }) {
 
     setIsSubmitting(true);
     try {
-      const newComment = await createComment(postId, { content: trimmed });
+      const response = await createComment(postId, { content: trimmed });
+      const newComment = response.data;
       /* 작성 성공 시 목록 맨 아래에 추가 (서버 기본 정렬: createdAt ASC) */
       setComments((prev) => [...prev, newComment]);
       setContent('');
@@ -97,6 +100,7 @@ export default function CommentSection({ postId }) {
       if (newComment?.rewardPoints > 0) {
         showReward(newComment.rewardPoints, '댓글 작성');
       }
+      showAchievements(response.unlockedAchievements);
     } catch (err) {
       await showAlert({
         title: '댓글 작성 실패',

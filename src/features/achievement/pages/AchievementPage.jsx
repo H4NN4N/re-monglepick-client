@@ -43,7 +43,7 @@ export default function AchievementPage() {
     setIsLoading(true);
     try {
       const data = await getAchievements({ category: selectedCategory || undefined });
-      setAchievements(Array.isArray(data) ? data : data?.content || []);
+      setAchievements(data);
     } catch (err) {
       console.error('[Achievement] 로드 실패:', err.message);
       setAchievements([]);

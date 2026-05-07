@@ -10,6 +10,36 @@
 import { backendApi, requireAuth } from '../../../shared/api/axiosInstance';
 import { ACHIEVEMENT_ENDPOINTS } from '../../../shared/constants/api';
 
+function unwrapApiData(response) {
+  if (
+    response &&
+    typeof response === 'object' &&
+    Object.prototype.hasOwnProperty.call(response, 'data')
+  ) {
+    return response.data;
+  }
+  return response;
+}
+
+function normalizeAchievementList(response) {
+  const data = unwrapApiData(response);
+  const pageData = unwrapApiData(data);
+
+  if (Array.isArray(pageData)) {
+    return pageData;
+  }
+
+  if (Array.isArray(pageData?.content)) {
+    return pageData.content;
+  }
+
+  if (Array.isArray(pageData?.achievements)) {
+    return pageData.achievements;
+  }
+
+  return [];
+}
+
 /**
  * 사용자 업적 목록 조회.
  *
@@ -21,7 +51,8 @@ export async function getAchievements({ category } = {}) {
   requireAuth();
   const params = {};
   if (category) params.category = category;
-  return backendApi.get(ACHIEVEMENT_ENDPOINTS.LIST, { params });
+  const response = await backendApi.get(ACHIEVEMENT_ENDPOINTS.LIST, { params });
+  return normalizeAchievementList(response);
 }
 
 /**
@@ -32,7 +63,8 @@ export async function getAchievements({ category } = {}) {
  */
 export async function getAchievementDetail(achievementId) {
   requireAuth();
-  return backendApi.get(ACHIEVEMENT_ENDPOINTS.DETAIL(achievementId));
+  const response = await backendApi.get(ACHIEVEMENT_ENDPOINTS.DETAIL(achievementId));
+  return unwrapApiData(response);
 }
 
 /**

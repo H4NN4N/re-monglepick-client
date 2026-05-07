@@ -22,6 +22,7 @@
 
 import { useState, useCallback } from 'react';
 import { submitQuizAnswer, requestQuizHint } from '../api/quizApi';
+import { useAchievementUnlock } from '../../../shared/components/AchievementUnlock';
 import * as S from './QuizCard.styled';
 
 /**
@@ -34,6 +35,7 @@ import * as S from './QuizCard.styled';
  *   QuizPage 가 "내 응시 현황" 카드를 즉시 리페치하기 위한 hook (2026-04-29).
  */
 export default function QuizCard({ quiz, index = 0, onSubmitted }) {
+  const { showAchievements } = useAchievementUnlock();
   /** 사용자가 고른 선택지 텍스트 */
   const [selected, setSelected] = useState(null);
   /** 제출 API 호출 중 플래그 */
@@ -62,8 +64,10 @@ export default function QuizCard({ quiz, index = 0, onSubmitted }) {
     setSubmitting(true);
     setError(null);
     try {
-      const resp = await submitQuizAnswer(quiz.quizId, selected);
+      const response = await submitQuizAnswer(quiz.quizId, selected);
+      const resp = response.data;
       setResult(resp);
+      showAchievements(response.unlockedAchievements);
       /* 응시 현황 카드 즉시 갱신을 위해 부모에게 알림 (옵셔널) */
       if (typeof onSubmitted === 'function') {
         onSubmitted(resp);
@@ -82,7 +86,7 @@ export default function QuizCard({ quiz, index = 0, onSubmitted }) {
     } finally {
       setSubmitting(false);
     }
-  }, [quiz?.quizId, selected, onSubmitted]);
+  }, [quiz?.quizId, selected, onSubmitted, showAchievements]);
 
   /** 힌트 사용 핸들러 — QUIZ_HINT 아이템 1개 소비 후 힌트 표시 */
   const handleUseHint = useCallback(async () => {

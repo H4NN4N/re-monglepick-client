@@ -9,6 +9,7 @@
 
 import { backendApi, agentApi, requireAuth } from '../../../shared/api/axiosInstance';
 import { ROADMAP_ENDPOINTS, REVIEW_VERIFICATION_ENDPOINTS } from '../../../shared/constants/api';
+import { normalizeAchievementAwareResponse } from '../../../shared/utils/achievementAwareResponse';
 
 /**
  * 코스 목록 조회.
@@ -156,7 +157,8 @@ export async function getMovieReview(courseId, movieId) {
  */
 export async function submitFinalReview(courseId, reviewText) {
   requireAuth();
-  return backendApi.post(ROADMAP_ENDPOINTS.FINAL_REVIEW(courseId), { reviewText });
+  const result = await backendApi.post(ROADMAP_ENDPOINTS.FINAL_REVIEW(courseId), { reviewText });
+  return normalizeAchievementAwareResponse(result);
 }
 
 /**
@@ -169,4 +171,3 @@ export async function getFinalReview(courseId) {
   requireAuth();
   return backendApi.get(ROADMAP_ENDPOINTS.FINAL_REVIEW(courseId));
 }
-
