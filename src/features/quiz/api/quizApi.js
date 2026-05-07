@@ -17,6 +17,7 @@
 
 import { backendApi, requireAuth } from '../../../shared/api/axiosInstance';
 import { QUIZ_ENDPOINTS } from '../../../shared/constants/api';
+import { normalizeAchievementAwareResponse } from '../../../shared/utils/achievementAwareResponse';
 
 /**
  * 특정 영화의 PUBLISHED 퀴즈 목록을 조회한다.
@@ -77,7 +78,8 @@ export async function getTodayQuizzes() {
 export async function submitQuizAnswer(quizId, answer) {
   /* JWT 필수 가드 — 토큰 없으면 즉시 에러 throw */
   requireAuth();
-  return backendApi.post(QUIZ_ENDPOINTS.SUBMIT(quizId), { answer });
+  const result = await backendApi.post(QUIZ_ENDPOINTS.SUBMIT(quizId), { answer });
+  return normalizeAchievementAwareResponse(result);
 }
 
 /**

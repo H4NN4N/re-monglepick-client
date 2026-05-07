@@ -9,6 +9,7 @@
 import api from '../../../shared/api/axiosInstance';
 import { COMMUNITY_ENDPOINTS } from '../../../shared/constants/api';
 import { getDisplayNickname, isWithdrawnUser } from '../../../shared/utils/userDisplay';
+import { normalizeAchievementAwareResponse } from '../../../shared/utils/achievementAwareResponse';
 
 function normalizePost(post) {
   if (!post) return post;
@@ -55,7 +56,12 @@ export async function getPostDetail(postId) {
 }
 
 export async function createPost({ title, content, category = 'FREE', imageUrls = [] }) {
-  return api.post(COMMUNITY_ENDPOINTS.CREATE_POST, { title, content, category, imageUrls });
+  const result = await api.post(COMMUNITY_ENDPOINTS.CREATE_POST, { title, content, category, imageUrls });
+  const response = normalizeAchievementAwareResponse(result);
+  return {
+    ...response,
+    data: normalizePost(response.data),
+  };
 }
 
 export async function updatePost(postId, { title, content, category }) {
@@ -88,12 +94,17 @@ export async function getSharedPlaylists({ page = 1, size = 15 } = {}) {
 }
 
 export async function sharePlaylist({ title, content, playlistId }) {
-  return api.post(COMMUNITY_ENDPOINTS.CREATE_POST, {
+  const result = await api.post(COMMUNITY_ENDPOINTS.CREATE_POST, {
     title,
     content,
     category: 'PLAYLIST_SHARE',
     playlistId,
   });
+  const response = normalizeAchievementAwareResponse(result);
+  return {
+    ...response,
+    data: normalizePost(response.data),
+  };
 }
 
 export async function uploadImages(files) {

@@ -76,8 +76,7 @@ export default function AchievementDetailPage() {
       setIsLoading(true);
       try {
         const data = await getAchievements();
-        const list = Array.isArray(data) ? data : data?.content || [];
-        const found = list.find(
+        const found = data.find(
           (a) => String(a.achievementTypeId) === String(id) ||
                  String(a.id) === String(id)
         );

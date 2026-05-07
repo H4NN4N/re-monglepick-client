@@ -17,6 +17,7 @@ import {
   WATCH_HISTORY_ENDPOINTS,
 } from '../../../shared/constants/api';
 import { getDisplayNickname, isWithdrawnUser } from '../../../shared/utils/userDisplay';
+import { normalizeAchievementAwareResponse } from '../../../shared/utils/achievementAwareResponse';
 
 const MIN_VISIBLE_FAVORITE_GENRE_COUNT = 100;
 
@@ -282,11 +283,18 @@ export async function saveFavoriteMovies(movieIds) {
   const result = await recommendApi.put(RECOMMEND_USER_ENDPOINTS.FAVORITE_MOVIES, {
     movie_ids: movieIds,
   });
+  const response = normalizeAchievementAwareResponse(result);
+  const data = response.data;
 
   return {
-    favoriteMovies: (result?.favorite_movies || []).map(normalizeFavoriteMovie).filter(Boolean),
-    total: result?.total || 0,
-    maxCount: result?.max_count || 9,
+    data: {
+      favoriteMovies: (data?.favorite_movies || data?.favoriteMovies || [])
+        .map(normalizeFavoriteMovie)
+        .filter(Boolean),
+      total: data?.total || 0,
+      maxCount: data?.max_count || data?.maxCount || 9,
+    },
+    unlockedAchievements: response.unlockedAchievements,
   };
 }
 
@@ -346,19 +354,24 @@ export async function saveFavoriteGenres(genreIds) {
   const result = await recommendApi.put(RECOMMEND_USER_ENDPOINTS.FAVORITE_GENRES, {
     genre_ids: genreIds,
   });
+  const response = normalizeAchievementAwareResponse(result);
+  const data = response.data;
 
-  const availableGenres = (result?.available_genres || result?.availableGenres || [])
+  const availableGenres = (data?.available_genres || data?.availableGenres || [])
     .map(normalizeFavoriteGenreOption)
     .filter((item) => item?.contentsCount >= MIN_VISIBLE_FAVORITE_GENRE_COUNT)
     .filter(Boolean);
-  const selectedGenres = (result?.selected_genres || result?.selectedGenres || [])
+  const selectedGenres = (data?.selected_genres || data?.selectedGenres || [])
     .map(normalizeFavoriteGenre)
     .filter(Boolean);
 
   return {
-    availableGenres,
-    selectedGenres,
-    selectedGenreIds: selectedGenres.map((item) => item.genreId),
+    data: {
+      availableGenres,
+      selectedGenres,
+      selectedGenreIds: selectedGenres.map((item) => item.genreId),
+    },
+    unlockedAchievements: response.unlockedAchievements,
   };
 }
 

@@ -16,6 +16,7 @@ import { trackEvent } from '../../../shared/utils/eventTracker';
 import { useModal } from '../../../shared/components/Modal';
 /* 리워드 획득 토스트 — 활동 리워드 알림 */
 import { useRewardToast } from '../../../shared/components/RewardToast';
+import { useAchievementUnlock } from '../../../shared/components/AchievementUnlock';
 /* 영화 API — 같은 feature 내의 movieApi에서 가져옴 */
 import {
   getMovie,
@@ -54,6 +55,7 @@ export default function MovieDetailPage() {
   const { showAlert } = useModal();
   /* 리워드 획득 토스트 */
   const { showReward } = useRewardToast();
+  const { showAchievements } = useAchievementUnlock();
 
   // URL 파라미터에서 영화 ID 추출
   const { id } = useParams();
@@ -470,7 +472,7 @@ export default function MovieDetailPage() {
     }
 
     try {
-      const result = await createReview(id, {
+      const response = await createReview(id, {
         movieId: id,
         rating,
         content: content || null,
@@ -478,10 +480,12 @@ export default function MovieDetailPage() {
         reviewSource: 'detail',
         reviewCategoryCode: 'AI_RECOMMEND',
       });
+      const result = response.data;
       // 리워드 지급 시 토스트 알림
       if (result?.rewardPoints > 0) {
         showReward(result.rewardPoints, '리뷰 작성');
       }
+      showAchievements(response.unlockedAchievements);
 
       setShowFeedback(false);
       await showAlert({

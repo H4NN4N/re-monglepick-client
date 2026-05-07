@@ -23,6 +23,8 @@ import GlobalStyle from './shared/styles/GlobalStyle';
 import { ModalProvider } from './shared/components/Modal';
 /* 리워드 토스트 프로바이더 */
 import { RewardToastProvider } from './shared/components/RewardToast';
+/* 업적 달성 모달 프로바이더 */
+import { AchievementUnlockProvider } from './shared/components/AchievementUnlock';
 /* 메인 App 컴포넌트 */
 import App from './app/App.jsx';
 
@@ -46,9 +48,11 @@ function Root() {
     <ThemeProvider theme={theme}>
       <GlobalStyle />
       <ModalProvider>
-        <RewardToastProvider>
-          <App />
-        </RewardToastProvider>
+        <AchievementUnlockProvider>
+          <RewardToastProvider>
+            <App />
+          </RewardToastProvider>
+        </AchievementUnlockProvider>
       </ModalProvider>
     </ThemeProvider>
   );

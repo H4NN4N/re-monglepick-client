@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useModal } from '../../../shared/components/Modal';
 import { useRewardToast } from '../../../shared/components/RewardToast';
+import { useAchievementUnlock } from '../../../shared/components/AchievementUnlock';
 import { getPosts, createPost } from '../api/communityApi';
 import useAuthStore from '../../../shared/stores/useAuthStore';
 import PostList from '../components/PostList';
@@ -43,6 +44,7 @@ const SORT_OPTIONS = [
 export default function CommunityPage() {
   const { showAlert } = useModal();
   const { showReward } = useRewardToast();
+  const { showAchievements } = useAchievementUnlock();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
@@ -136,7 +138,8 @@ export default function CommunityPage() {
   const handleCreatePost = async (postData) => {
     setIsSubmitting(true);
     try {
-      const newPost = await createPost(postData);
+      const response = await createPost(postData);
+      const newPost = response.data;
       setShowForm(false);
       goToPage(1);
       setKeyword('');
@@ -146,6 +149,7 @@ export default function CommunityPage() {
       if (newPost?.rewardPoints > 0) {
         showReward(newPost.rewardPoints, '게시글 작성');
       }
+      showAchievements(response.unlockedAchievements);
     } catch (err) {
       await showAlert({
         title: '작성 실패',
