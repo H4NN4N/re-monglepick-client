@@ -111,6 +111,8 @@ export default function QuizCard({ quiz, index = 0, onSubmitted }) {
     ? quiz.options.map((opt) => (typeof opt === 'string' ? opt : opt?.text ?? String(opt)))
     : [];
 
+  const [posterError, setPosterError] = useState(false);
+
   return (
     <S.Card $solved={result !== null} $correct={result?.correct}>
       {/* ── 카드 헤더: 번호 + 리워드 배지 ── */}
@@ -120,6 +122,22 @@ export default function QuizCard({ quiz, index = 0, onSubmitted }) {
           <S.RewardBadge>+{quiz.rewardPoint}P</S.RewardBadge>
         )}
       </S.CardHeader>
+
+      {/* ── 영화 포스터 + 제목 (movieId 있을 때만) ── */}
+      {quiz?.movieId && (
+        <S.MovieInfo>
+          {quiz.posterPath && !posterError ? (
+            <S.Poster
+              src={quiz.posterPath}
+              alt={quiz.movieTitle ?? '영화 포스터'}
+              onError={() => setPosterError(true)}
+            />
+          ) : (
+            <S.PosterFallback>🎬</S.PosterFallback>
+          )}
+          {quiz.movieTitle && <S.MovieTitle>{quiz.movieTitle}</S.MovieTitle>}
+        </S.MovieInfo>
+      )}
 
       {/* ── 문제 ── */}
       <S.Question>{quiz?.question ?? '문제를 불러올 수 없습니다.'}</S.Question>
