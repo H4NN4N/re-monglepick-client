@@ -316,6 +316,46 @@ export const HintButton = styled.button`
   }
 `;
 
+/** 포스터 + 영화 제목 영역 */
+export const MovieInfo = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.sm};
+  background: ${({ theme }) => theme.colors.bgSecondary ?? theme.colors.bgInput};
+  border-radius: ${({ theme }) => theme.radius.md};
+`;
+
+export const Poster = styled.img`
+  width: 44px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  flex-shrink: 0;
+  background: ${({ theme }) => theme.colors.bgTertiary};
+`;
+
+export const PosterFallback = styled.div`
+  width: 44px;
+  height: 64px;
+  border-radius: ${({ theme }) => theme.radius.sm};
+  background: ${({ theme }) => theme.colors.bgTertiary};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+`;
+
+export const MovieTitle = styled.span`
+  font-size: ${({ theme }) => theme.typography.textSm};
+  font-weight: ${({ theme }) => theme.typography.fontMedium};
+  color: ${({ theme }) => theme.colors.textSecondary};
+  line-height: 1.4;
+  word-break: keep-all;
+`;
+
 /** 힌트 표시 박스 */
 export const HintBox = styled.div`
   margin-top: ${({ theme }) => theme.spacing.sm};
