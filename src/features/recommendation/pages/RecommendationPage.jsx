@@ -2,7 +2,7 @@
  * 추천 내역 페이지.
  *
  * AI가 추천한 영화 이력을 조회하고,
- * 찜/봤어요 토글 및 만족도 피드백 기능을 제공한다.
+ * 삭제, 찜/봤어요 토글 및 만족도 피드백 기능을 제공한다.
  *
  * 필터 탭: 전체 / 찜한 영화 / 본 영화
  * 페이지네이션: 20개 단위
@@ -16,6 +16,7 @@ import { useModal } from '../../../shared/components/Modal';
 import { ROUTES, buildPath } from '../../../shared/constants/routes';
 import {
   getRecommendations,
+  deleteRecommendationHistory,
   toggleWishlist,
   toggleWatched,
   submitFeedback,
@@ -55,7 +56,7 @@ function getRecommendationMovieId(recommendation) {
 
 export default function RecommendationPage() {
   const navigate = useNavigate();
-  const { showAlert } = useModal();
+  const { showAlert, showConfirm } = useModal();
 
   /* 필터 상태 */
   const [activeFilter, setActiveFilter] = useState('ALL');
@@ -68,6 +69,8 @@ export default function RecommendationPage() {
   const [totalElements, setTotalElements] = useState(0);
   /* 로딩 */
   const [isLoading, setIsLoading] = useState(true);
+  /* 삭제 진행 중인 추천 로그 ID 목록 */
+  const [deletingIds, setDeletingIds] = useState([]);
 
   /**
    * 추천 내역 로드.
@@ -234,6 +237,46 @@ export default function RecommendationPage() {
   };
 
   /**
+   * 추천 이력 삭제 핸들러.
+   *
+   * UX 요구사항 (2026-05-07):
+   *   - 버튼 라벨은 "관심 없음"이지만 실제 동작은 recommendation_log 삭제
+   *   - 확인 모달에서 "삭제"를 눌렀을 때만 서버 DELETE 호출
+   *   - 삭제 후 현재 페이지를 다시 로드하되, 마지막 항목을 지운 경우 이전 페이지로 이동
+   */
+  const handleDeleteRecommendation = async (recommendationId) => {
+    if (deletingIds.includes(recommendationId)) return;
+
+    const confirmed = await showConfirm({
+      title: '추천 내역 삭제',
+      message: '추천 내역에서 삭제하시겠습니까?',
+      type: 'warning',
+      confirmLabel: '삭제',
+      cancelLabel: '취소',
+    });
+
+    if (!confirmed) return;
+
+    setDeletingIds((prev) => [...prev, recommendationId]);
+
+    try {
+      await deleteRecommendationHistory(recommendationId);
+
+      const shouldMovePrevPage = recommendations.length === 1 && page > 0;
+      if (shouldMovePrevPage) {
+        setPage((prev) => Math.max(0, prev - 1));
+      } else {
+        await loadRecommendations();
+      }
+    } catch (err) {
+      console.error('[Recommendation] 삭제 실패:', err.message);
+      showAlert({ title: '오류', message: '추천 내역 삭제에 실패했습니다.', type: 'error' });
+    } finally {
+      setDeletingIds((prev) => prev.filter((id) => id !== recommendationId));
+    }
+  };
+
+  /**
    * 영화 클릭 → 상세 페이지 이동.
    */
   const handleClickMovie = (movieId) => {
@@ -309,7 +352,9 @@ export default function RecommendationPage() {
                 onToggleWishlist={handleToggleWishlist}
                 onToggleWatched={handleToggleWatched}
                 onSubmitFeedback={handleSubmitFeedback}
+                onDeleteRecommendation={handleDeleteRecommendation}
                 onClickMovie={handleClickMovie}
+                isDeleting={deletingIds.includes(rec.recommendationLogId)}
               />
             ))}
           </S.CardList>
