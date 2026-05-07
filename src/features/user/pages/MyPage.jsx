@@ -24,6 +24,7 @@ import { getEquippedItems, getMyItems, equipItem, unequipItem } from '../../poin
 /* 프로필 꾸미기 섹션 — 2026-04-27 신설. customize 탭 본체. */
 import ProfileCustomizeSection from '../components/ProfileCustomizeSection';
 import { useModal } from '../../../shared/components/Modal';
+import { useAchievementUnlock } from '../../../shared/components/AchievementUnlock';
 import { searchMovies } from '../../movie/api/movieApi';
 import { getOnboardingMissionStatus } from '../../onboarding/api/onboardingApi';
 import { ROUTES, buildPath } from '../../../shared/constants/routes';
@@ -736,6 +737,7 @@ export default function MyPagePage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { showAlert } = useModal();
+  const { showAchievements } = useAchievementUnlock();
   const onboardingMission = location.state?.onboardingMission || null;
   /* 중첩 프로퍼티를 변수로 추출 — useCallback/useEffect 의존성 배열에 안전하게 사용 */
   const locationReturnTo = location.state?.returnTo ?? null;
@@ -1283,9 +1285,9 @@ export default function MyPagePage() {
 
   const handleFavoriteMoviesSaved = useCallback(async (movieIds) => {
     const response = await saveFavoriteMovies(movieIds);
-    applyFavoriteMovieResponse(response);
-    await loadOnboardingStatus();
-  }, [applyFavoriteMovieResponse, loadOnboardingStatus]);
+    applyFavoriteMovieResponse(response.data);
+    showAchievements(response.unlockedAchievements);
+  }, [applyFavoriteMovieResponse, showAchievements]);
 
   const handleFavoriteGenreSelect = useCallback((genre) => {
     setSelectedFavoriteGenres((prevGenres) => {
@@ -1350,8 +1352,8 @@ export default function MyPagePage() {
     setIsFavoriteGenreSaving(true);
     try {
       const response = await saveFavoriteGenres(selectedFavoriteGenreIds);
-      applyFavoriteGenreResponse(response);
-      await loadOnboardingStatus();
+      applyFavoriteGenreResponse(response.data);
+      showAchievements(response.unlockedAchievements);
     } catch (err) {
       await showAlert({
         title: '선호 장르 저장 실패',
@@ -1361,7 +1363,7 @@ export default function MyPagePage() {
     } finally {
       setIsFavoriteGenreSaving(false);
     }
-  }, [applyFavoriteGenreResponse, loadOnboardingStatus, selectedFavoriteGenreIds, showAlert]);
+  }, [applyFavoriteGenreResponse, selectedFavoriteGenreIds, showAchievements, showAlert]);
 
   const handleFavoriteOrderSave = useCallback(async () => {
     setIsFavoriteOrderSaving(true);

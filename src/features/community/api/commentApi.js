@@ -15,6 +15,7 @@ import api, { requireAuth } from '../../../shared/api/axiosInstance';
 /* API 상수 — shared/constants에서 가져옴 */
 import { COMMUNITY_ENDPOINTS } from '../../../shared/constants/api';
 import { getDisplayNickname, isWithdrawnUser } from '../../../shared/utils/userDisplay';
+import { normalizeAchievementAwareResponse } from '../../../shared/utils/achievementAwareResponse';
 
 /** 게시글 댓글 기본 경로 빌더 — /api/v1/posts/{postId}/comments */
 const commentsBase = (postId) => `/api/v1/posts/${postId}/comments`;
@@ -66,8 +67,12 @@ export async function getComments(postId, { page = 0, size = 20 } = {}) {
  */
 export async function createComment(postId, { content, parentCommentId = null }) {
   requireAuth();
-  const data = await api.post(commentsBase(postId), { content, parentCommentId });
-  return normalizeComment(data);
+  const result = await api.post(commentsBase(postId), { content, parentCommentId });
+  const response = normalizeAchievementAwareResponse(result);
+  return {
+    ...response,
+    data: normalizeComment(response.data),
+  };
 }
 
 /**
