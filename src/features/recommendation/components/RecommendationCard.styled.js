@@ -150,8 +150,18 @@ export const Explanation = styled.p`
 /** 액션 버튼 영역 */
 export const Actions = styled.div`
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
   margin-top: 10px;
+  flex-wrap: wrap;
+`;
+
+/** 주요 액션 버튼 묶음 — 좌측 정렬 */
+export const PrimaryActions = styled.div`
+  display: flex;
+  gap: 8px;
+  flex: 1 1 320px;
+  min-width: 0;
   flex-wrap: wrap;
 `;
 
@@ -217,6 +227,28 @@ export const ActionBtn = styled.button`
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+`;
+
+/** 휴지통 아이콘 */
+export const ActionIcon = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+`;
+
+/** 추천 내역 삭제 버튼 — 우측 정렬, hover 시만 강한 위험색 노출 */
+export const DeleteActionBtn = styled(ActionBtn)`
+  margin-left: auto;
+  background: ${({ theme }) => theme.colors.errorBg};
+  color: ${({ theme }) => theme.colors.error};
+  border-color: ${({ theme }) => `${theme.colors.error}22`};
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => theme.colors.error};
+    border-color: ${({ theme }) => theme.colors.error};
+    color: #fff;
   }
 `;
 

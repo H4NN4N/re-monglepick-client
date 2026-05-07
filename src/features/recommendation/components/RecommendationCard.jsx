@@ -15,7 +15,9 @@
  * @param {function} onToggleWishlist - 찜 토글 콜백
  * @param {function} onToggleWatched - 봤어요 토글 콜백
  * @param {function} onSubmitFeedback - 피드백 제출 콜백
+ * @param {function} onDeleteRecommendation - 추천 이력 삭제 콜백
  * @param {function} onClickMovie - 영화 클릭 시 상세 이동 콜백
+ * @param {boolean} [isDeleting=false] - 삭제 진행 여부
  */
 
 import { useState } from 'react';
@@ -52,7 +54,9 @@ export default function RecommendationCard({
   onToggleWishlist,
   onToggleWatched,
   onSubmitFeedback,
+  onDeleteRecommendation,
   onClickMovie,
+  isDeleting = false,
 }) {
   /* 피드백 폼 표시 상태 */
   const [showFeedback, setShowFeedback] = useState(false);
@@ -150,32 +154,43 @@ export default function RecommendationCard({
 
         {/* 액션 버튼 */}
         <S.Actions>
-          <S.ActionBtn
-            $variant="wishlist"
-            $active={recommendation.wishlisted}
-            aria-pressed={!!recommendation.wishlisted}
-            onClick={() => onToggleWishlist(recommendation.recommendationLogId)}
-          >
-            {recommendation.wishlisted ? '❤️ 찜 해제' : '🤍 찜하기'}
-          </S.ActionBtn>
+          <S.PrimaryActions>
+            <S.ActionBtn
+              $variant="wishlist"
+              $active={recommendation.wishlisted}
+              aria-pressed={!!recommendation.wishlisted}
+              onClick={() => onToggleWishlist(recommendation.recommendationLogId)}
+            >
+              {recommendation.wishlisted ? '❤️ 찜 해제' : '🤍 찜하기'}
+            </S.ActionBtn>
 
-          <S.ActionBtn
-            $variant="watched"
-            $active={recommendation.watched}
-            aria-pressed={!!recommendation.watched}
-            onClick={() => onToggleWatched(recommendation.recommendationLogId)}
-          >
-            {recommendation.watched ? '✅ 봤어요' : '👀 봤어요'}
-          </S.ActionBtn>
+            <S.ActionBtn
+              $variant="watched"
+              $active={recommendation.watched}
+              aria-pressed={!!recommendation.watched}
+              onClick={() => onToggleWatched(recommendation.recommendationLogId)}
+            >
+              {recommendation.watched ? '✅ 봤어요' : '👀 봤어요'}
+            </S.ActionBtn>
 
-          <S.ActionBtn
-            $variant="feedback"
-            $active={hasFeedback}
-            aria-expanded={showFeedback}
-            onClick={() => setShowFeedback(!showFeedback)}
+            <S.ActionBtn
+              $variant="feedback"
+              $active={hasFeedback}
+              aria-expanded={showFeedback}
+              onClick={() => setShowFeedback(!showFeedback)}
+            >
+              {hasFeedback ? `★ ${recommendation.feedbackRating}점` : '💬 평가 남기기'}
+            </S.ActionBtn>
+          </S.PrimaryActions>
+
+          <S.DeleteActionBtn
+            type="button"
+            onClick={() => onDeleteRecommendation(recommendation.recommendationLogId)}
+            disabled={isDeleting}
           >
-            {hasFeedback ? `★ ${recommendation.feedbackRating}점` : '💬 평가 남기기'}
-          </S.ActionBtn>
+            <S.ActionIcon aria-hidden="true">🗑️</S.ActionIcon>
+            {isDeleting ? '삭제 중...' : '관심 없음'}
+          </S.DeleteActionBtn>
         </S.Actions>
 
         {/* 피드백 폼 */}
