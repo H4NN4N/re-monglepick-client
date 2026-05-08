@@ -12,7 +12,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 /* 영화 검색 API — features/movie에서 가져옴 */
 import {
   deleteAllRecentSearches,
@@ -46,6 +46,7 @@ const RECENT_PREVIEW_SIZE = 5;
 const RECENT_HISTORY_PAGE_SIZE = 10;
 const RECENT_HISTORY_SCROLL_THRESHOLD = 80;
 const SEARCH_CACHE_STORAGE_KEY = 'monglepick_search_page_cache';
+const SEARCH_SCROLL_STORAGE_KEY = 'monglepick_search_page_scroll';
 const AUTOCOMPLETE_DEBOUNCE_MS = 300;
 const AUTOCOMPLETE_LIMIT = 8;
 const MIN_RELEASE_YEAR = 1900;
@@ -576,9 +577,62 @@ function clearSearchCache() {
   }
 }
 
+function normalizeScrollTop(value) {
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed)) {
+    return null;
+  }
+
+  return Math.max(0, parsed);
+}
+
+function buildSearchPageRouteKey(pathname, search) {
+  return `${pathname}${search || ''}`;
+}
+
+function readSearchScrollSnapshot() {
+  try {
+    const raw = window.sessionStorage.getItem(SEARCH_SCROLL_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeSearchScrollSnapshot(payload) {
+  try {
+    window.sessionStorage.setItem(SEARCH_SCROLL_STORAGE_KEY, JSON.stringify(payload));
+  } catch {
+    // sessionStorage 저장 실패는 검색 UX를 막지 않음
+  }
+}
+
+function clearSearchScrollSnapshot() {
+  try {
+    window.sessionStorage.removeItem(SEARCH_SCROLL_STORAGE_KEY);
+  } catch {
+    // sessionStorage 접근 실패는 무시
+  }
+}
+
 export default function SearchPage() {
   /* URL 쿼리 파라미터 연동 */
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  const searchPageRouteKey = buildSearchPageRouteKey(location.pathname, location.search);
+  const initialScrollSnapshotRef = useRef(undefined);
+  if (initialScrollSnapshotRef.current === undefined) {
+    const cachedScrollSnapshot = readSearchScrollSnapshot();
+    initialScrollSnapshotRef.current = (
+      cachedScrollSnapshot?.routeKey === searchPageRouteKey
+        ? cachedScrollSnapshot
+        : null
+    );
+  }
+  const pendingScrollRestoreTopRef = useRef(
+    normalizeScrollTop(initialScrollSnapshotRef.current?.scrollTop),
+  );
   const initialSelectedGenres = parseSelectedGenresParam(searchParams.get('genres'));
 
   /* 검색 상태 */
@@ -625,6 +679,8 @@ export default function SearchPage() {
   const [personalizedSections, setPersonalizedSections] = useState(createInitialPersonalizedSections);
   const [isPersonalizedLoading, setIsPersonalizedLoading] = useState(false);
   const [isPersonalizedCalculating, setIsPersonalizedCalculating] = useState(false);
+  const [isInitialRouteHydrated, setIsInitialRouteHydrated] = useState(false);
+  const [isPersonalizedHydrated, setIsPersonalizedHydrated] = useState(false);
   const loadMoreRef = useRef(null);
   const autocompleteRef = useRef(null);
   const searchInputRef = useRef(null);
@@ -680,8 +736,72 @@ export default function SearchPage() {
     || personalizedSections.reviewSections.length > 0;
   const shouldShowPersonalizedSkeleton = isPersonalizedLoading
     || (isPersonalizedCalculating && !hasCachedPersonalizedContent);
+  const shouldAutoFocusSearchInput = pendingScrollRestoreTopRef.current === null;
 
   const isAutocompleteSupportedSearchType = searchType === 'all' || searchType === 'title';
+
+  const persistSearchPageScroll = useCallback((scrollTop = window.scrollY) => {
+    const normalizedScrollTop = normalizeScrollTop(scrollTop);
+
+    if (normalizedScrollTop === null) {
+      return;
+    }
+
+    writeSearchScrollSnapshot({
+      routeKey: searchPageRouteKey,
+      scrollTop: normalizedScrollTop,
+    });
+  }, [searchPageRouteKey]);
+
+  const persistCurrentSearchSnapshot = useCallback(() => {
+    const hasCachedQuery = Boolean(lastSearchContext?.query?.trim());
+    const hasCachedGenres = Boolean(lastSearchContext?.discoveryGenres?.length);
+    const hasCachedAdvancedFilters = hasActiveAdvancedFilters({
+      yearFrom: lastSearchContext?.yearFrom ?? null,
+      yearTo: lastSearchContext?.yearTo ?? null,
+      ratingMin: lastSearchContext?.ratingMin ?? null,
+      ratingMax: lastSearchContext?.ratingMax ?? null,
+    });
+
+    if (!hasSearched || (!hasCachedQuery && !hasCachedGenres && !hasCachedAdvancedFilters)) {
+      return;
+    }
+
+    writeSearchCache({
+      key: buildSearchCacheKey({
+        query: lastSearchContext.query,
+        searchType: lastSearchContext.searchType,
+        genre: lastSearchContext.genre,
+        sort: lastSearchContext.sort,
+        selectedGenres: lastSearchContext.discoveryGenres || [],
+        yearFrom: lastSearchContext.yearFrom,
+        yearTo: lastSearchContext.yearTo,
+        ratingMin: lastSearchContext.ratingMin,
+        ratingMax: lastSearchContext.ratingMax,
+      }),
+      snapshot: {
+        movies,
+        totalCount,
+        currentPage,
+        hasMore,
+        hasSearched,
+        lastSearchContext,
+        searchDidYouMean,
+        relatedQueries,
+        searchSource,
+      },
+    });
+  }, [
+    currentPage,
+    hasMore,
+    hasSearched,
+    lastSearchContext,
+    movies,
+    relatedQueries,
+    searchDidYouMean,
+    searchSource,
+    totalCount,
+  ]);
 
   /**
    * 자동완성 레이어 상태를 초기화한다.
@@ -975,6 +1095,7 @@ export default function SearchPage() {
 
       if (cachedSearch?.key === cacheKey) {
         restoreSearchSnapshot(cachedSearch.snapshot);
+        setIsInitialRouteHydrated(true);
         return;
       }
 
@@ -991,7 +1112,11 @@ export default function SearchPage() {
         ratingMinValue: normalizedUrlFilters.ratingMin,
         ratingMaxValue: normalizedUrlFilters.ratingMax,
       });
+      setIsInitialRouteHydrated(true);
+      return;
     }
+
+    setIsInitialRouteHydrated(true);
   }, [executeSearch, restoreSearchSnapshot, searchParams]);
 
   /**
@@ -1098,10 +1223,12 @@ export default function SearchPage() {
         setPersonalizedSections(createInitialPersonalizedSections());
         setIsPersonalizedLoading(false);
         setIsPersonalizedCalculating(false);
+        setIsPersonalizedHydrated(true);
         personalizedRefreshRequestedRef.current = false;
         return;
       }
 
+      setIsPersonalizedHydrated(false);
       setIsPersonalizedLoading(true);
 
       const personalizedTopPicksResult = await Promise.resolve(
@@ -1172,6 +1299,7 @@ export default function SearchPage() {
       }));
       setIsPersonalizedCalculating(nextIsPersonalizedCalculating);
       setIsPersonalizedLoading(false);
+      setIsPersonalizedHydrated(true);
     };
 
     loadPersonalizedSections()
@@ -1183,6 +1311,7 @@ export default function SearchPage() {
         setPersonalizedSections(createInitialPersonalizedSections());
         setIsPersonalizedLoading(false);
         setIsPersonalizedCalculating(false);
+        setIsPersonalizedHydrated(true);
         personalizedRefreshRequestedRef.current = false;
       });
 
@@ -1401,53 +1530,52 @@ export default function SearchPage() {
   }, [isFilterModalOpen, isRecentModalOpen]);
 
   useEffect(() => {
-    const hasCachedQuery = Boolean(lastSearchContext?.query?.trim());
-    const hasCachedGenres = Boolean(lastSearchContext?.discoveryGenres?.length);
-    const hasCachedAdvancedFilters = hasActiveAdvancedFilters({
-      yearFrom: lastSearchContext?.yearFrom ?? null,
-      yearTo: lastSearchContext?.yearTo ?? null,
-      ratingMin: lastSearchContext?.ratingMin ?? null,
-      ratingMax: lastSearchContext?.ratingMax ?? null,
-    });
+    persistCurrentSearchSnapshot();
+  }, [persistCurrentSearchSnapshot]);
 
-    if (!hasSearched || (!hasCachedQuery && !hasCachedGenres && !hasCachedAdvancedFilters)) {
-      return;
+  useEffect(() => {
+    const pendingScrollTop = pendingScrollRestoreTopRef.current;
+
+    if (pendingScrollTop === null || !isInitialRouteHydrated) {
+      return undefined;
     }
 
-    writeSearchCache({
-      key: buildSearchCacheKey({
-        query: lastSearchContext.query,
-        searchType: lastSearchContext.searchType,
-        genre: lastSearchContext.genre,
-        sort: lastSearchContext.sort,
-        selectedGenres: lastSearchContext.discoveryGenres || [],
-        yearFrom: lastSearchContext.yearFrom,
-        yearTo: lastSearchContext.yearTo,
-        ratingMin: lastSearchContext.ratingMin,
-        ratingMax: lastSearchContext.ratingMax,
-      }),
-      snapshot: {
-        movies,
-        totalCount,
-        currentPage,
-        hasMore,
-        hasSearched,
-        lastSearchContext,
-        searchDidYouMean,
-        relatedQueries,
-        searchSource,
-      },
+    const shouldWaitForSearchResults = hasSearched && isLoading;
+    const shouldWaitForPersonalizedSections = (
+      !hasSearched
+      && shouldShowPersonalizedRecommendations
+      && !isPersonalizedHydrated
+    );
+
+    if (shouldWaitForSearchResults || shouldWaitForPersonalizedSections) {
+      return undefined;
+    }
+
+    let frameId = 0;
+    let nestedFrameId = 0;
+
+    frameId = window.requestAnimationFrame(() => {
+      nestedFrameId = window.requestAnimationFrame(() => {
+        window.scrollTo({
+          top: pendingScrollTop,
+          left: 0,
+          behavior: 'auto',
+        });
+        pendingScrollRestoreTopRef.current = null;
+        clearSearchScrollSnapshot();
+      });
     });
+
+    return () => {
+      window.cancelAnimationFrame(frameId);
+      window.cancelAnimationFrame(nestedFrameId);
+    };
   }, [
-    currentPage,
-    hasMore,
     hasSearched,
-    lastSearchContext,
-    movies,
-    relatedQueries,
-    searchDidYouMean,
-    searchSource,
-    totalCount,
+    isInitialRouteHydrated,
+    isLoading,
+    isPersonalizedHydrated,
+    shouldShowPersonalizedRecommendations,
   ]);
 
   /**
@@ -2077,6 +2205,9 @@ export default function SearchPage() {
   }, [hasMore, hasSearched, loadMoreMovies]);
 
   const handleMovieClick = useCallback(async (movie) => {
+    persistSearchPageScroll();
+    persistCurrentSearchSnapshot();
+
     const searchKeyword = lastSearchContext?.query?.trim()
       || lastSearchContext?.discoveryGenres?.join(',');
 
@@ -2104,7 +2235,11 @@ export default function SearchPage() {
     } catch {
       // 클릭 로그 저장 실패가 상세 페이지 이동을 막으면 안 됨
     }
-  }, [lastSearchContext]);
+  }, [lastSearchContext, persistCurrentSearchSnapshot, persistSearchPageScroll]);
+
+  const handlePersonalizedMovieClick = useCallback(() => {
+    persistSearchPageScroll();
+  }, [persistSearchPageScroll]);
 
   const renderPersonalizedSection = ({
     key,
@@ -2129,6 +2264,7 @@ export default function SearchPage() {
             <S.PersonalizedPosterCard
               key={`${key}-${movie.id}`}
               to={buildPath(ROUTES.MOVIE_DETAIL, { id: movie.id })}
+              onClick={handlePersonalizedMovieClick}
             >
               <S.PersonalizedPosterFrame>
                 {movie.posterSrc ? (
@@ -2206,7 +2342,7 @@ export default function SearchPage() {
                 placeholder="영화 제목, 배우, 감독을 검색하세요..."
                 aria-autocomplete="list"
                 aria-expanded={isAutocompleteOpen || isPopularSearchOpen}
-                autoFocus
+                autoFocus={shouldAutoFocusSearchInput}
               />
 
               {isPopularSearchOpen && (
