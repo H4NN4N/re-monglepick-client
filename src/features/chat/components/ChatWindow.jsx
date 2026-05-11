@@ -56,8 +56,13 @@ const DEFAULT_MAX_INPUT_LENGTH = 200;
  * theater/booking 의도일 가능성이 높을 때만 좌표 권한을 요청해 사용자 마찰을 줄인다.
  * 추천(recommend) 의도까지 매번 위치를 묻지 않도록 보수적으로 매칭하되,
  * "근처/주변/가까운" 처럼 위치 기반 탐색을 암시하는 표현도 포함해 권한 유도 확률을 높인다.
+ *
+ * 2026-05-11: "내 위치/현재 위치/여기" 같은 자기참조 표현도 추가 — 사용자가 명시적으로
+ * 좌표 사용을 요청한 발화에서 권한 팝업이 안 뜨던 회귀 차단. (geo.request 가 한 턴 더
+ * 시도되도록 유도 — 권한이 차단돼 있으면 showAlert 가 안내한다.)
  */
-const THEATER_INTENT_RE = /(영화관|상영관|극장|cgv|롯데시네마|메가박스|예매|근처|주변|가까운|가까이)/i;
+const THEATER_INTENT_RE =
+  /(영화관|상영관|극장|cgv|롯데시네마|메가박스|예매|근처|주변|가까운|가까이|내\s*위치|현재\s*위치|지금\s*위치|여기서|여기)/i;
 function detectsTheaterIntent(text) {
   if (!text) return false;
   return THEATER_INTENT_RE.test(text);
