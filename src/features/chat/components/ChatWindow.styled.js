@@ -653,6 +653,26 @@ export const StatusText = styled.span`
  * ============================================================ */
 
 /**
+ * external_map 메시지(영화관 + 박스오피스) 의 통합 지도 + 카드 캐러셀을 세로로 묶는 컬럼 래퍼.
+ *
+ * - TheatersMap(상단) 은 부모 폭 100% — 가로 스크롤 컨테이너 바깥에 두어야 부모 폭 비례 16:9 가 정상 작동.
+ * - ChatMovieCards(하단) 는 기존 가로 스크롤 동작 유지.
+ *
+ * max-width 는 ChatMovieCards 와 동일한 calc(100vw - 100px) 로 두 자식 모두 동일한 가용 폭을 갖는다.
+ */
+export const ExternalMapColumn = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: calc(100vw - 100px);
+  min-width: 0;  /* flex item shrink 허용 — 부모 ChatMsg 가 좁아져도 가로 폭 깨지지 않도록 */
+
+  ${media.mobile} {
+    max-width: calc(100vw - 72px);
+  }
+`;
+
+/**
  * 영화 카드 가로 스크롤 래퍼.
  * max-width: calc(100vw - 100px)로 화면을 넘지 않도록 제한한다.
  */

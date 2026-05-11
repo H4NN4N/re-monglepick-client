@@ -108,7 +108,7 @@ export const LinkBtn = styled.a`
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 8px 12px;
+  padding: 8px 10px;
   font-size: 13px;
   font-weight: 600;
   border-radius: 8px;
@@ -117,6 +117,9 @@ export const LinkBtn = styled.a`
   transition: background-color 0.15s ease, transform 0.05s ease;
   /* button 으로 polymorphic 사용 시 기본 폰트 family 가 reset 되지 않게 강제 상속 */
   font-family: inherit;
+  /* 카드 너비(240–320px)에 3개 버튼이 들어갈 때 한글 라벨이 글자 단위로 줄바꿈되지
+     않도록 nowrap 강제. 좁은 너비에서는 약간 잘릴 수 있으나 글자 stack 보다는 가독성↑. */
+  white-space: nowrap;
 
   ${({ $variant, theme }) => $variant === 'primary'
     ? `

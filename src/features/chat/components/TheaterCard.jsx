@@ -95,7 +95,8 @@ export default function TheaterCard({
             {isMapOpen ? '🔼 지도 접기' : '🗺️ 지도 보기'}
           </S.LinkBtn>
         )}
-        {/* 카카오맵 길찾기 — 좌표가 있으면 항상 노출 (JS SDK 키 불필요, 외부링크 직행) */}
+        {/* 카카오맵 길찾기 — 좌표가 있으면 항상 노출 (JS SDK 키 불필요, 외부링크 직행).
+            카카오맵 상세 페이지(place_url) 버튼은 동일 사이트로 이동하여 중복이라 제거 — 길찾기에서 영화관명 클릭 시 동일 페이지 진입 가능. */}
         {directionsUrl && (
           <S.LinkBtn
             href={directionsUrl}
@@ -104,16 +105,6 @@ export default function TheaterCard({
             $variant="secondary"
           >
             🚌 길찾기
-          </S.LinkBtn>
-        )}
-        {theater.place_url && (
-          <S.LinkBtn
-            href={theater.place_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            $variant="secondary"
-          >
-            ↗ 카카오맵
           </S.LinkBtn>
         )}
         {theater.booking_url && (
