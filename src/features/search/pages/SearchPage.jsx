@@ -47,6 +47,8 @@ const RECENT_HISTORY_PAGE_SIZE = 10;
 const RECENT_HISTORY_SCROLL_THRESHOLD = 80;
 const SEARCH_CACHE_STORAGE_KEY = 'monglepick_search_page_cache';
 const SEARCH_SCROLL_STORAGE_KEY = 'monglepick_search_page_scroll';
+const SEARCH_CACHE_TTL_MS = 10 * 60 * 1000;
+const SEARCH_CACHE_MAX_ENTRIES = 12;
 const AUTOCOMPLETE_DEBOUNCE_MS = 300;
 const AUTOCOMPLETE_LIMIT = 8;
 const MIN_RELEASE_YEAR = 1900;
@@ -552,20 +554,116 @@ function normalizeHistorySort(sortBy) {
   return 'relevance';
 }
 
-function readSearchCache() {
+function normalizeSearchCacheEntries(payload) {
+  if (!payload || typeof payload !== 'object') {
+    return [];
+  }
+
+  if (Array.isArray(payload.entries)) {
+    return payload.entries
+      .filter((entry) => entry && typeof entry === 'object')
+      .map((entry) => ({
+        key: typeof entry.key === 'string' ? entry.key : '',
+        snapshot: entry.snapshot || null,
+        savedAt: Number(entry.savedAt) || 0,
+      }))
+      .filter((entry) => entry.key && entry.snapshot);
+  }
+
+  if (typeof payload.key === 'string' && payload.snapshot) {
+    return [{
+      key: payload.key,
+      snapshot: payload.snapshot,
+      savedAt: Number(payload.savedAt) || 0,
+    }];
+  }
+
+  return [];
+}
+
+function readSearchCacheEntry(cacheKey) {
+  if (!cacheKey) {
+    return null;
+  }
+
   try {
     const raw = window.sessionStorage.getItem(SEARCH_CACHE_STORAGE_KEY);
-    return raw ? JSON.parse(raw) : null;
+    const parsed = raw ? JSON.parse(raw) : null;
+    const now = Date.now();
+    const entries = normalizeSearchCacheEntries(parsed);
+
+    const matchedEntry = entries.find((entry) => {
+      if (entry.key !== cacheKey) {
+        return false;
+      }
+
+      if (!entry.savedAt) {
+        return true;
+      }
+
+      return now - entry.savedAt <= SEARCH_CACHE_TTL_MS;
+    });
+
+    return matchedEntry || null;
   } catch {
     return null;
   }
 }
 
-function writeSearchCache(payload) {
+function writeSearchCacheEntry(payload) {
+  if (!payload?.key || !payload?.snapshot) {
+    return;
+  }
+
   try {
-    window.sessionStorage.setItem(SEARCH_CACHE_STORAGE_KEY, JSON.stringify(payload));
+    const raw = window.sessionStorage.getItem(SEARCH_CACHE_STORAGE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    const nextEntry = {
+      key: payload.key,
+      snapshot: payload.snapshot,
+      savedAt: Date.now(),
+    };
+    const nextEntries = [
+      nextEntry,
+      ...normalizeSearchCacheEntries(parsed).filter((entry) => entry.key !== payload.key),
+    ].slice(0, SEARCH_CACHE_MAX_ENTRIES);
+
+    window.sessionStorage.setItem(
+      SEARCH_CACHE_STORAGE_KEY,
+      JSON.stringify({ entries: nextEntries }),
+    );
   } catch {
     // sessionStorage 저장 실패는 검색 UX를 막지 않음
+  }
+}
+
+function clearSearchCacheEntry(cacheKey) {
+  try {
+    if (!cacheKey) {
+      window.sessionStorage.removeItem(SEARCH_CACHE_STORAGE_KEY);
+      return;
+    }
+
+    const raw = window.sessionStorage.getItem(SEARCH_CACHE_STORAGE_KEY);
+    if (!raw) {
+      return;
+    }
+
+    const parsed = JSON.parse(raw);
+    const remainingEntries = normalizeSearchCacheEntries(parsed)
+      .filter((entry) => entry.key !== cacheKey);
+
+    if (remainingEntries.length === 0) {
+      window.sessionStorage.removeItem(SEARCH_CACHE_STORAGE_KEY);
+      return;
+    }
+
+    window.sessionStorage.setItem(
+      SEARCH_CACHE_STORAGE_KEY,
+      JSON.stringify({ entries: remainingEntries }),
+    );
+  } catch {
+    // sessionStorage 접근 실패는 무시
   }
 }
 
@@ -737,6 +835,7 @@ export default function SearchPage() {
   const shouldShowPersonalizedSkeleton = isPersonalizedLoading
     || (isPersonalizedCalculating && !hasCachedPersonalizedContent);
   const shouldAutoFocusSearchInput = pendingScrollRestoreTopRef.current === null;
+  const persistSearchSnapshotOnUnmountRef = useRef(() => {});
 
   const isAutocompleteSupportedSearchType = searchType === 'all' || searchType === 'title';
 
@@ -767,7 +866,7 @@ export default function SearchPage() {
       return;
     }
 
-    writeSearchCache({
+    writeSearchCacheEntry({
       key: buildSearchCacheKey({
         query: lastSearchContext.query,
         searchType: lastSearchContext.searchType,
@@ -802,6 +901,16 @@ export default function SearchPage() {
     searchSource,
     totalCount,
   ]);
+
+  useEffect(() => {
+    persistSearchSnapshotOnUnmountRef.current = persistCurrentSearchSnapshot;
+  }, [persistCurrentSearchSnapshot]);
+
+  useEffect(() => (
+    () => {
+      persistSearchSnapshotOnUnmountRef.current?.();
+    }
+  ), []);
 
   /**
    * 자동완성 레이어 상태를 초기화한다.
@@ -1019,7 +1128,18 @@ export default function SearchPage() {
         setSearchDidYouMean(null);
         setRelatedQueries([]);
         setSearchSource(null);
-        clearSearchCache();
+        const failedCacheKey = buildSearchCacheKey({
+          query: queryText,
+          searchType: effectiveSearchType,
+          genre: effectiveGenre,
+          sort: effectiveSort,
+          selectedGenres: normalizedDiscoveryGenres,
+          yearFrom: normalizedFilters.yearFrom,
+          yearTo: normalizedFilters.yearTo,
+          ratingMin: normalizedFilters.ratingMin,
+          ratingMax: normalizedFilters.ratingMax,
+        });
+        clearSearchCacheEntry(failedCacheKey);
       }
     } finally {
       if (append) {
@@ -1091,9 +1211,9 @@ export default function SearchPage() {
         ratingMin: normalizedUrlFilters.ratingMin,
         ratingMax: normalizedUrlFilters.ratingMax,
       });
-      const cachedSearch = readSearchCache();
+      const cachedSearch = readSearchCacheEntry(cacheKey);
 
-      if (cachedSearch?.key === cacheKey) {
+      if (cachedSearch?.snapshot) {
         restoreSearchSnapshot(cachedSearch.snapshot);
         setIsInitialRouteHydrated(true);
         return;
