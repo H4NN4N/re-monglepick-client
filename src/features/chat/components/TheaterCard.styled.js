@@ -15,6 +15,12 @@ export const Card = styled.div`
   background-color: ${({ theme }) => theme.colors.bgCard};
   border: 1px solid ${({ theme }) => theme.colors.borderDefault};
   border-radius: 12px;
+  /* 부모 ChatMovieCards 가 display:flex + overflow-x:auto 인데 flex-shrink 기본값(1) 이면
+     카드가 N 개일 때 모든 카드가 비례 축소되어 마지막 카드의 우측이 잘려 보인다 (예매 버튼 cut-off).
+     MovieCardWrapper 와 동일하게 0 으로 고정해 가로 스크롤 시에도 폭 보존. (2026-05-11 회귀 픽스) */
+  flex-shrink: 0;
+  /* 폭을 단일 값으로 고정해 카드 간 폭 편차도 함께 제거 — 좁은 화면에선 240px, 그 외 280px. */
+  width: 280px;
   min-width: 240px;
   max-width: 320px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
@@ -108,7 +114,7 @@ export const LinkBtn = styled.a`
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 8px 12px;
+  padding: 8px 10px;
   font-size: 13px;
   font-weight: 600;
   border-radius: 8px;
@@ -117,6 +123,9 @@ export const LinkBtn = styled.a`
   transition: background-color 0.15s ease, transform 0.05s ease;
   /* button 으로 polymorphic 사용 시 기본 폰트 family 가 reset 되지 않게 강제 상속 */
   font-family: inherit;
+  /* 카드 너비(240–320px)에 3개 버튼이 들어갈 때 한글 라벨이 글자 단위로 줄바꿈되지
+     않도록 nowrap 강제. 좁은 너비에서는 약간 잘릴 수 있으나 글자 stack 보다는 가독성↑. */
+  white-space: nowrap;
 
   ${({ $variant, theme }) => $variant === 'primary'
     ? `

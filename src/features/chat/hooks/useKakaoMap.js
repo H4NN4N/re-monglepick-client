@@ -29,10 +29,13 @@ let _sdkLoadPromise = null;
 /**
  * 카카오맵 SDK 스크립트를 동적으로 로드한다 (1회).
  *
+ * 단건 미니맵(useKakaoMap) 외에 통합 지도(TheatersMap) 등 다른 컴포넌트에서도
+ * 동일한 1회 로딩/Promise 캐싱을 그대로 재사용하도록 export.
+ *
  * @returns {Promise<typeof window.kakao>} window.kakao 가 사용 가능해진 시점에 resolve.
  *   키 누락 또는 로딩 실패 시 reject.
  */
-function loadKakaoMapSdk() {
+export function loadKakaoMapSdk() {
   // SSR 가드 — Node 환경(테스트 등)에서는 즉시 reject
   if (typeof window === 'undefined') {
     return Promise.reject(new Error('window 없음 (SSR/Node 환경)'));
@@ -228,8 +231,9 @@ export function useKakaoMap(containerRef, {
  * 사용자 위치 마커용 SVG (24×35, 파란색).
  * 카카오맵 기본 마커(빨강)와 색으로 구분 → "내 위치 vs 영화관" 한눈에 식별.
  * data URI 로 인라인 → 추가 네트워크 요청 없음.
+ * TheatersMap 등 다른 컴포넌트에서도 동일 SVG 를 재사용하므로 export.
  */
-const USER_MARKER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="35" viewBox="0 0 24 35">
+export const USER_MARKER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="35" viewBox="0 0 24 35">
   <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 23 12 23s12-14 12-23c0-6.6-5.4-12-12-12z" fill="#3b82f6"/>
   <circle cx="12" cy="12" r="5" fill="#fff"/>
 </svg>`;

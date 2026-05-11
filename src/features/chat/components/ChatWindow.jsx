@@ -32,6 +32,7 @@ import useChatSuggestions from '../hooks/useChatSuggestions';
 import MovieCard from './MovieCard';
 /* 외부 지도 카드/패널 — theater_card / now_showing SSE 이벤트 렌더 */
 import TheaterCard from './TheaterCard';
+import TheatersMap from './TheatersMap';
 import NowShowingPanel from './NowShowingPanel';
 /* 후속 질문 + AI 생성 제안 카드 (Claude Code 스타일, 2026-04-15 신설) */
 import ClarificationOptions from './ClarificationOptions';
@@ -55,8 +56,13 @@ const DEFAULT_MAX_INPUT_LENGTH = 200;
  * theater/booking 의도일 가능성이 높을 때만 좌표 권한을 요청해 사용자 마찰을 줄인다.
  * 추천(recommend) 의도까지 매번 위치를 묻지 않도록 보수적으로 매칭하되,
  * "근처/주변/가까운" 처럼 위치 기반 탐색을 암시하는 표현도 포함해 권한 유도 확률을 높인다.
+ *
+ * 2026-05-11: "내 위치/현재 위치/여기" 같은 자기참조 표현도 추가 — 사용자가 명시적으로
+ * 좌표 사용을 요청한 발화에서 권한 팝업이 안 뜨던 회귀 차단. (geo.request 가 한 턴 더
+ * 시도되도록 유도 — 권한이 차단돼 있으면 showAlert 가 안내한다.)
  */
-const THEATER_INTENT_RE = /(영화관|상영관|극장|cgv|롯데시네마|메가박스|예매|근처|주변|가까운|가까이)/i;
+const THEATER_INTENT_RE =
+  /(영화관|상영관|극장|cgv|롯데시네마|메가박스|예매|근처|주변|가까운|가까이|내\s*위치|현재\s*위치|지금\s*위치|여기서|여기)/i;
 function detectsTheaterIntent(text) {
   if (!text) return false;
   return THEATER_INTENT_RE.test(text);
@@ -871,30 +877,39 @@ export default function ChatWindow() {
                     size="sm"
                   />
                 </S.MonggleAvatarWrapper>
-                {/* ChatMovieCards 와 동일한 가로 스크롤 컨테이너 재사용 — 카드 세로 정렬 + 모바일 가로 스와이프 */}
-                <S.ChatMovieCards>
-                  {hasTheaters && msg.theaters.map((t, tIdx) => (
-                    <TheaterCard
-                      key={t.theater_id || `t-${tIdx}`}
-                      theater={t}
+                {/* TheatersMap(통합 지도) 은 가로 스크롤 컨테이너 바깥에 두어 부모 폭에 맞춰 풀폭으로 렌더.
+                    하단의 ChatMovieCards 가로 스크롤은 그대로 유지 — 카드 한 장씩 살펴보기 + 모바일 스와이프. */}
+                <S.ExternalMapColumn>
+                  {hasTheaters && (
+                    <TheatersMap
+                      theaters={msg.theaters}
                       userLocation={msg.userLocation}
-                      /* SSE 도중 취소된 부분 데이터는 dimmed 시각화 (MovieCard 와 동일 패턴) */
-                      cancelled={msg.cancelled === true}
-                      /* 영화관이 1개뿐이면 미니맵 자동 펼침 — 사용자가 추가 클릭 없이 위치 즉시 확인 */
-                      defaultOpen={msg.theaters.length === 1}
-                    />
-                  ))}
-                  {hasNowShowing && (
-                    <NowShowingPanel
-                      movies={msg.nowShowing}
-                      onPickMovie={(text) => {
-                        // 박스오피스 영화명 클릭 → 입력창에 자동 채움 + 포커스 (사용자가 보낼지 결정).
-                        setInputText(text);
-                        inputRef.current?.focus();
-                      }}
                     />
                   )}
-                </S.ChatMovieCards>
+                  <S.ChatMovieCards>
+                    {hasTheaters && msg.theaters.map((t, tIdx) => (
+                      <TheaterCard
+                        key={t.theater_id || `t-${tIdx}`}
+                        theater={t}
+                        userLocation={msg.userLocation}
+                        /* SSE 도중 취소된 부분 데이터는 dimmed 시각화 (MovieCard 와 동일 패턴) */
+                        cancelled={msg.cancelled === true}
+                        /* 통합 지도가 위에서 모든 영화관 위치를 한눈에 보여주므로 카드별 미니맵은 기본 닫힘 유지.
+                           사용자가 특정 영화관만 크게 보고 싶을 때만 '지도 보기' 토글로 펼치는 UX 로 일관. */
+                      />
+                    ))}
+                    {hasNowShowing && (
+                      <NowShowingPanel
+                        movies={msg.nowShowing}
+                        onPickMovie={(text) => {
+                          // 박스오피스 영화명 클릭 → 입력창에 자동 채움 + 포커스 (사용자가 보낼지 결정).
+                          setInputText(text);
+                          inputRef.current?.focus();
+                        }}
+                      />
+                    )}
+                  </S.ChatMovieCards>
+                </S.ExternalMapColumn>
               </S.ChatMsg>
             );
           }
