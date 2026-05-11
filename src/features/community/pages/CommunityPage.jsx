@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useModal } from '../../../shared/components/Modal';
 import { useRewardToast } from '../../../shared/components/RewardToast';
+import { useAchievementUnlock } from '../../../shared/components/AchievementUnlock';
 import { getPosts, createPost } from '../api/communityApi';
 import useAuthStore from '../../../shared/stores/useAuthStore';
 import PostList from '../components/PostList';
@@ -43,6 +44,7 @@ const SORT_OPTIONS = [
 export default function CommunityPage() {
   const { showAlert } = useModal();
   const { showReward } = useRewardToast();
+  const { showAchievements } = useAchievementUnlock();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const tabFromUrl = searchParams.get('tab');
@@ -136,7 +138,8 @@ export default function CommunityPage() {
   const handleCreatePost = async (postData) => {
     setIsSubmitting(true);
     try {
-      const newPost = await createPost(postData);
+      const response = await createPost(postData);
+      const newPost = response.data;
       setShowForm(false);
       goToPage(1);
       setKeyword('');
@@ -146,6 +149,7 @@ export default function CommunityPage() {
       if (newPost?.rewardPoints > 0) {
         showReward(newPost.rewardPoints, '게시글 작성');
       }
+      showAchievements(response.unlockedAchievements);
     } catch (err) {
       await showAlert({
         title: '작성 실패',
@@ -257,15 +261,34 @@ export default function CommunityPage() {
                     ◀
                   </S.PageBtn>
 
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <S.PageBtn
-                      key={page}
-                      $active={page === currentPage}
-                      onClick={() => goToPage(page)}
-                    >
-                      {page}
-                    </S.PageBtn>
-                  ))}
+                  {(() => {
+                    const delta = 2;
+                    const rangeSet = new Set([1, totalPages]);
+                    for (let i = Math.max(2, currentPage - delta); i <= Math.min(totalPages - 1, currentPage + delta); i++) {
+                      rangeSet.add(i);
+                    }
+                    const sorted = [...rangeSet].sort((a, b) => a - b);
+                    const items = [];
+                    let prev = null;
+                    for (const p of sorted) {
+                      if (prev !== null && p - prev > 1) items.push('...');
+                      items.push(p);
+                      prev = p;
+                    }
+                    return items.map((item, idx) =>
+                      item === '...' ? (
+                        <S.Ellipsis key={`ellipsis-${idx}`}>···</S.Ellipsis>
+                      ) : (
+                        <S.PageBtn
+                          key={item}
+                          $active={item === currentPage}
+                          onClick={() => goToPage(item)}
+                        >
+                          {item}
+                        </S.PageBtn>
+                      )
+                    );
+                  })()}
 
                   <S.PageBtn
                     onClick={() => goToPage(Math.min(totalPages, currentPage + 1))}

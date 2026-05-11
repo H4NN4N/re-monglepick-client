@@ -13,6 +13,7 @@
 import { useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useModal } from '../../../shared/components/Modal';
+import { useAchievementUnlock } from '../../../shared/components/AchievementUnlock';
 import { ROUTES, buildPath } from '../../../shared/constants/routes';
 import { submitFinalReview } from '../api/roadmapApi';
 import * as S from './StampReviewPage.styled';
@@ -24,6 +25,7 @@ export default function FinalReviewPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { showAlert } = useModal();
+  const { showAchievements } = useAchievementUnlock();
 
   const courseTitle = location.state?.courseTitle || '코스';
 
@@ -41,7 +43,9 @@ export default function FinalReviewPage() {
     }
     setIsSubmitting(true);
     try {
-      const result = await submitFinalReview(courseId, reviewText.trim());
+      const response = await submitFinalReview(courseId, reviewText.trim());
+      const result = response.data;
+      showAchievements(response.unlockedAchievements);
 
       if (result?.courseStatus === 'COMPLETED') {
         await showAlert({

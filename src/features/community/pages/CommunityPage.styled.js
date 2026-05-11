@@ -407,3 +407,15 @@ export const SearchBtn = styled.button`
     box-shadow: ${({ theme }) => theme.shadows.md};
   }
 `;
+
+/** 페이지네이션 말줄임 (...) */
+export const Ellipsis = styled.span`
+  min-width: 36px;
+  height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: ${({ theme }) => theme.colors.textMuted};
+  font-size: ${({ theme }) => theme.typography.textSm};
+  user-select: none;
+`;

@@ -15,6 +15,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useModal } from '../../../shared/components/Modal';
+import { useAchievementUnlock } from '../../../shared/components/AchievementUnlock';
 import { ROUTES, buildPath } from '../../../shared/constants/routes';
 import {
   getPlaylists,
@@ -36,6 +37,7 @@ export default function PlaylistPage() {
   const navigate = useNavigate();
   const { id: detailId } = useParams();
   const { showAlert, showConfirm } = useModal();
+  const { showAchievements } = useAchievementUnlock();
 
   /* ── 목록 상태 ── */
   const [playlists, setPlaylists] = useState([]);
@@ -189,11 +191,12 @@ export default function PlaylistPage() {
           prev.map((p) => p.playlistId === playlist.playlistId ? { ...p, isPublic: true } : p)
         );
         try {
-          await sharePlaylist({
+          const response = await sharePlaylist({
             title: playlist.playlistName,
             content: `${playlist.playlistName} 플레이리스트를 공유합니다.`,
             playlistId: playlist.playlistId,
           });
+          showAchievements(response.unlockedAchievements);
         } catch { /* 커뮤니티 게시 실패 — isPublic은 이미 true이므로 롤백 안 함 */ }
         showAlert({ title: '공유 완료', message: '커뮤니티에 공유됐어요!', type: 'success' });
       } catch (err) {
@@ -275,7 +278,8 @@ export default function PlaylistPage() {
         /* 공개로 생성했다면 커뮤니티에도 게시 (best-effort) */
         if (newId && formIsPublic) {
           try {
-            await sharePlaylist({ title: formTitle.trim(), content: `${formTitle.trim()} 플레이리스트를 공유합니다.`, playlistId: newId });
+            const response = await sharePlaylist({ title: formTitle.trim(), content: `${formTitle.trim()} 플레이리스트를 공유합니다.`, playlistId: newId });
+            showAchievements(response.unlockedAchievements);
           } catch { /* 커뮤니티 게시 실패는 무시 */ }
         }
         setShowForm(false);

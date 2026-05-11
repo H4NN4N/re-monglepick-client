@@ -10,6 +10,7 @@ import { recommendApi, requireAuth } from '../../../shared/api/axiosInstance';
 /* API 상수 — shared/constants에서 가져옴 */
 import { RECOMMEND_REVIEW_ENDPOINTS } from '../../../shared/constants/api';
 import { getDisplayNickname, isWithdrawnUser } from '../../../shared/utils/userDisplay';
+import { normalizeAchievementAwareResponse } from '../../../shared/utils/achievementAwareResponse';
 
 function normalizeReview(review) {
   if (!review) {
@@ -36,6 +37,7 @@ function normalizeReview(review) {
     createdAt: review.created_at || review.createdAt,
     likeCount: review.like_count ?? review.likeCount ?? 0,
     liked: Boolean(review.liked ?? false),
+    rewardPoints: review.reward_points ?? review.rewardPoints ?? 0,
   };
 }
 
@@ -105,7 +107,11 @@ export async function createReview(
     review_source: reviewSource,
     review_category_code: reviewCategoryCode,
   });
-  return normalizeReview(result);
+  const response = normalizeAchievementAwareResponse(result);
+  return {
+    ...response,
+    data: normalizeReview(response.data),
+  };
 }
 
 /**

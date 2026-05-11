@@ -20,6 +20,7 @@ import { trackEvent } from '../../../shared/utils/eventTracker';
 import useAuthStore from '../../../shared/stores/useAuthStore';
 import { useModal } from '../../../shared/components/Modal';
 import { useRewardToast } from '../../../shared/components/RewardToast';
+import { useAchievementUnlock } from '../../../shared/components/AchievementUnlock';
 import { createReview } from '../../../features/review/api/reviewApi';
 import { toggleDismissed } from '../../../features/recommendation/api/recommendationApi';
 import PostWatchFeedback from '../../../features/movie/components/PostWatchFeedback';
@@ -258,6 +259,7 @@ export default function MovieCard({ movie, sessionId, onFindNearbyTheater, cance
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
   const { showAlert } = useModal();
   const { showReward } = useRewardToast();
+  const { showAchievements } = useAchievementUnlock();
 
   /* YouTube embed URL (YouTube가 아니면 null → 외부 링크 폴백) */
   const embedUrl = getYouTubeEmbedUrl(trailer_url);
@@ -380,7 +382,7 @@ export default function MovieCard({ movie, sessionId, onFindNearbyTheater, cance
     if (submitting) return;
     setSubmitting(true);
     try {
-      const result = await createReview(movie.id, {
+      const response = await createReview(movie.id, {
         movieId: movie.id,
         rating: ratingValue,
         content: content || null,
@@ -388,6 +390,7 @@ export default function MovieCard({ movie, sessionId, onFindNearbyTheater, cance
         reviewSource: sessionId ? `chat_${sessionId}` : 'chat',
         reviewCategoryCode: 'AI_RECOMMEND',
       });
+      const result = response.data;
       setReviewed(true);
       trackEvent('review_submit', movie.id, {
         rank, source: 'chat', rating: ratingValue,
@@ -397,6 +400,7 @@ export default function MovieCard({ movie, sessionId, onFindNearbyTheater, cance
       if (result?.rewardPoints > 0) {
         showReward(result.rewardPoints, '리뷰 작성');
       }
+      showAchievements(response.unlockedAchievements);
     } catch (err) {
       /* 409 중복 리뷰 — 이미 이 영화에 리뷰를 작성한 상태이므로 버튼을 잠금 처리한다.
          네트워크/5xx 등 다른 에러는 조용히 무시하여 UX 를 차단하지 않는다.

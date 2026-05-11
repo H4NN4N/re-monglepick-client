@@ -15,6 +15,7 @@ import { getSharedPlaylists, sharePlaylist, togglePostLike } from '../api/commun
 import { getShareablePlaylists, importPlaylist, updatePlaylist } from '../../playlist/api/playlistApi';
 import useAuthStore from '../../../shared/stores/useAuthStore';
 import { useModal } from '../../../shared/components/Modal';
+import { useAchievementUnlock } from '../../../shared/components/AchievementUnlock';
 import { buildPath, ROUTES } from '../../../shared/constants/routes';
 
 import { formatRelativeTime } from '../../../shared/utils/formatters';
@@ -423,6 +424,7 @@ const Btn = styled.button`
 
 export default function PlaylistShareFeed() {
   const { showAlert } = useModal();
+  const { showAchievements } = useAchievementUnlock();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated());
   const currentUser = useAuthStore((s) => s.user);
   const navigate = useNavigate();
@@ -584,11 +586,12 @@ export default function PlaylistShareFeed() {
           isPublic: true,
         });
       }
-      await sharePlaylist({
+      const response = await sharePlaylist({
         title: shareForm.title.trim(),
         content: shareForm.content.trim() || fallbackContent,
         playlistId: Number(shareForm.playlistId),
       });
+      showAchievements(response.unlockedAchievements);
       setShowShareModal(false);
       await loadFeed();
     } catch (err) {
